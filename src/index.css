@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.path-hover {
+    transition: transform 0.4s ease, fill 0.4s ease;
+  }
+  
+  .path-hover:hover {
+    fill: bisque;
+  }
+  
+  svg{
+    pointer-events: auto;
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  
+  svg path{
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  
+  svg g{
+    transform-origin: center;
+    transform-box: fill-box;
+  }
