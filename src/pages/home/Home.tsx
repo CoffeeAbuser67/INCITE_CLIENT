@@ -118,10 +118,10 @@ const Home = () => {
   // ● transition
   const transition = useTransition(mapRegionCity[activeRegion] || [], {
     trail: 600 / mapRegionCity[activeRegion].length || 1,
-    from: { opacity: 0, scale: 0 },
-    enter: { opacity: 1, scale: 1 },
-    leave: { opacity: 0, scale: 0 },
-    config: { mass: 120, tension: 330, friction: 166, clamp: true },
+    from: { opacity: 0, transform: 'scale(0)' },
+    enter: { opacity: 1, transform: 'scale(1)' },
+    leave: { opacity: 0, transform: 'scale(0)' },
+    config: { mass: 10, tension: 63, friction: 16, clamp: true },
     keys: (mapRegionCity[activeRegion] || []).map((el) => el.id),
   });
 
