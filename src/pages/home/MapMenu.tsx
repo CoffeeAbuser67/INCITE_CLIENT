@@ -1,4 +1,4 @@
-// HERE Home
+// HERE MapMenu
 
 import React, {
   useState,
@@ -18,7 +18,6 @@ import {
 import classNames from "classnames";
 import { useWindowResize } from "../../hooks/useWindowResize";
 
-// HERE regionCity
 import regionCityData from "../../assets/BahiaRegiaoMuni.json";
 import regionData from "../../assets/BahiaRegiao.json";
 
@@ -26,6 +25,7 @@ interface City {
   id: string;
   d: string;
 }
+
 interface RegionCity {
   [key: string]: City[];
 }
@@ -48,17 +48,12 @@ interface BoundingBox {
   height: number;
 }
 
-// ★ Home  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
-const Home = () => {
+
+// ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
+const MapMenu = () => {
   const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
   const c1Ref = useRef<SVGCircleElement | null>(null); // HERE c1Ref
   const originalBBoxRef = useRef<BoundingBox | null>(null); // HERE originalBBoxRef
-
-  // ✳ [windowSize, setWindowSize]
-  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
-  useWindowResize((width, height) => {
-    setWindowSize({ width, height });
-  });
 
   type levels = 0 | 1 | 2;
   // ✳ [currentLevel, setCurrentLevel]
@@ -118,9 +113,9 @@ const Home = () => {
   // ● transition
   const transition = useTransition(mapRegionCity[activeRegion] || [], {
     trail: 600 / mapRegionCity[activeRegion].length || 1,
-    from: { opacity: 0, transform: 'scale(0)' },
-    enter: { opacity: 1, transform: 'scale(1)' },
-    leave: { opacity: 0, transform: 'scale(0)' },
+    from: { opacity: 0, transform: "scale(0)" },
+    enter: { opacity: 1, transform: "scale(1)" },
+    leave: { opacity: 0, transform: "scale(0)" },
     config: { mass: 10, tension: 63, friction: 16, clamp: true },
     keys: (mapRegionCity[activeRegion] || []).map((el) => el.id),
   });
@@ -128,7 +123,7 @@ const Home = () => {
   // ● springStyles
   const [springStyles, api] = useSpring(() => ({
     transform: `scale(1) translate(0px, 0px)`,
-    config: { tension: 160, friction: 30 },
+    config: { tension: 62, friction: 35, mass: 7},
   })); // ── ⋙── ── ── ── ── ── ──➤
 
   // {✪} resetMap
@@ -273,21 +268,13 @@ const Home = () => {
         resetMap(); // {○} resetMap
       }
     }
-  }; // . . . . . . . . . . . . . .
+  }
+  ; // . . . . . . . . . . . . . .
 
   return (
     // ── ⋙── ── ── ── ── ── ──➤ DOM ↯
     <>
-      <p
-        // _PIN_ windowSize ↯
-        className="fixed right-10 top-30 text-xl text-slate-950"
-      >
-        🦀{` wdith: ${windowSize.width}`} <br />
-        🦀{` height: ${windowSize.height}`}
-      </p>
-
       <div
-        //── ⋙── ── ── ── ── ── ──➤
         className="flex gap-10 items-center"
       >
         <div
@@ -324,7 +311,6 @@ const Home = () => {
                   {
                     ".cls-city{stroke:#000;stroke-linejoin:round;stroke-width:.5px}"
                   }
-
                 </style>
               </defs>
 
@@ -408,5 +394,5 @@ const Home = () => {
     </>
   );
 };
-export default Home;
+export default MapMenu;
 // ★ ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤

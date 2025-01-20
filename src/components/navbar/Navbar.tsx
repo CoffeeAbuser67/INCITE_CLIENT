@@ -1,7 +1,7 @@
 // import
 import { Card, Heading, TabNav, IconButton, Tooltip } from "@radix-ui/themes";
 import { Link, useLocation } from "react-router-dom";
-import useAuthService from "../../utils/authService";
+import useAuthService from "../../services/authService";
 import ComponentProtector from "../guard/ComponentProtector";
 
 // WARN Repeated SVG

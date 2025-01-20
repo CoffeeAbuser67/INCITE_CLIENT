@@ -1,7 +1,7 @@
 
 import { useEffect } from "react";
-import { axiosPrivate } from "../utils/axios";
-import useAuthService from "../utils/authService";
+import { axiosPrivate } from "../services/axios";
+import useAuthService from "../services/authService";
 
 // {✪} useAxiosErrorInterceptor
 const useAxiosErrorInterceptor = () => {

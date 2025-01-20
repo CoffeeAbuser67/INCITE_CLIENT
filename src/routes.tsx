@@ -5,7 +5,7 @@ import Default from "./layouts/Default";
 import AuthLayout from "./layouts/Auth";
 import RouteProtector from "./components/guard/RouteProtector";
 
-const Home = lazy(() => import("./pages/home/Home"));
+const Home = lazy(() => import("./pages/home/Index"));
 const Settings = lazy(() => import("./pages/settings/Settings"));
 const Login = lazy(() => import("./pages/auth/Login"));
 

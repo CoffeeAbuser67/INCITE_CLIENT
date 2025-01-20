@@ -11,15 +11,13 @@ import { Theme } from "@radix-ui/themes";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
-
 function App() {
   const content = useRoutes(routes); 
   return (
     <HelmetProvider>
       <Helmet
-        titleTemplate="%s Incite Agricultura BAHIA 🫘"
-        defaultTitle="Incite Agricultura 🫘"
+        titleTemplate="%s 🔬 Instituto de Ciência, Inovação e Tecnologia do Estado da Bahia"
+        defaultTitle="Agricultura Familiar Diversificada e Sustentável 🫘"
       />
 
       <Theme appearance="dark" accentColor="orange" grayColor="olive">

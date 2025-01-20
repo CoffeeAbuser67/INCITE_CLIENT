@@ -1,4 +1,4 @@
-import { axiosDefault } from "./axios";
+import { axiosDefault } from "../services/axios";
 import { useUserStore } from "../store/userStore";
 import { useNavigate } from "react-router-dom";
 
