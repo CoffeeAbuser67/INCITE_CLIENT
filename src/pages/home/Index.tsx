@@ -30,7 +30,7 @@ import {
   Separator,
 } from "@radix-ui/themes";
 
-import {axiosDefault} from "../../services/axios";
+import { axiosDefault } from "../../services/axios";
 import handleAxiosError from "../../utils/handleAxiosError";
 import { useWindowResize } from "../../hooks/useWindowResize";
 
@@ -50,33 +50,53 @@ const Home = () => {
 
   // ── ⋙── ── ── ── ── ── ── ──➤
 
-  // (✪) getToP10──➤
-  const  getToP10 = async () => {
+
+
+
+
+  // variables = [
+  //   'area plantada',
+  //   'area plantada percentual total',
+
+  //   'area colhida',
+  //   'area colhida percentual total',
+
+  //   'valor da producao',
+  //   'valor da producao percentual total',
+
+  //   'quantidade produzida',
+  //   'rendimento medio',
+  // ]
+
+
+  // (✪) getToP10
+  const getToP10 = async () => {
 
     const axios = axiosDefault;
     try {
+
       const url = "/getTop10/";
       const params = {
-        area: 'bahia',      // 
-        year: 2023,           
-        variable: 'area colhida percentual total',
+        year: 2023,
+        area: 'bahia',
+        variable: 'area colhida',
+        fetchType: 'timeSeries'
       };
-      // _PIN_ getTop10  ✉ 
 
-      const response = await axios.get(url, { params });
+      const response = await axios.get(url, { params }); // _PIN_ getTop10  ✉ 
 
       setData(response.data); // ↺ setData
-      console.log(response.data); // [LOG] data
+      console.log(response.data); // [LOG] data 
 
     } catch (err: unknown) {
       if (err) {
         handleAxiosError(err);
       }
     }
-  }   
-  
+  }
+
+  // ── ⋙── ── DOM ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤ 
   return (
-    // ── ⋙── ── DOM ↯ ── ── ── ──➤ 
     <>
       <p
         // _PIN_ windowSize ↯
@@ -86,11 +106,15 @@ const Home = () => {
         🦀{` height: ${windowSize.height}`}
       </p>
 
-      <Button onClick = {getToP10} size="3" variant="soft">
+      <Button onClick={getToP10} size="3" variant="soft">
         <Text >🦀</Text>
       </Button>
 
-      <MapMenu/>
+      <Box
+      // <○> MapMenu 
+      >
+        <MapMenu />
+      </Box>
 
     </>
   );
