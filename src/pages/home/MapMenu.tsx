@@ -123,7 +123,7 @@ const MapMenu = () => {
   // ● springStyles
   const [springStyles, api] = useSpring(() => ({
     transform: `scale(1) translate(0px, 0px)`,
-    config: { tension: 62, friction: 35, mass: 7},
+    config: { tension: 62, friction: 35, mass: 7 },
   })); // ── ⋙── ── ── ── ── ── ──➤
 
   // {✪} resetMap
@@ -180,9 +180,8 @@ const MapMenu = () => {
     console.log("✦────────────────────────────➤");
 
     api.start({
-      transform: `scale(${
-        maxScale - 0.35
-      }) translate(${translateX}px, ${translateY}px)`,
+      transform: `scale(${maxScale - 0.35
+        }) translate(${translateX}px, ${translateY}px)`,
     });
   }; // ── ⋙── ── ── ── ── ── ──➤
 
@@ -269,7 +268,7 @@ const MapMenu = () => {
       }
     }
   }
-  ; // . . . . . . . . . . . . . .
+    ; // . . . . . . . . . . . . . .
 
   return (
     // ── ⋙── ── ── ── ── ── ──➤ DOM ↯
@@ -306,7 +305,7 @@ const MapMenu = () => {
               <defs>
                 <style>
                   {
-                    ".cls-region{stroke:#000;stroke-linejoin:round;stroke-width:.8px; fill:#964B00}"
+                    ".cls-region{stroke:#000;stroke-linejoin:round;stroke-width:.8px}"
                   }
                   {
                     ".cls-city{stroke:#000;stroke-linejoin:round;stroke-width:.5px}"
@@ -315,17 +314,23 @@ const MapMenu = () => {
               </defs>
 
               <g id="RegionsMap" className="cls-region">
+
                 {mapRegion.map((el, i) => (
                   // [○] mapRegion
-                  <animated.path
-                    id={el.id}
-                    d={el.d}
-                    key={i}
-                    data-type={"region"}
-                    className="path-hover"
-                  />
+                  <g key={i} className={`${el.id === 'velho_chico' ? 'fill-yellow-100' : 'fill-orange-900'}`}>
+                    <animated.path
+                      id={el.id}
+                      d={el.d}
+                      data-type={"region"}
+                      className="path-hover"
+                    />
+                  </g>
+
                 ))}
               </g>
+
+
+
 
               {currentLevel === 1 && (
                 // . . . . . . .
@@ -349,11 +354,10 @@ const MapMenu = () => {
                     id={item.id}
                     d={item.d}
                     data-type={"city"}
-                    className={`path-hover cls-city ${
-                      activeCity === item.id
-                        ? "fill-slate-100"
-                        : "fill-slate-900"
-                    }`}
+                    className={`path-hover cls-city ${activeCity === item.id
+                      ? "fill-slate-100"
+                      : "fill-slate-900"
+                      }`}
                   />
                 </animated.g>
               ))}
