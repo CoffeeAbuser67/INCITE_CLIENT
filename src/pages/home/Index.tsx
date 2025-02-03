@@ -41,8 +41,13 @@ import { BarChart, Bar, Cell, LabelList, LineChart, Line, XAxis, YAxis, Cartesia
 
 import MapMenu from "./MapMenu";
 
-
+import Icons from "../../assets/Icons";
+import ICON_SIZES from "../../assets/IconsSizes";
 // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+
+
 //  {●} D
 const D = [
   {
@@ -89,6 +94,7 @@ const D = [
   },
 ];
 
+//  {●} VARIABLES
 const VARIABLES = {
   'area_plantada_ou_destinada_a_colheita': 'Área plantada ou destinada a colheita',
   'area_colhida': 'Área colhida',
@@ -98,25 +104,36 @@ const VARIABLES = {
 //  {●} YEARS
 const YEARS = Array.from({ length: 2024 - 2000 }, (_, i) => 2000 + i);
 
+// . . . . . . .
+//  ● TESTDICT
+const TESTDICT = {
+  "goiaba": "Laranaja",
+}
 
-// const svgs = {
-//   pv: (props) => (
-//     <svg {...props} width={20} height={20} fill="red" viewBox="0 0 1024 1024">
-//       <path d="M512 1009.984 ..." />
-//     </svg>
-//   ),
-//   uv: (props) => (
-//     <svg {...props} width={20} height={20} fill="green" viewBox="0 0 1024 1024">
-//       <path d="M517.12 53.248 ..." />
-//     </svg>
-//   ),
-// };
-
-// const CustomizedDot = ({ cx, cy, dataKey }) => {
-//   const SvgComponent = svgs[dataKey]; // Obtém o componente SVGll;
-// };
-//   return SvgComponent ? <SvgComponent x={cx - 10} y={cy - 10} /> : nu
-
+//  {●} TESTDATA2
+const TESTDATA2 = [
+  { name: "Uva", id: "uva", v: Math.floor(Math.random() * 5000) },
+  { name: "Tangerina", id: "tangerina", v: Math.floor(Math.random() * 5000) },
+  { name: "Pêssego", id: "pessego", v: Math.floor(Math.random() * 5000) },
+  { name: "Pera", id: "pera", v: Math.floor(Math.random() * 5000) },
+  { name: "Noz", id: "noz_fruto_seco", v: Math.floor(Math.random() * 5000) },
+  { name: "Melão", id: "melao", v: Math.floor(Math.random() * 5000) },
+  { name: "Melancia", id: "melancia", v: Math.floor(Math.random() * 5000) },
+  { name: "Marmelo", id: "marmelo", v: Math.floor(Math.random() * 5000) },
+  // { name: "Maracujá", id: "maracuja", v: Math.floor(Math.random() * 5000) },
+  // { name: "Manga", id: "manga", v: Math.floor(Math.random() * 5000) },
+  // { name: "Mamão", id: "mamao", v: Math.floor(Math.random() * 5000) },
+  // { name: "Maçã", id: "maca", v: Math.floor(Math.random() * 5000) },
+  // { name: "Limão", id: "limao", v: Math.floor(Math.random() * 5000) },
+  // { name: "Laranja", id: "laranja", v: Math.floor(Math.random() * 5000) },
+  // { name: "Goiaba", id: "goiaba", v: Math.floor(Math.random() * 5000) },
+  // { name: "Figo", id: "figo", v: Math.floor(Math.random() * 5000) },
+  // { name: "Caqui", id: "caqui", v: Math.floor(Math.random() * 5000) },
+  // { name: "Caju", id: "caju", v: Math.floor(Math.random() * 5000) },
+  // { name: "Banana (cacho)", id: "banana_cacho", v: Math.floor(Math.random() * 5000) },
+  // { name: "Açaí", id: "acai", v: Math.floor(Math.random() * 5000) },
+  // { name: "Abacaxi", id: "abacaxi", v: Math.floor(Math.random() * 5000) },
+];
 
 
 const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤
@@ -177,7 +194,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     }
   } // ── ⋙── ── ── ── ── ── ── ──➤
 
-
   const CustomizedDot = (props) => { // {●} CustomizedDot
     const { cx, cy, stroke, payload, value } = props;
 
@@ -230,8 +246,23 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         />
       </svg>
     );
-  };
+  }; // . . . 
 
+  
+  const renderCustomizedLabel = (props) => {  // {●} renderCustomizedLabel
+    const { x, y, width, index } = props;
+    const dataName = TESTDATA2[index]?.id ?? "default";
+    const SvgComponent = Icons[dataName as keyof typeof Icons];
+  
+    if (!SvgComponent) return null;
+  
+    const svgWidth = ICON_SIZES[dataName] || 30;
+    const centerX = x + (width / 2) - (svgWidth / 2);
+
+    console.log(dataName, svgWidth)
+
+    return <SvgComponent x={centerX} y={y - 10} />;
+  };
 
 
   return (   // ── ⋙DOM ── ── ── ── ── ── ── ──⫸
@@ -267,8 +298,8 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
         <Box
           // . . . . . . . . .
-          id = "DropDownComponent" //HERE DropDownComponent
-          className="flex gap-6" 
+          id="DropDownComponent" //HERE DropDownComponent
+          className="flex gap-6"
         >
           <DropdownMenu.Root
           // ⊙  DropdownMenu Year
@@ -347,7 +378,8 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
               <Line type="monotone"
                 dataKey="pv"
                 stroke="#8884d8"
-                dot={<CustomizedDot />} // {○} CustomizedDot
+                dot={<CustomizedDot />}
+              // {○} CustomizedDot
               />
               <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
             </LineChart>
@@ -356,10 +388,43 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         </Box>
 
 
+        <Box
+          // . . . . . . . . .
+          id='ChartBox' //HERE TesteBox
+          className=' rounded-xl bg-purple-900 bg-opacity-20 h-[420px] w-[620px]'
+        >
 
+          <ResponsiveContainer width="100%" height="100%">
 
+            <BarChart
+              width={700}
+              height={300}
+              data={TESTDATA2} // {○} TESTDATA2
+              margin={{
+                top: 5,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}
+            >
 
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
 
+              <Bar dataKey="v" fill="#8884d8" minPointSize={5}>
+                <LabelList
+                  dataKey="name"
+                  content={renderCustomizedLabel}  // {○} renderCustomizedLabel
+                />
+
+              </Bar>
+
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
       </Box >
 
     </>
