@@ -30,21 +30,14 @@ import {
   Separator,
   DropdownMenu,
 } from "@radix-ui/themes";
-
 import { axiosDefault } from "../../services/axios";
 import handleAxiosError from "../../utils/handleAxiosError";
 import { useWindowResize } from "../../hooks/useWindowResize";
-
-
 import { BarChart, Bar, Cell, LabelList, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-
-
 import MapMenu from "./MapMenu";
-
 import Icons from "../../assets/Icons";
 import ICON_SIZES from "../../assets/IconsSizes";
 // ── ⋙── ── ── ── ── ── ── ──➤
-
 
 
 
@@ -105,13 +98,11 @@ const VARIABLES = {
 const YEARS = Array.from({ length: 2024 - 2000 }, (_, i) => 2000 + i);
 
 // . . . . . . .
-//  ● TESTDICT
-const TESTDICT = {
-  "goiaba": "Laranaja",
-}
 
-//  {●} TESTDATA2
-const TESTDATA2 = [
+
+
+//  {●} TESTDATA
+const TESTDATA = [
   { name: "Uva", id: "uva", v: Math.floor(Math.random() * 5000) },
   { name: "Tangerina", id: "tangerina", v: Math.floor(Math.random() * 5000) },
   { name: "Pêssego", id: "pessego", v: Math.floor(Math.random() * 5000) },
@@ -120,20 +111,44 @@ const TESTDATA2 = [
   { name: "Melão", id: "melao", v: Math.floor(Math.random() * 5000) },
   { name: "Melancia", id: "melancia", v: Math.floor(Math.random() * 5000) },
   { name: "Marmelo", id: "marmelo", v: Math.floor(Math.random() * 5000) },
-  // { name: "Maracujá", id: "maracuja", v: Math.floor(Math.random() * 5000) },
-  // { name: "Manga", id: "manga", v: Math.floor(Math.random() * 5000) },
-  // { name: "Mamão", id: "mamao", v: Math.floor(Math.random() * 5000) },
-  // { name: "Maçã", id: "maca", v: Math.floor(Math.random() * 5000) },
-  // { name: "Limão", id: "limao", v: Math.floor(Math.random() * 5000) },
-  // { name: "Laranja", id: "laranja", v: Math.floor(Math.random() * 5000) },
-  // { name: "Goiaba", id: "goiaba", v: Math.floor(Math.random() * 5000) },
-  // { name: "Figo", id: "figo", v: Math.floor(Math.random() * 5000) },
-  // { name: "Caqui", id: "caqui", v: Math.floor(Math.random() * 5000) },
-  // { name: "Caju", id: "caju", v: Math.floor(Math.random() * 5000) },
-  // { name: "Banana (cacho)", id: "banana_cacho", v: Math.floor(Math.random() * 5000) },
-  // { name: "Açaí", id: "acai", v: Math.floor(Math.random() * 5000) },
-  // { name: "Abacaxi", id: "abacaxi", v: Math.floor(Math.random() * 5000) },
+  { name: "Maracujá", id: "maracuja", v: Math.floor(Math.random() * 5000) },
+  { name: "Manga", id: "manga", v: Math.floor(Math.random() * 5000) },
+  { name: "Mamão", id: "mamao", v: Math.floor(Math.random() * 5000) },
+  { name: "Maçã", id: "maca", v: Math.floor(Math.random() * 5000) },
+  { name: "Limão", id: "limao", v: Math.floor(Math.random() * 5000) },
+  { name: "Laranja", id: "laranja", v: Math.floor(Math.random() * 5000) },
+  { name: "Goiaba", id: "goiaba", v: Math.floor(Math.random() * 5000) },
+  { name: "Figo", id: "figo", v: Math.floor(Math.random() * 5000) },
+  { name: "Caqui", id: "caqui", v: Math.floor(Math.random() * 5000) },
+  { name: "Caju", id: "caju", v: Math.floor(Math.random() * 5000) },
+  { name: "Banana (cacho)", id: "banana_cacho", v: Math.floor(Math.random() * 5000) },
+  { name: "Açaí", id: "acai", v: Math.floor(Math.random() * 5000) },
+  { name: "Abacaxi", id: "abacaxi", v: Math.floor(Math.random() * 5000) },
+  { name: "Abacate", id: "abacate", v: Math.floor(Math.random() * 5000) },
 ];
+
+
+//  {●} TESTDATA2
+const TESTDATA2 = [
+  { name: "Algodão Arbóreo em Caroço", id: "algodao_arboreo_em_caroco", v: Math.floor(Math.random() * 5000) },
+  { name: "Algodão Herbáceo em Caroço", id: "algodao_herbaceo_em_caroco", v: Math.floor(Math.random() * 5000) },
+  { name: "Amendoim em Casca", id: "amendoim_em_casca", v: Math.floor(Math.random() * 5000) },
+  { name: "Arroz em Casca", id: "arroz_em_casca", v: Math.floor(Math.random() * 5000) },
+  { name: "Aveia em Grão", id: "aveia_em_grao", v: Math.floor(Math.random() * 5000) },
+  { name: "Centeio em Grão", id: "centeio_em_grao", v: Math.floor(Math.random() * 5000) },
+  { name: "Cevada em Grão", id: "cevada_em_grao", v: Math.floor(Math.random() * 5000) },
+  { name: "Ervilha em Grão", id: "ervilha_em_grao", v: Math.floor(Math.random() * 5000) },
+  { name: "Fava em Grão", id: "fava_em_grao", v: Math.floor(Math.random() * 5000) },
+  { name: "Feijão em Grão", id: "feijao_em_grao", v: Math.floor(Math.random() * 5000) },
+  { name: "Girassol em Grão", id: "girassol_em_grao", v: Math.floor(Math.random() * 5000) },
+  { name: "Linhaça (Semente de Linho)", id: "linho_semente", v: Math.floor(Math.random() * 5000) },
+  { name: "Milho em Grão", id: "milho_em_grao", v: Math.floor(Math.random() * 5000) },
+  { name: "Soja em Grão", id: "soja_em_grao", v: Math.floor(Math.random() * 5000) },
+  { name: "Sorgo em Grão", id: "sorgo_em_grao", v: Math.floor(Math.random() * 5000) },
+  { name: "Trigo em Grão", id: "trigo_em_grao", v: Math.floor(Math.random() * 5000) },
+  { name: "Triticale em Grão", id: "triticale_em_grao", v: Math.floor(Math.random() * 5000) },
+];
+
 
 
 const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤
@@ -150,8 +165,20 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   //  ✳ [variable, setVariable]
   const [variable, setVariable] = useState<keyof typeof VARIABLES | undefined>(undefined);
 
-  //  ✳ [data, setData]
-  const [data, setData] = useState(null);
+
+  type DataItem = { id: string; name: string; v: number };
+
+  type AgriculturalData = {
+    data: DataItem[];
+    percent_data: DataItem[];
+    quantidade_produzida: DataItem[];
+    rendimento_medio_da_producao: DataItem[];
+    var: string;
+  };
+
+  //  ✳ [topVData, setTopVData]
+  const [topVData, setTopVData] = useState<AgriculturalData | null>(null);
+
 
 
   // variables = [
@@ -182,10 +209,10 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         type: 'regiao'
       };
 
-      const response = await axios.get(url, { params }); // _PIN_ getTop10  ✉ 
+      const response = await axios.get(url, { params }); // _PIN_ getTopValues  ✉ 
 
-      setData(response.data); // ↺ setData
-      console.log(response.data); // [LOG] data 
+      setTopVData(response.data); // ↺ setTopVData
+      console.log(response.data); // [LOG] topVData
 
     } catch (err: unknown) {
       if (err) {
@@ -248,21 +275,41 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     );
   }; // . . . 
 
-  
-  const renderCustomizedLabel = (props) => {  // {●} renderCustomizedLabel
+
+  const topValuesLabels = (props) => {  // {●} topValuesLabels
     const { x, y, width, index } = props;
-    const dataName = TESTDATA2[index]?.id ?? "default";
+    const dataName = topVData?.data[index]?.id ?? "default"; // ⊙ topVData
     const SvgComponent = Icons[dataName as keyof typeof Icons];
-  
     if (!SvgComponent) return null;
-  
     const svgWidth = ICON_SIZES[dataName] || 30;
     const centerX = x + (width / 2) - (svgWidth / 2);
+    return <SvgComponent x={centerX} y={y - 10} />;
+  };// . . . 
 
-    console.log(dataName, svgWidth)
 
+
+  const renderCustomizedLabel = (props) => {  // {●} renderCustomizedLabel
+    const { x, y, width, index } = props;
+    const dataName = TESTDATA[index]?.id ?? "default";// {○} TESTDATA
+    const SvgComponent = Icons[dataName as keyof typeof Icons];
+    if (!SvgComponent) return null;
+    const svgWidth = ICON_SIZES[dataName] || 30;
+    const centerX = x + (width / 2) - (svgWidth / 2);
+    return <SvgComponent x={centerX} y={y - 10} />;
+  };// . . . 
+
+
+
+  const renderCustomizedLabel2 = (props) => {  // {●} renderCustomizedLabel2
+    const { x, y, width, index } = props;
+    const dataName = TESTDATA2[index]?.id ?? "default"; // {○} TESTDATA2
+    const SvgComponent = Icons[dataName as keyof typeof Icons];
+    if (!SvgComponent) return null;
+    const svgWidth = ICON_SIZES[dataName] || 30;
+    const centerX = x + (width / 2) - (svgWidth / 2);
     return <SvgComponent x={centerX} y={y - 10} />;
   };
+
 
 
   return (   // ── ⋙DOM ── ── ── ── ── ── ── ──⫸
@@ -274,12 +321,10 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         🦀{` wdith: ${windowSize.width}`} <br />
         🦀{` height: ${windowSize.height}`}
       </p>
-
       <Button onClick={getTopValues} size="3" variant="soft">
         <Text >🦀</Text>
       </Button>
-
-      <Box id='MC' className='flex flex-col justify-start items-center gap-8  bg-slate-700 '>
+      <Box id='MC' className='flex flex-col justify-start items-center gap-8  bg-slate-500 '>
 
         <Box
         // . . . . . . . . .
@@ -287,14 +332,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         >
           <MapMenu />
         </Box>
-
-
-        {/* {dates.map((date) => (
-          <SelectItem key={date} value={date} className="p-2 hover:bg-gray-200 cursor-pointer">
-            {date}
-          </SelectItem>
-        ))} */}
-
 
         <Box
           // . . . . . . . . .
@@ -317,7 +354,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
               ))}
             </DropdownMenu.Content>
           </DropdownMenu.Root>
-
 
           <DropdownMenu.Root
           // ⊙  DropdownMenu Variable
@@ -348,8 +384,48 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
         <Box
           // . . . . . . . . .
-          id='ChartBox' //HERE TopSeriesBox
-          className=' rounded-xl bg-blue-900 bg-opacity-20 h-[420px]'
+          id='TopValuesBox' //HERE TopValuesBox
+          className=' rounded-xl bg-white bg-opacity-20 h-[420px] w-[620px]'
+        >
+
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              width={700}
+              height={300}
+              data={topVData?.data} // ⊙  topVData
+              margin={{
+                top: 5,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}
+            >
+
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" stroke="#000" />
+              <YAxis stroke="#000" />
+              <Tooltip />
+              <Legend />
+              <Bar name = '🦀' dataKey="v" fill="#8884d8" minPointSize={5}>
+                <LabelList
+                  dataKey="name"
+                  content={topValuesLabels}  // {○} topValuesLabels
+                />
+              </Bar>
+            </BarChart>
+
+          </ResponsiveContainer>
+
+        </Box>
+
+
+
+
+
+        <Box
+          // . . . . . . . . .
+          id='TopSeriesBox' //HERE TopSeriesBox
+          className=' rounded-xl bg-purple-950 bg-opacity-20 h-[420px]'
         >
 
           🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀
@@ -370,14 +446,14 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
               }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
+              <XAxis dataKey="name" stroke="#000" />
+              <YAxis stroke="#000" />
               <Tooltip />
               <Legend />
 
               <Line type="monotone"
                 dataKey="pv"
-                stroke="#8884d8"
+                stroke="#000"
                 dot={<CustomizedDot />}
               // {○} CustomizedDot
               />
@@ -390,7 +466,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
         <Box
           // . . . . . . . . .
-          id='ChartBox' //HERE TesteBox
+          id='TesteBox' //HERE TesteBox
           className=' rounded-xl bg-purple-900 bg-opacity-20 h-[420px] w-[620px]'
         >
 
@@ -398,6 +474,47 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
             <BarChart
               width={700}
+              height={300}
+              data={TESTDATA} // {○} TESTDATA
+              margin={{
+                top: 5,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}
+            >
+
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" stroke="#000" />
+              <YAxis stroke="#000" />
+              <Tooltip />
+              <Legend />
+
+              <Bar dataKey="v" fill="#8884d8" minPointSize={5}>
+                <LabelList
+                  dataKey="name"
+                  content={renderCustomizedLabel}  // {○} renderCustomizedLabel
+                />
+              </Bar>
+            </BarChart>
+
+          </ResponsiveContainer>
+        </Box>
+
+
+
+
+
+        <Box
+          // . . . . . . . . .
+          id='TesteBox2' //HERE TesteBox2
+          className=' rounded-xl bg-purple-900 bg-opacity-20 h-[420px] w-[620px]'
+        >
+
+          <ResponsiveContainer width="100%" height="100%">
+
+            <BarChart
+              width={600}
               height={300}
               data={TESTDATA2} // {○} TESTDATA2
               margin={{
@@ -409,22 +526,27 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
             >
 
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
+              <XAxis dataKey="name" stroke="#000" />
+              <YAxis stroke="#000" />
               <Tooltip />
               <Legend />
 
               <Bar dataKey="v" fill="#8884d8" minPointSize={5}>
                 <LabelList
                   dataKey="name"
-                  content={renderCustomizedLabel}  // {○} renderCustomizedLabel
+                  content={renderCustomizedLabel2}  // {○} renderCustomizedLabel2
                 />
-
               </Bar>
-
             </BarChart>
+
           </ResponsiveContainer>
         </Box>
+
+
+
+
+
+
       </Box >
 
     </>
