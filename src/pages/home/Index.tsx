@@ -54,9 +54,7 @@ import { TooltipProps } from "recharts";
 import MapMenu from "./MapMenu";
 import Icons from "../../assets/Icons";
 import ICON_SIZES from "../../assets/IconsSizes";
-// ── ⋙── ── ── ── ── ── ── ──➤
-
-
+// . . . . . . .
 //  ● D
 const D = [
   {
@@ -142,7 +140,6 @@ const TESTDATA = [
   { name: "Abacate", id: "abacate", v: Math.floor(Math.random() * 5000) },
 ];
 
-
 //  ● TESTDATA2
 const TESTDATA2 = [
   { name: "Algodão Arbóreo em Caroço", id: "algodao_arboreo_em_caroco", v: Math.floor(Math.random() * 5000) },
@@ -172,8 +169,24 @@ const pieData = [ // ● pieData
   { name: "Group D", value: 200 }
 ];
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
-const RADIAN = Math.PI / 180;
+
+//  ● COLORS 
+const COLORS = {
+  area_plantada_ou_destinada_a_colheita: ["#312e81", "#3730a3", "#4338ca", "#4f46e5", "#6366f1", "#818cf8", "#a5b4fc", "#c7d2fe", "#e0e7ff", "#eef2ff", "#f5f7ff"],
+  area_colhida: ["#7c2d12", "#9a3412", "#c2410c", "#ea580c", "#f97316", "#fb923c", "#fdba74", "#fed7aa", "#ffe5cc", "#ffedd5", "#fff7ed"],
+  valor_da_producao: ["#171717", "#262626", "#404040", "#525252", "#737373", "#a3a3a3", "#d4d4d4", "#e5e5e5", "#f5f5f5", "#fafafa", "#fcfcfc"],
+}
+// indigo = ["#312e81", "#3730a3", "#4338ca", "#4f46e5", "#6366f1", "#818cf8", "#a5b4fc", "#c7d2fe", "#e0e7ff", "#eef2ff", "#f5f7ff"]
+
+// orange = ["#7c2d12", "#9a3412", "#c2410c", "#ea580c", "#f97316", "#fb923c", "#fdba74", "#fed7aa", "#ffe5cc", "#ffedd5", "#fff7ed"]
+// color_palettes = {
+//   "blue": ["#002359", "#013875", "#024c7e", "#036290", "#0578b7", "#0891cf", "#36b5e0", "#65c7ec", "#96d2f1", "#c3e0f9", "#ebf5ff"],
+//   "green": ["#053c2a", "#064e3b", "#065f46", "#047857", "#059669", "#10b981", "#34d399", "#6ee7b7", "#a7f3d0", "#d1fae5", "#f0fdf4"],
+//   "yellow": ["#5d2e0f", "#713f12", "#854d0e", "#a16207", "#ca8a04", "#eab308", "#facc15", "#fde047", "#fef08a", "#fef9c3", "#fefce8"],
+//   "purple": ["#4c1d95", "#5b21b6", "#6d28d9", "#7c3aed", "#8b5cf6", "#a855f7", "#c084fc", "#d8b4fe", "#e9d5ff", "#f3e8ff", "#faf5ff"]
+//    "neutral" : ["#171717", "#262626", "#404040", "#525252", "#737373", "#a3a3a3", "#d4d4d4", "#e5e5e5", "#f5f5f5", "#fafafa", "#fcfcfc"]
+
+// }
 
 
 const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤
@@ -188,16 +201,14 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   const [year, setYear] = useState<number | null>(null);
 
   //  ✳ [variable, setVariable]
-  const [variable, setVariable] = useState<keyof typeof VARIABLES | undefined>(undefined);
+  const [variable, setVariable] = useState<keyof typeof VARIABLES>('valor_da_producao');
 
-
-  type DataItem = { id: string; name: string; v: number };
-
+  type A_Item = { id: string; name: string; v: number };
+  type A_Item2 = { id: string; name: string; qp: number, rm: number };
   type AgriculturalData = {
-    data: DataItem[];
-    percent_data: DataItem[];
-    quantidade_produzida: DataItem[];
-    rendimento_medio_da_producao: DataItem[];
+    data: A_Item[];
+    percent_data: A_Item[];
+    QP_RM: A_Item2[];
     var: string;
   };
 
@@ -246,13 +257,8 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     }
   } // ── ⋙── ── ── ── ── ── ── ──➤
 
-
-
-
-
-
-  // (●) CustomTooltip
-  const CustomTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {
+  // (●) PieTooltip
+  const PieTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const { id, name, v } = payload[0].payload; // Extract id from payload
 
@@ -262,7 +268,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
       return (
         <Card>
           <SvgComponent />
-          <span>{`${name}: ${v.toFixed(2)}`}</span>
+          <span>{`${name}: ${v.toFixed(2)}%`}</span>
         </Card>
       );
     }
@@ -270,16 +276,39 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   }; // . . .
 
 
+
+  // (●) BarTooltip
+  const BarTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {
+    if (active && payload && payload.length) {
+      const { id, name, v } = payload[0].payload; // Extract id from payload
+
+      return (
+        <Card>
+          <div>{`${name} `}</div>
+          <div>{`${v.toLocaleString('de-DE')} R$`}</div>
+        </Card>
+      );
+    }
+    return null;
+  }; // . . .
+
+
+
+
   const topValuesLabels = (props) => {  // {●} topValuesLabels
     const { x, y, width, index } = props;
     const dataName = topVData?.data[index]?.id ?? "default"; // ⊙ topVData
     const SvgComponent = Icons[dataName as keyof typeof Icons];
     if (!SvgComponent) return null;
-    const svgWidth = ICON_SIZES[dataName] || 30;
-    const centerX = x + (width / 2) - (svgWidth / 2);
-    return <SvgComponent x={centerX} y={y - 10} />;
-  };// . . . 
 
+    const svgWidth = ICON_SIZES[dataName]?.w || 30;
+    const centerX = x + (width / 2) - (svgWidth / 2); // Position at the middle of the bar
+
+    const svgHeight = ICON_SIZES[dataName]?.h || 30;
+    const centerY = y - svgHeight; // Position at the **exact top** of the bar
+
+    return <SvgComponent x={centerX} y={centerY} />;
+  };// . . . 
 
   const CustomizedDot = (props) => { // ● CustomizedDot
     const { cx, cy, stroke, payload, value } = props;
@@ -335,43 +364,18 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     );
   }; // . . . 
 
-  // const pieLabel = ({ 
-  //   cx,
-  //   cy,
-  //   midAngle,
-  //   innerRadius,
-  //   outerRadius,
-  //   percent,
-  //   index
-  // }: any) => {
-
-  //   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  //   const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  //   const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-
-  //   return (
-  //     <text
-  //       x={x}
-  //       y={y}
-  //       fill="white"
-  //       textAnchor={x > cx ? "start" : "end"}
-  //       dominantBaseline="central"
-  //     >
-  //       {`${(percent * 100).toFixed(0)}%`}
-  //     </text>
-  //   );
-  // }; 
-
-
   const renderCustomizedLabel = (props) => {  // ● renderCustomizedLabel
     const { x, y, width, index } = props;
     const dataName = TESTDATA[index]?.id ?? "default";// ○ TESTDATA
     const SvgComponent = Icons[dataName as keyof typeof Icons];
     if (!SvgComponent) return null;
-    const svgWidth = ICON_SIZES[dataName] || 30;
-    const centerX = x + (width / 2) - (svgWidth / 2);
-    return <SvgComponent x={centerX} y={y - 10} />;
+    const svgWidth = ICON_SIZES[dataName]?.w || 30;
+    const centerX = x + (width / 2) - (svgWidth / 2); // Position at the middle of the bar
+
+    const svgHeight = ICON_SIZES[dataName]?.h || 30;
+    const centerY = y - svgHeight; // Position at the **exact top** of the bar
+
+    return <SvgComponent x={centerX} y={centerY} />;
   };// . . . 
 
   const renderCustomizedLabel2 = (props) => {  // ● renderCustomizedLabel2
@@ -379,9 +383,17 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     const dataName = TESTDATA2[index]?.id ?? "default"; // ○ TESTDATA2
     const SvgComponent = Icons[dataName as keyof typeof Icons];
     if (!SvgComponent) return null;
-    const svgWidth = ICON_SIZES[dataName] || 30;
-    const centerX = x + (width / 2) - (svgWidth / 2);
-    return <SvgComponent x={centerX} y={y - 10} />;
+
+    const svgWidth = ICON_SIZES[dataName]?.w || 30;
+    const centerX = x + (width / 2) - (svgWidth / 2); // Position at the middle of the bar
+
+    const svgHeight = ICON_SIZES[dataName]?.h || 30;
+    const centerY = y - svgHeight; // Position at the **exact top** of the bar
+
+    return <SvgComponent x={centerX} y={centerY} />;
+
+
+
   };
 
 
@@ -395,16 +407,14 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         🦀{` height: ${windowSize.height}`}
       </p>
 
-
       {/* <Button onClick={getTopValues} size="3" variant="soft">
         <Text >🦀</Text>
       </Button> */}
-
-
-      <Box id='MC' className='flex flex-col justify-start items-center gap-8  bg-slate-500 '>
+      {/*//  _PIN_ MC ⊛ */}
+      <Box id='MC' className='flex flex-col justify-start items-center gap-8'>
 
         <Box
-        // ── ⋙── ── ── ── ── ──➤
+        // ── ⋙── ── ⊛ ── ── ──➤
         // <○> MapMenu 
         >
           <MapMenu />
@@ -462,59 +472,80 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         <Box
           // ── ⋙── ── ── ── ── ──➤
           id='TopValuesBox' //HERE TopValuesBox
-          className=' flex gap-6 rounded-xl bg-white bg-opacity-20 h-[420px] w-full'
-        // . . . . . . Pie . . . . . .
+          className='flex gap-8 rounded-xl h-[440px] w-full'
         >
+          <Card
+            // . . . . . . pie . . . . . .
+            id='pie'
+            variant="ghost"
+            className='flex z10 bg-neutral-400 overflow-visible'
+          >
 
-          <PieChart width={600} height={600}>
-            <Pie
-              data={topVData?.percent_data} // ⊙ topVData
-              cy={160}
+            <PieChart width={420} height={420}>
+              <Pie
+                data={topVData?.percent_data} // ⊙ topVData
+                cy={210}
+                label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                outerRadius={120}
+                fill="#000"
+                dataKey="v"
+              >
+                {topVData?.percent_data.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[variable][index % COLORS[variable].length]} />
+                ))}
+              </Pie>
 
-              label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
-              outerRadius={200}
-              fill="#000"
-              dataKey="v"
-            >
-              {topVData?.percent_data.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
+              <Tooltip
+                // (○) PieTooltip
+                content={<PieTooltip />} />
+            </PieChart>
 
-            <Tooltip
-              // (○) CustomTooltip
-              content={<CustomTooltip />} />
-          </PieChart>
+          </Card>
 
+          <Card
+            // . . . . . . bar . . . . . .
+            id='bar'
+            variant="ghost"
+            className='flex w-full h-[460px] z-0 bg-emerald-700 '
+          >
+            <ResponsiveContainer
+              width="100%" height="100%">
+              <BarChart
+                width={700}
+                height={440}
+                data={topVData?.data} // ⊙ topVData
+                margin={{
+                  top: 46,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
 
-          <ResponsiveContainer
-            // . . . . . . Bar . . . . . .
-            width="100%" height="100%">
-            <BarChart
-              width={700}
-              height={300}
-              data={topVData?.data} // ⊙ topVData
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" stroke="#000" />
+                <YAxis stroke="#000" />
+                <Tooltip
+                // (○) PieTooltip
+                content={<BarTooltip />} />
+                <Legend />
+                <Bar name='🦀' dataKey="v" fill="#8884d8" minPointSize={5}>
 
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" stroke="#000" />
-              <YAxis stroke="#000" />
-              <Tooltip />
-              <Legend />
-              <Bar name='🦀' dataKey="v" fill="#8884d8" minPointSize={5}>
-                <LabelList
-                  dataKey="name"
-                  content={topValuesLabels}  // {○} topValuesLabels
-                />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+                  {topVData?.data.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[variable][index % COLORS[variable].length]} />
+                  ))}
+
+                  <LabelList
+                    dataKey="name"
+                    content={topValuesLabels}  // {○} topValuesLabels
+                  />
+
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+
+          </Card>
+
         </Box>
 
         <Box

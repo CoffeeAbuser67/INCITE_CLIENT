@@ -20,7 +20,7 @@ function App() {
         defaultTitle="Agricultura Familiar Diversificada e Sustentável 🫘"
       />
 
-      <Theme appearance="dark" accentColor="orange" grayColor="olive">
+      <Theme appearance="light" accentColor="bronze" grayColor="sand">
         <Suspense fallback={<Loader />}>{content}</Suspense>
       </Theme>
       <ToastContainer theme="dark" />
