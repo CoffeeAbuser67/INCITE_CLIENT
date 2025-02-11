@@ -27,6 +27,7 @@ import {
   TextArea,
   Dialog,
   Separator,
+  Strong,
   DropdownMenu,
 } from "@radix-ui/themes";
 import { axiosDefault } from "../../services/axios";
@@ -47,10 +48,12 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Rectangle,
+  Label
 } from 'recharts';
-import { TooltipProps } from "recharts";
 
+import { TooltipProps, LegendProps } from "recharts";
 import MapMenu from "./MapMenu";
 import Icons from "../../assets/Icons";
 import ICON_SIZES from "../../assets/IconsSizes";
@@ -100,7 +103,6 @@ const D = [
     amt: 2100,
   },
 ];
-
 //  {●} VARIABLES
 const VARIABLES = {
   'area_plantada_ou_destinada_a_colheita': 'Área plantada ou destinada a colheita',
@@ -111,71 +113,13 @@ const VARIABLES = {
 //  {●} YEARS
 const YEARS = Array.from({ length: 2024 - 2000 }, (_, i) => 2000 + i);
 
-// . . . . . . .
-
-
-//  ● TESTDATA
-const TESTDATA = [
-  { name: "Uva", id: "uva", v: Math.floor(Math.random() * 5000) },
-  { name: "Tangerina", id: "tangerina", v: Math.floor(Math.random() * 5000) },
-  { name: "Pêssego", id: "pessego", v: Math.floor(Math.random() * 5000) },
-  { name: "Pera", id: "pera", v: Math.floor(Math.random() * 5000) },
-  { name: "Noz", id: "noz_fruto_seco", v: Math.floor(Math.random() * 5000) },
-  { name: "Melão", id: "melao", v: Math.floor(Math.random() * 5000) },
-  { name: "Melancia", id: "melancia", v: Math.floor(Math.random() * 5000) },
-  { name: "Marmelo", id: "marmelo", v: Math.floor(Math.random() * 5000) },
-  { name: "Maracujá", id: "maracuja", v: Math.floor(Math.random() * 5000) },
-  { name: "Manga", id: "manga", v: Math.floor(Math.random() * 5000) },
-  { name: "Mamão", id: "mamao", v: Math.floor(Math.random() * 5000) },
-  { name: "Maçã", id: "maca", v: Math.floor(Math.random() * 5000) },
-  { name: "Limão", id: "limao", v: Math.floor(Math.random() * 5000) },
-  { name: "Laranja", id: "laranja", v: Math.floor(Math.random() * 5000) },
-  { name: "Goiaba", id: "goiaba", v: Math.floor(Math.random() * 5000) },
-  { name: "Figo", id: "figo", v: Math.floor(Math.random() * 5000) },
-  { name: "Caqui", id: "caqui", v: Math.floor(Math.random() * 5000) },
-  { name: "Caju", id: "caju", v: Math.floor(Math.random() * 5000) },
-  { name: "Banana (cacho)", id: "banana_cacho", v: Math.floor(Math.random() * 5000) },
-  { name: "Açaí", id: "acai", v: Math.floor(Math.random() * 5000) },
-  { name: "Abacaxi", id: "abacaxi", v: Math.floor(Math.random() * 5000) },
-  { name: "Abacate", id: "abacate", v: Math.floor(Math.random() * 5000) },
-];
-
-//  ● TESTDATA2
-const TESTDATA2 = [
-  { name: "Algodão Arbóreo em Caroço", id: "algodao_arboreo_em_caroco", v: Math.floor(Math.random() * 5000) },
-  { name: "Algodão Herbáceo em Caroço", id: "algodao_herbaceo_em_caroco", v: Math.floor(Math.random() * 5000) },
-  { name: "Amendoim em Casca", id: "amendoim_em_casca", v: Math.floor(Math.random() * 5000) },
-  { name: "Arroz em Casca", id: "arroz_em_casca", v: Math.floor(Math.random() * 5000) },
-  { name: "Aveia em Grão", id: "aveia_em_grao", v: Math.floor(Math.random() * 5000) },
-  { name: "Centeio em Grão", id: "centeio_em_grao", v: Math.floor(Math.random() * 5000) },
-  { name: "Cevada em Grão", id: "cevada_em_grao", v: Math.floor(Math.random() * 5000) },
-  { name: "Ervilha em Grão", id: "ervilha_em_grao", v: Math.floor(Math.random() * 5000) },
-  { name: "Fava em Grão", id: "fava_em_grao", v: Math.floor(Math.random() * 5000) },
-  { name: "Feijão em Grão", id: "feijao_em_grao", v: Math.floor(Math.random() * 5000) },
-  { name: "Girassol em Grão", id: "girassol_em_grao", v: Math.floor(Math.random() * 5000) },
-  { name: "Linhaça (Semente de Linho)", id: "linho_semente", v: Math.floor(Math.random() * 5000) },
-  { name: "Milho em Grão", id: "milho_em_grao", v: Math.floor(Math.random() * 5000) },
-  { name: "Soja em Grão", id: "soja_em_grao", v: Math.floor(Math.random() * 5000) },
-  { name: "Sorgo em Grão", id: "sorgo_em_grao", v: Math.floor(Math.random() * 5000) },
-  { name: "Trigo em Grão", id: "trigo_em_grao", v: Math.floor(Math.random() * 5000) },
-  { name: "Triticale em Grão", id: "triticale_em_grao", v: Math.floor(Math.random() * 5000) },
-];
-
-
-const pieData = [ // ● pieData
-  { name: "Group A", value: 400 },
-  { name: "Group B", value: 300 },
-  { name: "Group C", value: 300 },
-  { name: "Group D", value: 200 }
-];
-
-
-//  ● COLORS 
-const COLORS = {
+//  [●] COLORS 
+const COLORS = { 
   area_plantada_ou_destinada_a_colheita: ["#312e81", "#3730a3", "#4338ca", "#4f46e5", "#6366f1", "#818cf8", "#a5b4fc", "#c7d2fe", "#e0e7ff", "#eef2ff", "#f5f7ff"],
   area_colhida: ["#7c2d12", "#9a3412", "#c2410c", "#ea580c", "#f97316", "#fb923c", "#fdba74", "#fed7aa", "#ffe5cc", "#ffedd5", "#fff7ed"],
   valor_da_producao: ["#171717", "#262626", "#404040", "#525252", "#737373", "#a3a3a3", "#d4d4d4", "#e5e5e5", "#f5f5f5", "#fafafa", "#fcfcfc"],
 }
+
 // indigo = ["#312e81", "#3730a3", "#4338ca", "#4f46e5", "#6366f1", "#818cf8", "#a5b4fc", "#c7d2fe", "#e0e7ff", "#eef2ff", "#f5f7ff"]
 
 // orange = ["#7c2d12", "#9a3412", "#c2410c", "#ea580c", "#f97316", "#fb923c", "#fdba74", "#fed7aa", "#ffe5cc", "#ffedd5", "#fff7ed"]
@@ -198,10 +142,14 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   });
 
   //  ✳ [year, setYear]
-  const [year, setYear] = useState<number | null>(null);
+  const [year, setYear] = useState<number>(2023);
 
   //  ✳ [variable, setVariable]
   const [variable, setVariable] = useState<keyof typeof VARIABLES>('valor_da_producao');
+
+  //  ✳ [variableS, setVariableS]
+  const [variableS, setVariableS] = useState<keyof typeof VARIABLES>('valor_da_producao');
+
 
   type A_Item = { id: string; name: string; v: number };
   type A_Item2 = { id: string; name: string; qp: number, rm: number };
@@ -214,6 +162,16 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   //  ✳ [topVData, setTopVData]
   const [topVData, setTopVData] = useState<AgriculturalData | null>(null);
+
+
+  type SeriesData = {
+    [key: string]: number;
+    year: number;
+  };
+
+  //  ✳ [seriesVData, setSeriesVData]
+  const [seriesVData, setSeriesVData] = useState<SeriesData | null>(null);
+
 
   // variables = [
   //   'area plantada',
@@ -230,9 +188,11 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   // ]
   // ── ⋙── ── ── ── ── ── ── ──➤
 
-  useEffect(() => {
+
+  useEffect(() => {   // HERE useEffect
     getTopValues()
   }, [year, variable])
+  // ── ⋙── ── ── ── ── ── ── ──➤
 
   const getTopValues = async () => { // (✪) getTopValues
     const axios = axiosDefault;
@@ -240,9 +200,9 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
       const url = "/getTopValues/";
       const params = {
-        year: 2023,
+        year: year,
         area: 'bahia',
-        variable: 'area_colhida',
+        variable: variable,
         type: 'regiao'
       };
 
@@ -257,8 +217,29 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     }
   } // ── ⋙── ── ── ── ── ── ── ──➤
 
-  // (●) PieTooltip
-  const PieTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {
+  const getSeriesValues = async () => { // {✪} getSeriesValues
+    const axios = axiosDefault;
+    try {
+
+      const url = "/getTopSeries/";
+      const params = {
+        area: 'bahia',
+        variable: variable,
+        type: 'regiao'
+      };
+
+      const response = await axios.get(url, { params }); // _PIN_ getTopSeries  ✉ 
+      setSeriesVData(response.data); // ↺ setSeriesVData
+      console.log(response.data); // [LOG] seriesVData
+
+    } catch (err: unknown) {
+      if (err) {
+        handleAxiosError(err);
+      }
+    }
+  } // ── ⋙── ── ── ── ── ── ── ──➤
+
+  const PieTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {   // <●> PieTooltip
     if (active && payload && payload.length) {
       const { id, name, v } = payload[0].payload; // Extract id from payload
 
@@ -273,42 +254,52 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
       );
     }
     return null;
-  }; // . . .
+  }; // . . . . . . . . . . . .
 
-
-
-  // (●) BarTooltip
-  const BarTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {
+  const BarTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // (●) BarTooltip
     if (active && payload && payload.length) {
       const { id, name, v } = payload[0].payload; // Extract id from payload
 
       return (
         <Card>
-          <div>{`${name} `}</div>
+          <Text as="div"> <Strong>{`${name}`}</Strong> </Text>
           <div>{`${v.toLocaleString('de-DE')} R$`}</div>
         </Card>
       );
     }
     return null;
-  }; // . . .
+  };
 
-
-
-
-  const topValuesLabels = (props) => {  // {●} topValuesLabels
+  const BarTopLabels = (props) => {  // (●) BarTopLabels
     const { x, y, width, index } = props;
     const dataName = topVData?.data[index]?.id ?? "default"; // ⊙ topVData
     const SvgComponent = Icons[dataName as keyof typeof Icons];
     if (!SvgComponent) return null;
-
-    const svgWidth = ICON_SIZES[dataName]?.w || 30;
+    const { w: svgWidth, h: svgHeight } = ICON_SIZES[dataName] || { w: 30, h: 30 };
     const centerX = x + (width / 2) - (svgWidth / 2); // Position at the middle of the bar
-
-    const svgHeight = ICON_SIZES[dataName]?.h || 30;
     const centerY = y - svgHeight; // Position at the **exact top** of the bar
 
     return <SvgComponent x={centerX} y={centerY} />;
-  };// . . . 
+  }; // . . .
+
+  const BarLegend = () => { // (●) BarLegend
+    return <Text as='div' size="4" highContrast> <Strong>{VARIABLES[variable]} </Strong></Text>;
+  };// . . . . . . . . . . . .
+
+  const QMRMTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // {●} QMRMTooltip
+    if (active && payload && payload.length) {
+      const { id, name, qp, rm } = payload[0].payload; // Extract id from payload
+
+      return (
+        <Card>
+          <Text as="div"> <Strong>{`${name}`}</Strong> </Text>
+          <Text size='3' as="div"> Quantidade Produzida: <Strong>{qp.toLocaleString('de-DE')}</Strong> Toneladas* </Text>
+          <Text as="div"> Rendimento Médio: <Strong>{rm.toLocaleString('de-DE')}</Strong> Kg/Hectares </Text>
+        </Card>
+      );
+    }
+    return null;
+  }; // . . . . . . . . . . . .
 
   const CustomizedDot = (props) => { // ● CustomizedDot
     const { cx, cy, stroke, payload, value } = props;
@@ -362,120 +353,43 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         />
       </svg>
     );
-  }; // . . . 
+  }; 
 
-  const renderCustomizedLabel = (props) => {  // ● renderCustomizedLabel
-    const { x, y, width, index } = props;
-    const dataName = TESTDATA[index]?.id ?? "default";// ○ TESTDATA
-    const SvgComponent = Icons[dataName as keyof typeof Icons];
-    if (!SvgComponent) return null;
-    const svgWidth = ICON_SIZES[dataName]?.w || 30;
-    const centerX = x + (width / 2) - (svgWidth / 2); // Position at the middle of the bar
-
-    const svgHeight = ICON_SIZES[dataName]?.h || 30;
-    const centerY = y - svgHeight; // Position at the **exact top** of the bar
-
-    return <SvgComponent x={centerX} y={centerY} />;
-  };// . . . 
-
-  const renderCustomizedLabel2 = (props) => {  // ● renderCustomizedLabel2
-    const { x, y, width, index } = props;
-    const dataName = TESTDATA2[index]?.id ?? "default"; // ○ TESTDATA2
-    const SvgComponent = Icons[dataName as keyof typeof Icons];
-    if (!SvgComponent) return null;
-
-    const svgWidth = ICON_SIZES[dataName]?.w || 30;
-    const centerX = x + (width / 2) - (svgWidth / 2); // Position at the middle of the bar
-
-    const svgHeight = ICON_SIZES[dataName]?.h || 30;
-    const centerY = y - svgHeight; // Position at the **exact top** of the bar
-
-    return <SvgComponent x={centerX} y={centerY} />;
-
-
-
-  };
-
-
-  return (   // ── ⋙DOM ── ── ── ── ── ── ── ──⫸
+  return (// ── ⋙DOM── ── ── ── ── ── ── ──⫸
     <>
       <p
-        // _PIN_ windowSize ↯
+        // HERE windowSize ↯
         className="fixed right-10 top-30 text-xl text-slate-950"
       >
         🦀{` wdith: ${windowSize.width}`} <br />
         🦀{` height: ${windowSize.height}`}
       </p>
 
-      {/* <Button onClick={getTopValues} size="3" variant="soft">
+      <Button
+        // . . .
+        id="AuxButton"// HERE AuxButton
+        onClick={getSeriesValues} // {○} getSeriesValues
+        size="3"
+        variant="soft">
         <Text >🦀</Text>
-      </Button> */}
-      {/*//  _PIN_ MC ⊛ */}
-      <Box id='MC' className='flex flex-col justify-start items-center gap-8'>
+      </Button>
 
-        <Box
-        // ── ⋙── ── ⊛ ── ── ──➤
+      <Box
+        id='MC' //_PIN_ MC⊛×⁕◉▣ 
+        className='flex flex-col justify-start items-center gap-10'>
+
+        <Box // ── ⋙── ── MapMenu ── ── ──➤
         // <○> MapMenu 
         >
           <MapMenu />
         </Box>
 
-        <Box
-          // ── ⋙── ── ── ── ── ──➤
-          id="DropDownComponent" //HERE DropDownComponent
-          className="flex gap-6"
-        >
-          <DropdownMenu.Root
-          // ⊙  DropdownMenu Year
-          >
-            <DropdownMenu.Trigger>
-              <Button color="gray" variant="soft" highContrast>
-                {year ?? "Ano"}
-                <DropdownMenu.TriggerIcon />
-              </Button>
-            </DropdownMenu.Trigger>
-
-            <DropdownMenu.Content color="gray" variant="soft" highContrast>
-              {YEARS.map((y, i) => (
-                <DropdownMenu.Item key={i} onSelect={() => setYear(y)} shortcut="●">{y}</DropdownMenu.Item>
-              ))}
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-
-          <DropdownMenu.Root
-          // ⊙  DropdownMenu Variable
-          >
-            <DropdownMenu.Trigger>
-              <Button color="gray" variant="soft" highContrast>
-                {variable ? VARIABLES[variable] : "Variável medida"}
-                <DropdownMenu.TriggerIcon />
-              </Button>
-            </DropdownMenu.Trigger>
-
-
-            <DropdownMenu.Content color="gray" variant="soft" highContrast>
-              <DropdownMenu.Item onSelect={() => setVariable("valor_da_producao")} shortcut="R$">
-                Valor da produção
-              </DropdownMenu.Item>
-              <DropdownMenu.Separator />
-              <DropdownMenu.Item onSelect={() => setVariable("area_plantada_ou_destinada_a_colheita")} shortcut="▣">
-                Área plantada ou destinada a colheita
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => setVariable("area_colhida")} shortcut="▢">
-                Área colhida
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-
-          </DropdownMenu.Root>
-        </Box >
-
-        <Box
-          // ── ⋙── ── ── ── ── ──➤
-          id='TopValuesBox' //HERE TopValuesBox
+        <Box //── ⋙── ── ── TopValuesBox ── ── ── ──➤
+          id='TopValuesBox'
           className='flex gap-8 rounded-xl h-[440px] w-full'
         >
           <Card
-            // . . . . . . pie . . . . . .
+            // . . . . . . . . . . . .pie
             id='pie'
             variant="ghost"
             className='flex z10 bg-neutral-400 overflow-visible'
@@ -496,24 +410,123 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
               </Pie>
 
               <Tooltip
-                // (○) PieTooltip
+                // <○> PieTooltip
                 content={<PieTooltip />} />
             </PieChart>
 
           </Card>
 
           <Card
-            // . . . . . . bar . . . . . .
+            // . . . . . . . . . . . .bar
             id='bar'
             variant="ghost"
-            className='flex w-full h-[460px] z-0 bg-emerald-700 '
+            className='flex flex-col items-center gap-0 w-full h-[460px] z-0 bg-emerald-700 '
           >
+            <Box
+              //HERE DropDownComponent
+              id="DropDownComponent"
+              className="flex justify-end gap-6 mt-2 w-full mr-[30px]"
+            >
+              <DropdownMenu.Root
+              // ⊙  DropdownMenu Year
+              >
+                <DropdownMenu.Trigger>
+                  <Button color="gray" variant="solid" highContrast>
+                    {year ?? "Ano"}
+                    <DropdownMenu.TriggerIcon />
+                  </Button>
+                </DropdownMenu.Trigger>
+
+                <DropdownMenu.Content color="gray" variant="soft" highContrast>
+                  {YEARS.map((y, i) => (
+                    <DropdownMenu.Item key={i} onSelect={() => setYear(y)} shortcut="●">{y}</DropdownMenu.Item>
+                  ))}
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+
+              <DropdownMenu.Root
+              // ⊙  DropdownMenu Variable
+              >
+                <DropdownMenu.Trigger>
+                  <Button color="gray" variant="solid" highContrast>
+                    {variable ? VARIABLES[variable] : "Variável medida"}
+                    <DropdownMenu.TriggerIcon />
+                  </Button>
+                </DropdownMenu.Trigger>
+
+
+                <DropdownMenu.Content color="gray" variant="soft" highContrast>
+                  <DropdownMenu.Item onSelect={() => setVariable("valor_da_producao")} shortcut="R$">
+                    Valor da produção
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.Item onSelect={() => setVariable("area_plantada_ou_destinada_a_colheita")} shortcut="▣">
+                    Área plantada ou destinada a colheita
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item onSelect={() => setVariable("area_colhida")} shortcut="▢">
+                    Área colhida
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+
+              </DropdownMenu.Root>
+            </Box >
+
             <ResponsiveContainer
+              // . . . 
               width="100%" height="100%">
               <BarChart
                 width={700}
                 height={440}
                 data={topVData?.data} // ⊙ topVData
+                margin={{
+                  top: 40,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+
+                <XAxis dataKey="name" stroke="#000" />
+
+                <YAxis stroke="#000" />
+                <Tooltip
+                  // (○) BarTooltip
+                  content={<BarTooltip />} />
+
+                <Bar name='🦀' dataKey="v" fill="#8884d8" minPointSize={5}>
+                  {topVData?.data.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[variable][index % COLORS[variable].length]} />
+                  ))}
+
+                  <LabelList
+                    dataKey="name"
+                    content={BarTopLabels}  // (○) BarTopLabels
+                  />
+                </Bar>
+
+              </BarChart>
+
+            </ResponsiveContainer>
+
+            <BarLegend /> {/* //(○) BarLegend */}
+          </Card>
+
+        </Box>
+
+        <Box // ── ⋙── ── ── QPRM_bars ── ── ── ──➤
+          id='QPRM_bars'
+          className='flex gap-8 rounded-xl h-[440px] w-full'
+        >
+          <Card
+            variant="ghost"
+            className="w-full h-full bg-neutral-50/80"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                width={500}
+                height={300}
+                data={topVData?.QP_RM} // ⊙ topVData
                 margin={{
                   top: 46,
                   right: 30,
@@ -521,35 +534,34 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                   bottom: 5,
                 }}
               >
-
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" stroke="#000" />
-                <YAxis stroke="#000" />
+                <XAxis dataKey="name" />
+
+                <YAxis yAxisId="left" orientation="left" stroke="#AC4D39" />
+                <YAxis yAxisId="right" orientation="right" stroke="#FFC53D" />
+
                 <Tooltip
-                // (○) PieTooltip
-                content={<BarTooltip />} />
+                  // {○} QMRMTooltip
+                  content={<QMRMTooltip />} />
+
                 <Legend />
-                <Bar name='🦀' dataKey="v" fill="#8884d8" minPointSize={5}>
 
-                  {topVData?.data.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[variable][index % COLORS[variable].length]} />
-                  ))}
-
+                <Bar name='Quantidade Produzida' yAxisId="left" dataKey="qp" fill="#AC4D39" activeBar={<Rectangle stroke="#000" />}  >
                   <LabelList
                     dataKey="name"
-                    content={topValuesLabels}  // {○} topValuesLabels
+                    content={BarTopLabels}  // (○) BarTopLabels
                   />
-
                 </Bar>
+
+
+                <Bar name="Rendimento Médio" yAxisId="right" dataKey="rm" fill="#FFC53D" activeBar={<Rectangle stroke="#000" />} />
+
               </BarChart>
             </ResponsiveContainer>
-
           </Card>
-
         </Box>
 
-        <Box
-          // ── ⋙── ── ── ── ── ──➤
+        <Box // ── ⋙── ── TopSeriesBox ── ── ──➤
           id='TopSeriesBox' //HERE TopSeriesBox
           className=' rounded-xl bg-purple-950 bg-opacity-20 h-[420px]'
         >
@@ -587,80 +599,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
             </LineChart>
           </ResponsiveContainer>
 
-        </Box>
-
-        <Box
-          // ── ⋙── ── ── ── ── ──➤
-          id='TesteBox' //HERE TesteBox
-          className=' rounded-xl bg-purple-900 bg-opacity-20 h-[420px] w-[620px]'
-        >
-
-          <ResponsiveContainer width="100%" height="100%">
-
-            <BarChart
-              width={700}
-              height={300}
-              data={TESTDATA} // ○ TESTDATA
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" stroke="#000" />
-              <YAxis stroke="#000" />
-              <Tooltip />
-              <Legend />
-
-              <Bar dataKey="v" fill="#8884d8" minPointSize={5}>
-                <LabelList
-                  dataKey="name"
-                  content={renderCustomizedLabel}  // ○ renderCustomizedLabel
-                />
-              </Bar>
-            </BarChart>
-
-          </ResponsiveContainer>
-        </Box>
-
-        <Box
-          // ── ⋙── ── ── ── ── ──➤
-          id='TesteBox2' //HERE TesteBox2
-          className=' rounded-xl bg-purple-900 bg-opacity-20 h-[420px] w-[620px]'
-        >
-
-          <ResponsiveContainer width="100%" height="100%">
-
-            <BarChart
-              width={600}
-              height={300}
-              data={TESTDATA2} // ○ TESTDATA2
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" stroke="#000" />
-              <YAxis stroke="#000" />
-              <Tooltip />
-              <Legend />
-
-              <Bar dataKey="v" fill="#8884d8" minPointSize={5}>
-                <LabelList
-                  dataKey="name"
-                  content={renderCustomizedLabel2}  // ○ renderCustomizedLabel2
-                />
-              </Bar>
-            </BarChart>
-
-          </ResponsiveContainer>
         </Box>
 
       </Box >
