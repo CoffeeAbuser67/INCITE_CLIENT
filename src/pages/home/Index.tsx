@@ -50,8 +50,11 @@ import {
   Legend,
   ResponsiveContainer,
   Rectangle,
+  ReferenceArea,
   Label
 } from 'recharts';
+
+
 
 import { TooltipProps, LegendProps } from "recharts";
 import MapMenu from "./MapMenu";
@@ -114,7 +117,7 @@ const VARIABLES = {
 const YEARS = Array.from({ length: 2024 - 2000 }, (_, i) => 2000 + i);
 
 //  [●] COLORS 
-const COLORS = { 
+const COLORS = {
   area_plantada_ou_destinada_a_colheita: ["#312e81", "#3730a3", "#4338ca", "#4f46e5", "#6366f1", "#818cf8", "#a5b4fc", "#c7d2fe", "#e0e7ff", "#eef2ff", "#f5f7ff"],
   area_colhida: ["#7c2d12", "#9a3412", "#c2410c", "#ea580c", "#f97316", "#fb923c", "#fdba74", "#fed7aa", "#ffe5cc", "#ffedd5", "#fff7ed"],
   valor_da_producao: ["#171717", "#262626", "#404040", "#525252", "#737373", "#a3a3a3", "#d4d4d4", "#e5e5e5", "#f5f5f5", "#fafafa", "#fcfcfc"],
@@ -164,13 +167,18 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   const [topVData, setTopVData] = useState<AgriculturalData | null>(null);
 
 
-  type SeriesData = {
+  type DataS = {
     [key: string]: number;
     year: number;
   };
 
+  type DataSeries = {
+    data: DataS[]
+    keys: string[];
+  };
+
   //  ✳ [seriesVData, setSeriesVData]
-  const [seriesVData, setSeriesVData] = useState<SeriesData | null>(null);
+  const [seriesVData, setSeriesVData] = useState<DataSeries | null>(null);
 
 
   // variables = [
@@ -282,6 +290,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return <SvgComponent x={centerX} y={centerY} />;
   }; // . . .
 
+
   const BarLegend = () => { // (●) BarLegend
     return <Text as='div' size="4" highContrast> <Strong>{VARIABLES[variable]} </Strong></Text>;
   };// . . . . . . . . . . . .
@@ -300,6 +309,21 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     }
     return null;
   }; // . . . . . . . . . . . .
+
+
+  const lineDotIcons = (props) => {  // <●> lineDotIcons
+    const { cx, cy, r } = props;
+    const dataName = seriesVData?.[index]?.id ?? "default"; // ⊙ seriesVData
+    const SvgComponent = Icons[dataName as keyof typeof Icons];
+    if (!SvgComponent) return null;
+    const { w: svgWidth, h: svgHeight } = ICON_SIZES[dataName] || { w: 30, h: 30 };
+    const centerX = cx + (width / 2) - (svgWidth / 2); // Position at the middle of the bar
+    const centerY = cy - svgHeight; // Position at the **exact top** of the bar
+
+    return <SvgComponent x={centerX} y={centerY} />;
+  }; // . . .
+
+
 
   const CustomizedDot = (props) => { // ● CustomizedDot
     const { cx, cy, stroke, payload, value } = props;
@@ -353,7 +377,9 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         />
       </svg>
     );
-  }; 
+  };
+
+
 
   return (// ── ⋙DOM── ── ── ── ── ── ── ──⫸
     <>
@@ -561,44 +587,47 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           </Card>
         </Box>
 
+
         <Box // ── ⋙── ── TopSeriesBox ── ── ──➤
           id='TopSeriesBox' //HERE TopSeriesBox
-          className=' rounded-xl bg-purple-950 bg-opacity-20 h-[420px]'
+          className='rounded-xl bg-neutral-50/80 bg-opacity-20 w-full h-[500px] p-10'
         >
-
-          🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀
-          🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀🦀
-
           <ResponsiveContainer
             width="100%"
             height="100%">
             <LineChart // ○ LineChart
-              width={500}
-              height={300}
-              data={D} // ○ D
+              width={700}
+              height={500}
+
+              data={seriesVData?.data} // ⊙ seriesVData
+
               margin={{
                 top: 5,
-                right: 30,
+                right: 20,
                 left: 20,
                 bottom: 5,
               }}
             >
+
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" stroke="#000" />
-              <YAxis stroke="#000" />
+              <XAxis dataKey="year" stroke="#000" />
+              <YAxis stroke="#000"  />
               <Tooltip />
               <Legend />
+              
 
-              <Line type="monotone"
-                dataKey="pv"
-                stroke="#000"
-                dot={<CustomizedDot />}
-              // ○ CustomizedDot
-              />
-              <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+              {seriesVData?.keys.map((key) => {
+                return (
+                  <Line type="monotone"
+                    dataKey={key}
+                    stroke="#000"
+                    // dot={<CustomizedDot />} // ○ CustomizedDot
+                  />
+                )
+              })}
+
             </LineChart>
           </ResponsiveContainer>
-
         </Box>
 
       </Box >
