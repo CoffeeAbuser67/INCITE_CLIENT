@@ -382,50 +382,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
 
 
-
-  const [zoomDomain, setZoomDomain] = useState<ZoomState>(['dataMin', 'dataMax']);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState(0);
-  const [dragEnd, setDragEnd] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Mouse handlers for drag-to-zoom
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!containerRef.current) return;
-    const { left } = containerRef.current.getBoundingClientRect();
-    setDragStart(e.clientX - left);
-    setIsDragging(true);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !containerRef.current) return;
-    const { left } = containerRef.current.getBoundingClientRect();
-    setDragEnd(e.clientX - left);
-  };
-
-  const handleMouseUp = () => {
-    if (!isDragging || !seriesVData?.data) return;
-
-    const [start, end] = [Math.min(dragStart, dragEnd), Math.max(dragStart, dragEnd)];
-    const containerWidth = containerRef.current?.offsetWidth || 0;
-
-    const startIndex = Math.floor((start / containerWidth) * seriesVData.data.length);
-    const endIndex = Math.ceil((end / containerWidth) * seriesVData.data.length);
-
-    const newDomain = [
-      seriesVData.data[startIndex]?.year || 'dataMin',
-      seriesVData.data[endIndex]?.year || 'dataMax'
-    ];
-
-    setZoomDomain(newDomain);
-    setIsDragging(false);
-  };
-
-
-
-
-
-
   return (// ── ⋙DOM── ── ── ── ── ── ── ──⫸
     <>
       <p
@@ -632,66 +588,39 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           </Card>
         </Box>
 
-
-        <Box
-          ref={containerRef}
-          id="TopSeriesBox"
-          className="rounded-xl bg-neutral-50/80 bg-opacity-20 w-full h-[500px] p-10"
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          style={{ position: 'relative', cursor: isDragging ? 'col-resize' : 'default' }}
-        >
-          {/* Visual selection overlay */}
-          {isDragging && (
-            <div style={{
-              position: 'absolute',
-              left: Math.min(dragStart, dragEnd),
-              width: Math.abs(dragEnd - dragStart),
-              top: 0,
-              height: '100%',
-              backgroundColor: 'rgba(100, 100, 100, 0.2)',
-              pointerEvents: 'none'
-            }} />
-          )}
-
+        <Box id='TopSeriesBox' className='rounded-xl bg-neutral-50/80 bg-opacity-20 w-full h-[500px] p-10'>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
+              width={700}
+              height={500}
               data={seriesVData?.data}
-              margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+              margin={{
+                top: 5,
+                right: 20,
+                left: 20,
+                bottom: 5,
+              }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="year"
-                stroke="#000"
-                domain={zoomDomain}
-                type="number"
-                allowDataOverflow
-              />
+              <XAxis dataKey="year" stroke="#000" />
               <YAxis stroke="#000" />
               <Tooltip />
               <Legend />
 
               {seriesVData?.keys.map((key) => (
-                <Line
-                  key={key}
-                  type="monotone"
-                  dataKey={key}
-                  stroke="#000"
-                  dot={false}
-                />
+                <Line key={key} type="monotone" dataKey={key} stroke="#000" />
               ))}
+
+              {/* Add Brush component for zooming */}
+              <Brush
+                dataKey="year" // Use the same dataKey as your XAxis
+                height={30}
+                stroke="#8884d8"
+                startIndex={0} // Initial start index
+                endIndex={Math.min(seriesVData?.data.length, 10)} // Initial end index (adjust as needed)
+              />
             </LineChart>
           </ResponsiveContainer>
-
-          {/* Reset zoom button */}
-          <button
-            onClick={() => setZoomDomain(['dataMin', 'dataMax'])}
-            className="absolute top-2 right-2 px-3 py-1 bg-white rounded-lg shadow-sm"
-          >
-            Reset Zoom
-          </button>
         </Box>
 
       </Box >

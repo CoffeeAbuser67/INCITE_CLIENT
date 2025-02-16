@@ -21,9 +21,11 @@ import { useWindowResize } from "../../hooks/useWindowResize";
 import regionCityData from "../../assets/BahiaRegiaoMuni.json";
 import regionData from "../../assets/BahiaRegiao.json";
 
+
 interface City {
   id: string;
   d: string;
+  name: string;
 }
 
 interface RegionCity {
@@ -36,6 +38,7 @@ const mapRegionCity: RegionCity = regionCityData;
 interface Region {
   id: string;
   d: string;
+  name: string;
 }
 
 // [●] mapRegion
@@ -164,20 +167,20 @@ const MapMenu = () => {
     setCurrentScale(maxScale - 0.35); // ↺ setCurrentScale
     // (maxScale - 0.3) -0.3 is an adjustment on the scale.
 
-    // [LOG] rect
-    console.log("target rect ↯");
-    console.log("x:", rect.x);
-    console.log("y:", rect.y);
-    console.log("width:", rect.width);
-    console.log("height:", rect.height);
-    console.log(". . . . . . . . . . . . ");
-    // [LOG] bbox
-    console.log("target bbox ↯");
-    console.log("x:", bbox.x);
-    console.log("y:", bbox.y);
-    console.log("width:", bbox.width);
-    console.log("height:", bbox.height);
-    console.log("✦────────────────────────────➤");
+    // // [LOG] rect
+    // console.log("target rect ↯");
+    // console.log("x:", rect.x);
+    // console.log("y:", rect.y);
+    // console.log("width:", rect.width);
+    // console.log("height:", rect.height);
+    // console.log(". . . . . . . . . . . . ");
+    // // [LOG] bbox
+    // console.log("target bbox ↯");
+    // console.log("x:", bbox.x);
+    // console.log("y:", bbox.y);
+    // console.log("width:", bbox.width);
+    // console.log("height:", bbox.height);
+    // console.log("✦────────────────────────────➤");
 
     api.start({
       transform: `scale(${maxScale - 0.35
@@ -238,13 +241,18 @@ const MapMenu = () => {
     const target = event.target;
     const target_id = target?.id;
     const target_type = target?.getAttribute("data-type");
+    const target_name = target?.getAttribute("data-name");
+
 
     // [LOG] target
     // console.log("target:", target);
     console.log("target id:", target_id);
     console.log("target type:", target_type);
+    console.log("target name:", target_name);
     console.log("level:", currentLevel);
     console.log("✦────────────────────────────➤");
+
+
 
     // . . .
     // ⊙ currentLevel 0
@@ -255,6 +263,7 @@ const MapMenu = () => {
         runToFit(target.getBBox(), target.getBoundingClientRect()); // {○} runToFit
       }
     } // . . .
+
 
     // ⊙ currentLevel 1
     else if (currentLevel === 1) {
@@ -268,6 +277,8 @@ const MapMenu = () => {
       }
     }
   }
+
+
     ; // . . . . . . . . . . . . . .
 
   return (
@@ -276,6 +287,7 @@ const MapMenu = () => {
       <div
         className="flex gap-10 items-center"
       >
+
         <div
           // _PIN_ canvas-wrapper
           id="canvas-wrapper"
@@ -287,8 +299,9 @@ const MapMenu = () => {
             // border: "1px solid black",
           }}
         >
+
           <animated.svg
-            // HERE SVGCanvas
+            // ── ⋙── SVGCanvas ──➤
             id="SVGCanvas"
             ref={svgRef}
             viewBox="0 0 715 760"
@@ -316,11 +329,13 @@ const MapMenu = () => {
               <g id="RegionsMap" className="cls-region">
 
                 {mapRegion.map((el, i) => (
+                  // . . . . . . .
                   // [○] mapRegion
                   <g key={i} className={`${el.id === 'velho_chico' ? 'fill-yellow-100' : 'fill-orange-900'}`}>
                     <animated.path
                       id={el.id}
                       d={el.d}
+                      data-name={el.name}
                       data-type={"region"}
                       className="path-hover"
                     />
@@ -328,9 +343,6 @@ const MapMenu = () => {
 
                 ))}
               </g>
-
-
-
 
               {currentLevel === 1 && (
                 // . . . . . . .
@@ -345,6 +357,7 @@ const MapMenu = () => {
                 />
               )}
 
+
               {transition((style, item) => (
                 // . . . . . . .
                 // ○ transition
@@ -353,6 +366,7 @@ const MapMenu = () => {
                   <animated.path
                     id={item.id}
                     d={item.d}
+                    data-name = {item.name}
                     data-type={"city"}
                     className={`path-hover cls-city ${activeCity === item.id
                       ? "fill-slate-100"
@@ -363,6 +377,7 @@ const MapMenu = () => {
               ))}
             </g>
 
+
             <circle
               // . . . . . . .
               // HERE c1Ref
@@ -370,15 +385,23 @@ const MapMenu = () => {
               cx={30}
               cy={30}
               r={12}
+              className="fill-lime-950"
               transform={`translate(${crabPos.X}, ${crabPos.Y})`}
             />
+
+
+
           </animated.svg>
+
+
         </div>
+
 
         <div
           //── ⋙── ── ── ── ── ── ──➤
           className="flex flex-col  justify-center items-center gap-3"
         >
+
           <div>
             <button // (○) buttonClickLog
               onClick={buttonClickLog}
@@ -392,6 +415,7 @@ const MapMenu = () => {
           // HERE City Info
           >
             <p className="text-2xl">🦀{`${activeCity}`}</p>
+
           </div>
         </div>
       </div>
