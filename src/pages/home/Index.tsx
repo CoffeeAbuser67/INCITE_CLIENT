@@ -121,7 +121,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   // ]
   // ── ⋙── ── ── ── ── ── ── ──➤
 
-
   useEffect(() => {   // HERE useEffect
     getTopValues()
   }, [year, variable])
@@ -235,97 +234,101 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
-  const CustomizedDot = (props) => { // ● CustomizedDot
-    const { cx, cy, stroke, payload, value } = props;
+  // const CustomizedDot = (props) => { 
+  //   const { cx, cy, stroke, payload, value } = props;
 
-    return (
-      <svg
-        width={20}
-        height={20}
-        viewBox="0 0 150 150"
-        x={cx - 10}
-        y={cy - 12}
-      >
-        <path
-          d="M77.81 50.35S84.1 20.61 71.77 9"
-          style={{
-            stroke: "#000",
-            strokeWidth: 4,
-            fill: "none",
-            strokeLinecap: "round",
-            strokeLinejoin: "round",
-          }}
-        />
+  //   return (
+  //     <svg
+  //       width={20}
+  //       height={20}
+  //       viewBox="0 0 150 150"
+  //       x={cx - 10}
+  //       y={cy - 12}
+  //     >
+  //       <path
+  //         d="M77.81 50.35S84.1 20.61 71.77 9"
+  //         style={{
+  //           stroke: "#000",
+  //           strokeWidth: 4,
+  //           fill: "none",
+  //           strokeLinecap: "round",
+  //           strokeLinejoin: "round",
+  //         }}
+  //       />
 
-        <circle
-          cx={71.77}
-          cy={94.09}
-          r={50.79}
-          style={{
-            strokeMiterlimit: 10,
-            fill: "#ffa300",
-            stroke: "#000",
-            strokeWidth: 4,
-          }}
-        />
+  //       <circle
+  //         cx={71.77}
+  //         cy={94.09}
+  //         r={50.79}
+  //         style={{
+  //           strokeMiterlimit: 10,
+  //           fill: "#ffa300",
+  //           stroke: "#000",
+  //           strokeWidth: 4,
+  //         }}
+  //       />
 
-        <path
-          d="M50.76 84.82a12.69 12.69 0 1 1 12.69-12.69 12.7 12.7 0 0 1-12.69 12.69Z"
-          style={{
-            fill: "#fff",
-          }}
-        />
+  //       <path
+  //         d="M50.76 84.82a12.69 12.69 0 1 1 12.69-12.69 12.7 12.7 0 0 1-12.69 12.69Z"
+  //         style={{
+  //           fill: "#fff",
+  //         }}
+  //       />
 
-        <path
-          d="M81.58 30c-2.23-18.52 26.61-32.34 46-20.54-17.22 14.86-20.27 33.96-46 20.54Z"
-          style={{
-            fill: "#49af20",
-            strokeMiterlimit: 10,
-            stroke: "#000",
-            strokeWidth: 4,
-          }}
-        />
-      </svg>
-    );
-  };
+  //       <path
+  //         d="M81.58 30c-2.23-18.52 26.61-32.34 46-20.54-17.22 14.86-20.27 33.96-46 20.54Z"
+  //         style={{
+  //           fill: "#49af20",
+  //           strokeMiterlimit: 10,
+  //           stroke: "#000",
+  //           strokeWidth: 4,
+  //         }}
+  //       />
+  //     </svg>
+  //   );
+  // };
 
-  const [zoomDomain, setZoomDomain] = useState<ZoomState>(['dataMin', 'dataMax']);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState(0);
-  const [dragEnd, setDragEnd] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+  // const [zoomDomain, setZoomDomain] = useState<ZoomState>(['dataMin', 'dataMax']);
+  // const [isDragging, setIsDragging] = useState(false);
+  // const [dragStart, setDragStart] = useState(0);
+  // const [dragEnd, setDragEnd] = useState(0);
+  // const containerRef = useRef<HTMLDivElement>(null);
 
-  // Mouse handlers for drag-to-zoom
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!containerRef.current) return;
-    const { left } = containerRef.current.getBoundingClientRect();
-    setDragStart(e.clientX - left);
-    setIsDragging(true);
-  };
+  // // Mouse handlers for drag-to-zoom
+  // const handleMouseDown = (e: React.MouseEvent) => {
+  //   if (!containerRef.current) return;
+  //   const { left } = containerRef.current.getBoundingClientRect();
+  //   setDragStart(e.clientX - left);
+  //   setIsDragging(true);
+  // };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !containerRef.current) return;
-    const { left } = containerRef.current.getBoundingClientRect();
-    setDragEnd(e.clientX - left);
-  };
+  // const handleMouseMove = (e: React.MouseEvent) => {
+  //   if (!isDragging || !containerRef.current) return;
+  //   const { left } = containerRef.current.getBoundingClientRect();
+  //   setDragEnd(e.clientX - left);
+  // };
 
-  const handleMouseUp = () => {
-    if (!isDragging || !seriesVData?.data) return;
+  // const handleMouseUp = () => {
+  //   if (!isDragging || !seriesVData?.data) return;
 
-    const [start, end] = [Math.min(dragStart, dragEnd), Math.max(dragStart, dragEnd)];
-    const containerWidth = containerRef.current?.offsetWidth || 0;
+  //   const [start, end] = [Math.min(dragStart, dragEnd), Math.max(dragStart, dragEnd)];
+  //   const containerWidth = containerRef.current?.offsetWidth || 0;
 
-    const startIndex = Math.floor((start / containerWidth) * seriesVData.data.length);
-    const endIndex = Math.ceil((end / containerWidth) * seriesVData.data.length);
+  //   const startIndex = Math.floor((start / containerWidth) * seriesVData.data.length);
+  //   const endIndex = Math.ceil((end / containerWidth) * seriesVData.data.length);
 
-    const newDomain = [
-      seriesVData.data[startIndex]?.year || 'dataMin',
-      seriesVData.data[endIndex]?.year || 'dataMax'
-    ];
+  //   const newDomain = [
+  //     seriesVData.data[startIndex]?.year || 'dataMin',
+  //     seriesVData.data[endIndex]?.year || 'dataMax'
+  //   ];
 
-    setZoomDomain(newDomain);
-    setIsDragging(false);
-  };
+  //   setZoomDomain(newDomain);
+  //   setIsDragging(false);
+  // };
+
+
+
+
 
 
 
@@ -382,12 +385,10 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                     <Cell key={`cell-${index}`} fill={COLORS[variable][index % COLORS[variable].length]} />
                   ))}
                 </Pie>
-
                 <Tooltip
                   // <○> PieTooltip
                   content={<PieTooltip />} />
               </PieChart>
-
             </ResponsiveContainer>
 
 
@@ -463,9 +464,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-
                 <XAxis dataKey="name" stroke="#000" />
-
                 <YAxis stroke="#000" />
                 <Tooltip
                   // (○) BarTooltip
@@ -481,14 +480,10 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                     content={BarTopLabels}  // (○) BarTopLabels
                   />
                 </Bar>
-
               </BarChart>
-
             </ResponsiveContainer>
-
             <BarLegend /> {/* //(○) BarLegend */}
           </Card>
-
         </Box>
 
         <Box // ── ⋙── ── ── QPRM_bars ── ── ── ──➤
@@ -513,16 +508,12 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-
                 <YAxis yAxisId="left" orientation="left" stroke="#AC4D39" />
                 <YAxis yAxisId="right" orientation="right" stroke="#FFC53D" />
-
                 <Tooltip
                   // {○} QMRMTooltip
                   content={<QMRMTooltip />} />
-
                 <Legend />
-
                 <Bar name='Quantidade Produzida' yAxisId="left" dataKey="qp" fill="#AC4D39" activeBar={<Rectangle stroke="#000" />}  >
                   <LabelList
                     dataKey="name"
@@ -540,65 +531,45 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
 
         <Box
-          ref={containerRef}
-          id="TopSeriesBox"
-          className="rounded-xl bg-neutral-50/80 bg-opacity-20 w-full h-[500px] p-10"
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          style={{ position: 'relative', cursor: isDragging ? 'col-resize' : 'default' }}
-        >
-          {/* Visual selection overlay */}
-          {isDragging && (
-            <div style={{
-              position: 'absolute',
-              left: Math.min(dragStart, dragEnd),
-              width: Math.abs(dragEnd - dragStart),
-              top: 0,
-              height: '100%',
-              backgroundColor: 'rgba(100, 100, 100, 0.2)',
-              pointerEvents: 'none'
-            }} />
-          )}
-
+          // ── ⋙── ── ── TopSeriesBox ── ── ── ──➤
+          id='TopSeriesBox'
+          className='rounded-xl bg-neutral-50/80 bg-opacity-20 w-full h-[700px] p-10'>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              data={seriesVData?.data}
-              margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
+              width={700}
+              height={500}
+              data={seriesVData?.data} // ⊙ seriesVData
+              margin={{
+                top: 5,
+                right: 20,
+                left: 20,
+                bottom: 5,
+              }}
             >
+
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="year"
-                stroke="#000"
-                domain={zoomDomain}
-                type="number"
-                allowDataOverflow
+              <XAxis dataKey="year" stroke="#000" />
+              <YAxis stroke="#000" scale="log"
+                domain={['auto', 'auto']} 
               />
-              <YAxis stroke="#000" />
+
               <Tooltip />
-              <Legend />
 
               {seriesVData?.keys.map((key) => (
-                <Line
-                  key={key}
-                  type="monotone"
-                  dataKey={key}
-                  stroke="#000"
-                  dot={false}
-                />
+                <Line key={key} type="monotone" dataKey={key} stroke="#000" dot={{ r: 15 }} />
               ))}
+
+      
+              <Brush
+                dataKey="year" 
+                height={30}
+                stroke="#8884d8"
+                travellerWidth={10}
+              />
             </LineChart>
           </ResponsiveContainer>
-
-          {/* Reset zoom button */}
-          <button
-            onClick={() => setZoomDomain(['dataMin', 'dataMax'])}
-            className="absolute top-2 right-2 px-3 py-1 bg-white rounded-lg shadow-sm"
-          >
-            Reset Zoom
-          </button>
         </Box>
+
 
       </Box >
 

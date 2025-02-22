@@ -59,8 +59,13 @@ interface BoundingBox {
 }
 
 
-// ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
+// ── ──➤
+// ── ──➤
+// ── ⋙──
+// ── ⋙──
 
+
+// ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
 const MapMenu = () => {
   const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
   const c1Ref = useRef<SVGCircleElement | null>(null); // HERE c1Ref
@@ -83,9 +88,12 @@ const MapMenu = () => {
   // ✳ { year, setYear } 
   const { year, setYear } = yearStore();
 
-  type bahiaValuesI = { total: number; name_id: string };
+  type regionValuesI = { total: number; name_id: string };
+  
   // ✳ [bahiaValues, setBahiaValues]
-  const [bahiaValues, setBahiaValues] = useState<bahiaValuesI[]>([]);
+  const [bahiaValues, setBahiaValues] = useState<regionValuesI[]>([]);
+  const [regionValues, setRegionValues] = useState<regionValuesI[]>([]);
+
 
   // const [rect, setRect] = useState<DOMRect | null>(null);
   // const [bbox, setBbox] = useState<DOMRect | null>(null);
@@ -102,13 +110,11 @@ const MapMenu = () => {
     }
   }, []); // . . . . . . .
 
-
   useEffect(() => {
     //HERE useEffect
     if (c1Ref.current) {
       const bbox = c1Ref.current.getBBox();
       const rect = c1Ref.current.getBoundingClientRect();
-
       console.log(" useEffect log");
       // // [LOG] c1Rect
       // console.log("rect ↯");
@@ -125,16 +131,24 @@ const MapMenu = () => {
       // console.log("height:", bbox.height);
       // console.log(". . . . . . . . . . . . ");
       // console.log("currentScale:", currentScale);
-      console.log("✦────────────────────────────➤");
+      console.log("── ⋙── ── ── ── ── ── ── ──➤");
     }
+
   }, [crabPos, currentScale]); // . . . . . 
-  // . .
+
+  useEffect(() => {
+    //HERE useEffect
+    getRegionValues(); // (○) getRegionValues
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [region, year, variable,]); // ── ⋙── ── ── ── ── ── ──➤
 
 
   useEffect(() => {
     //HERE useEffect
-    getBahiaColors(); // (○) getBahiaColors
-  }, [ ]); // ── ⋙── ── ── ── ── ── ──➤
+    getBahiaValues(); // (○) getRegionValues
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [year, variable]); // ── ⋙── ── ── ── ── ── ──➤
+
 
   // ● transition
   const transition = useTransition(mapRegionCity[region.active] || [], {
@@ -152,6 +166,58 @@ const MapMenu = () => {
     config: { tension: 62, friction: 35, mass: 7 },
   })); // ── ⋙── ── ── ── ── ── ──➤
 
+  // {✪} getThermometerColor
+  function getThermometerColor(name_id: string, data: regionValuesI[], colors: string[]): string | undefined {
+    const totals = data.map(d => d.total);
+    const min = Math.min(...totals);
+    const max = Math.max(...totals);
+
+    const logMin = Math.log10(min + 1);
+    const logMax = Math.log10(max + 1);
+
+    const item = data.find(d => d.name_id === name_id);
+
+    // console.log('item:', item); // [LOG] item
+
+    if (!item) return undefined;
+
+    const logValue = Math.log10(item.total + 1);
+    const index = Math.floor(((logValue - logMin) / (logMax - logMin)) * (colors.length - 1));
+
+    return colors[Math.min(index, colors.length - 1)];
+  } // ── ⋙── ── ── ── ── ── ──➤
+
+  // ● getLegendValues
+  function getLegendValues(data: regionValuesI[], steps: number) {
+    const totals = data.map(d => d.total);
+    const min = Math.min(...totals);
+    const max = Math.max(...totals);
+
+    return Array.from({ length: steps }, (_, i) => {
+      const value = Math.pow(10, Math.log10(min + 1) + (i / (steps - 1)) * (Math.log10(max + 1) - Math.log10(min + 1)));
+      return Math.round(value);
+    });
+  }
+
+  // ✪ThermometerLegend
+  const ThermometerLegend: React.FC = () => {
+    const COLORS = COLORS2[variable]
+    const legendValues = getLegendValues(bahiaValues, COLORS.length);
+    return (
+      <div className="flex flex-col items-center">
+        <div className="flex flex-col">
+          {COLORS.map((color, i) => (
+            <div key={i} className="flex items-center">
+              <div className={classNames("w-full h-10", color)}>
+                <span>{legendValues[i]}</span>
+              </div>
+
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };  // ── ⋙── ── ── ── ── ── ──➤
 
   // {✪} resetMap
   const resetMap = () => {
@@ -183,7 +249,6 @@ const MapMenu = () => {
     const translateX = SVGCX - CBX + 5;
     const translateY = SVGCY - CBY + 5;
 
-
     // {●} Scale
     const scaleX = svgRect.width / rect.width;
     const scaleY = svgRect.height / rect.height;
@@ -214,7 +279,6 @@ const MapMenu = () => {
         }) translate(${translateX}px, ${translateY}px)`,
     });
   }; // ── ⋙── ── ── ── ── ── ──➤
-
 
   // const buttonClickLog = () => {
   //   const svgRect = svgRef.current?.getBoundingClientRect();
@@ -263,21 +327,22 @@ const MapMenu = () => {
   // };
 
 
-  const getBahiaColors = async () => { // (✪) getBahiaColors 
 
+
+  const getBahiaValues = async () => { // (✪) getBahiaValues 
     const axios = axiosDefault;
     try {
       const url = "/getRegionValues/";
-
+      // ⊙ year ⊙ variable
       const params = {
-        region: 'bahia',
-        year: 2023,
-        variable: 'valor_da_producao',
+        region: 'bahia', 
+        year: year,
+        variable: variable,
       };
 
-      const response = await axios.get(url, { params }); // _PIN_ getBahiaColors  ✉ 
+      const response = await axios.get(url, { params }); // _PIN_ getRegionValues  ✉ 
       const data = response?.data
-      setBahiaValues(data)
+      setBahiaValues(data) // ↺ setBahiaValues
       console.log(data); // [LOG] 
 
     } catch (err: unknown) {
@@ -290,7 +355,34 @@ const MapMenu = () => {
 
 
 
-  // (✪) handleClick
+  const getRegionValues = async () => { // (✪) getRegionValues 
+    const axios = axiosDefault;
+    try {
+
+      const url = "/getRegionValues/";
+      // ⊙ region.active ⊙ year ⊙ variable
+      const params = {
+        region: region.active, 
+        year: year,
+        variable: variable,
+      };
+
+      const response = await axios.get(url, { params }); // _PIN_ getRegionValues  ✉ 
+      const data = response?.data
+      setRegionValues(data) // ↺ setRegionValues
+      console.log(data); // [LOG] 
+
+    } catch (err: unknown) {
+      if (err) {
+        handleAxiosError(err);
+      }
+    }
+
+  } // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+
+  // {✪} handleClick
   const handleClick = (event) => {
     const target = event.target;
     const target_id = target?.id;
@@ -326,43 +418,7 @@ const MapMenu = () => {
         resetMap(); // {○} resetMap
       }
     }
-  }// ── ⋙── ── ── ── ── ── ── ──➤
-
-
-
-
-  // (✪) getThermometerColor
-  // function getThermometerColor(name_id: string, data: bahiaValuesI[], colors: string[]): string | undefined {
-
-  //   const totals = data.map(d => d.total);
-  //   const min = Math.min(...totals);
-  //   const max = Math.max(...totals);
-  //   const stepSize = (max - min) / colors.length;
-
-  //   const item = data.find(d => d.name_id === name_id);
-  //   if (!item) return undefined;
-
-  //   const index = Math.min(Math.max(Math.floor((item.total - min) / stepSize), 0), colors.length - 1);
-  //   return colors[index];
-  // }
-
-  function getThermometerColor(name_id: string, data: bahiaValuesI[], colors: string[]): string | undefined {
-    const totals = data.map(d => d.total);
-    const min = Math.min(...totals);
-    const max = Math.max(...totals);
-  
-    const logMin = Math.log10(min + 1);
-    const logMax = Math.log10(max + 1);
-    
-    const item = data.find(d => d.name_id === name_id);
-    if (!item) return undefined;
-  
-    const logValue = Math.log10(item.total + 1);
-    const index = Math.floor(((logValue - logMin) / (logMax - logMin)) * (colors.length - 1));
-  
-    return colors[Math.min(index, colors.length - 1)];
   }
-
 
   return (
     // ── ⋙DOM ── ── ── ── ── ── ──➤  ↯
@@ -370,7 +426,6 @@ const MapMenu = () => {
       <div
         className="flex gap-10 items-center"
       >
-
         <div
           // _PIN_ canvas-wrapper
           id="canvas-wrapper"
@@ -382,9 +437,7 @@ const MapMenu = () => {
             // border: "1px solid black",
           }}
         >
-
           <animated.svg
-
             // ── ⋙── SVGCanvas ──➤
             id="SVGCanvas"
             ref={svgRef}
@@ -398,7 +451,6 @@ const MapMenu = () => {
             // (○) handleClick
             onClick={handleClick}
           >
-
             <g>
               <defs>
                 <style>
@@ -415,9 +467,9 @@ const MapMenu = () => {
                 {mapRegion.map((el, i) => (
                   // . . . . . . .
                   // [○] mapRegion
-
                   <g key={i} className={getThermometerColor(el.id, bahiaValues, COLORS2[variable])}>
-                  {/* <g key={i} className={'fill-neutral-100'}> */}
+                    {/* <g key={i} className={'fill-neutral-100'}> */}
+                    <title>{el.name}</title>
                     <animated.path
                       id={el.id}
                       d={el.d}
@@ -426,7 +478,6 @@ const MapMenu = () => {
                       className="path-hover"
                     />
                   </g>
-
                 ))}
               </g>
 
@@ -434,7 +485,7 @@ const MapMenu = () => {
                 // . . . . . . .
                 // HERE Overlay
                 <rect
-                  opacity={0.92}
+                  opacity={0.95}
                   x={-2000}
                   y={-2000}
                   width="4000"
@@ -447,7 +498,8 @@ const MapMenu = () => {
                 // . . . . . . .
                 // ○ transition
                 // [○] mapRegionCity
-                <animated.g {...style}>
+                <animated.g {...style} >
+                  <title>{item.name}</title>
                   <animated.path
                     id={item.id}
                     d={item.d}
@@ -455,7 +507,7 @@ const MapMenu = () => {
                     data-type={"city"}
                     className={`path-hover cls-city ${city.active === item.id
                       ? "fill-slate-100"
-                      : "fill-slate-900"
+                      : getThermometerColor(item.id, regionValues, COLORS2[variable])
                       }`}
                   />
                 </animated.g>
@@ -472,24 +524,30 @@ const MapMenu = () => {
               className="fill-lime-950"
               transform={`translate(${crabPos.X}, ${crabPos.Y})`}
             />
+
           </animated.svg>
+        </div>
+
+        <div
+          //── ⋙── ── ── ── ──➤
+          id='thermometer' // HERE thermometer
+          className="flex flex-col justify-end h-full w-24 bg-purple-700 p-4">
+          <div className="w-10 h-48 bg-gradient-to-b from-neutral-50 to-neutral-950 rounded-lg shadow-md"></div>
 
         </div>
 
         <div
           //── ⋙── ── ── ── ──➤
-          className="flex flex-col  justify-center items-center gap-3"
+          className="flex flex-col justify-center items-center gap-3 bg-purple-900"
         >
-
-          <div>
-            <button // (○) getBahiaColors
-              onClick={getBahiaColors}
+          {/* <div>
+            <button 
+              onClick={getBahiaValues}
               className="rounded-full p-6 bg-blue-950"
             >
               <h1 className="text-2xl">LOG ⊡</h1>
             </button>
-          </div>
-
+          </div> */}
           <div
           // HERE City Info
           >
@@ -497,6 +555,7 @@ const MapMenu = () => {
             <p className="text-2xl">🦀{`${city.name}`}</p>
           </div>
         </div>
+
       </div>
     </>
   );

@@ -12,17 +12,17 @@ export const YEARS = Array.from({ length: 2024 - 2000 }, (_, i) => 2000 + i);
 //  [●] COLORS2
 export const COLORS2 = {
   valor_da_producao: [
-    "fill-gray-50",
-    "fill-gray-100",
-    "fill-gray-200",
-    "fill-gray-300",
-    "fill-gray-400",
-    "fill-gray-500",
-    "fill-gray-600",
-    "fill-gray-700",
-    "fill-gray-800",
-    "fill-gray-900",
-    "fill-gray-950",
+    "fill-neutral-50",
+    "fill-neutral-100",
+    "fill-neutral-200",
+    "fill-neutral-300",
+    "fill-neutral-400",
+    "fill-neutral-500",
+    "fill-neutral-600",
+    "fill-neutral-700",
+    "fill-neutral-800",
+    "fill-neutral-900",
+    "fill-neutral-950",
   ],
 
   area_colhida: [
