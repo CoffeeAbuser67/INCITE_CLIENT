@@ -58,7 +58,6 @@ interface BoundingBox {
   height: number;
 }
 
-
 // ── ──➤
 // ── ──➤
 // ── ⋙──
@@ -89,7 +88,7 @@ const MapMenu = () => {
   const { year, setYear } = yearStore();
 
   type regionValuesI = { total: number; name_id: string };
-  
+
   // ✳ [bahiaValues, setBahiaValues]
   const [bahiaValues, setBahiaValues] = useState<regionValuesI[]>([]);
   const [regionValues, setRegionValues] = useState<regionValuesI[]>([]);
@@ -139,14 +138,14 @@ const MapMenu = () => {
   useEffect(() => {
     //HERE useEffect
     getRegionValues(); // (○) getRegionValues
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [region, year, variable,]); // ── ⋙── ── ── ── ── ── ──➤
 
 
   useEffect(() => {
     //HERE useEffect
     getBahiaValues(); // (○) getRegionValues
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year, variable]); // ── ⋙── ── ── ── ── ── ──➤
 
 
@@ -335,7 +334,7 @@ const MapMenu = () => {
       const url = "/getRegionValues/";
       // ⊙ year ⊙ variable
       const params = {
-        region: 'bahia', 
+        region: 'bahia',
         year: year,
         variable: variable,
       };
@@ -362,7 +361,7 @@ const MapMenu = () => {
       const url = "/getRegionValues/";
       // ⊙ region.active ⊙ year ⊙ variable
       const params = {
-        region: region.active, 
+        region: region.active,
         year: year,
         variable: variable,
       };
@@ -418,7 +417,25 @@ const MapMenu = () => {
         resetMap(); // {○} resetMap
       }
     }
-  }
+  }  // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+  // [✪] memoizedRegions
+  const memoizedRegions = useMemo(() => (
+    mapRegion.map((el, i) => (
+      <g key={i} className={`cls-region ${getThermometerColor(el.id, bahiaValues, COLORS2[variable])}`}>
+        <title>{el.name}</title>
+        <animated.path
+          id={el.id}
+          d={el.d}
+          data-name={el.name}
+          data-type="region"
+          className="path-hover"
+        />
+      </g>
+    ))
+  ), [mapRegion, bahiaValues, variable, year]);
+
 
   return (
     // ── ⋙DOM ── ── ── ── ── ── ──➤  ↯
@@ -437,6 +454,7 @@ const MapMenu = () => {
             // border: "1px solid black",
           }}
         >
+
           <animated.svg
             // ── ⋙── SVGCanvas ──➤
             id="SVGCanvas"
@@ -463,23 +481,8 @@ const MapMenu = () => {
                 </style>
               </defs>
 
-              <g id="RegionsMap" className="cls-region">
-                {mapRegion.map((el, i) => (
-                  // . . . . . . .
-                  // [○] mapRegion
-                  <g key={i} className={getThermometerColor(el.id, bahiaValues, COLORS2[variable])}>
-                    {/* <g key={i} className={'fill-neutral-100'}> */}
-                    <title>{el.name}</title>
-                    <animated.path
-                      id={el.id}
-                      d={el.d}
-                      data-name={el.name}
-                      data-type={"region"}
-                      className="path-hover"
-                    />
-                  </g>
-                ))}
-              </g>
+              {/* // [○] memoizedRegions */}
+              {memoizedRegions}
 
               {currentLevel === 1 && (
                 // . . . . . . .
@@ -494,6 +497,9 @@ const MapMenu = () => {
                 />
               )}
 
+
+              <rect width='20' height='20' x={20} y={20} fill='purple'>H </rect>
+
               {transition((style, item) => (
                 // . . . . . . .
                 // ○ transition
@@ -505,10 +511,10 @@ const MapMenu = () => {
                     d={item.d}
                     data-name={item.name}
                     data-type={"city"}
-                    className={`path-hover cls-city ${city.active === item.id
-                      ? "fill-slate-100"
-                      : getThermometerColor(item.id, regionValues, COLORS2[variable])
-                      }`}
+                    className={classNames(
+                      "path-hover cls-city",
+                      city.active === item.id ? "fill-slate-100" : getThermometerColor(item.id, regionValues, COLORS2[variable])
+                    )}
                   />
                 </animated.g>
               ))}
@@ -526,6 +532,7 @@ const MapMenu = () => {
             />
 
           </animated.svg>
+
         </div>
 
         <div
