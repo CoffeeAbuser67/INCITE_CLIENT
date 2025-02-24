@@ -66,9 +66,27 @@ interface BoundingBox {
 
 // ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
 const MapMenu = () => {
+
   const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
   const c1Ref = useRef<SVGCircleElement | null>(null); // HERE c1Ref
   const originalBBoxRef = useRef<BoundingBox | null>(null); // HERE originalBBoxRef
+  // ── ⋙── ── ── ── ── ── ── ──➤
+
+  // HERE TOOLTIP
+  const [tooltip, setTooltip] = useState<{ name: string | null }>({
+    name: null,
+  });
+
+  const handleMouseEnter = (name: string) => {
+    setTooltip({ name });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip({ name: null });
+  };
+
+
+  // ── ⋙── ── ── ── ── ── ── ──➤
 
   type levels = 0 | 1 | 2;
   // ✳ [currentLevel, setCurrentLevel]
@@ -325,9 +343,6 @@ const MapMenu = () => {
   //   // console.log("✦────────────────────────────➤");
   // };
 
-
-
-
   const getBahiaValues = async () => { // (✪) getBahiaValues 
     const axios = axiosDefault;
     try {
@@ -431,6 +446,8 @@ const MapMenu = () => {
           data-name={el.name}
           data-type="region"
           className="path-hover"
+          onMouseMove={() => handleMouseEnter(el.name)}
+          onMouseLeave={handleMouseLeave}
         />
       </g>
     ))
@@ -454,6 +471,32 @@ const MapMenu = () => {
             // border: "1px solid black",
           }}
         >
+
+          <div
+            id="TOOLTIP" // HERE TOOLTIP
+            className="absolute bg-gray-900 text-white text-sm p-2 rounded shadow-lg"
+            style={{
+              top: "0.5rem",  // Um pequeno espaçamento da borda superior
+              left: "0.5rem", // Um pequeno espaçamento da borda direita
+              pointerEvents: "none",
+              zIndex: 10, // Garante que o tooltip fica acima do SVG
+            }}
+          >
+            {tooltip.name}
+          </div>
+
+
+          <div
+            id='thermometerLegend' // HERE TOOLthermometerLegend
+            className="absolute w-10 h-48 bg-gradient-to-b from-neutral-50 to-neutral-950 rounded-lg shadow-md"
+            style={{
+              bottom: "0.5rem",  // Um pequeno espaçamento da borda superior
+              right: "0.5rem", // Um pequeno espaçamento da borda direita
+              pointerEvents: "none",
+              zIndex: 10, // Garante que o tooltip fica acima do SVG
+            }}
+          ></div>
+
 
           <animated.svg
             // ── ⋙── SVGCanvas ──➤
@@ -500,25 +543,32 @@ const MapMenu = () => {
 
               <rect width='20' height='20' x={20} y={20} fill='purple'>H </rect>
 
+
               {transition((style, item) => (
                 // . . . . . . .
                 // ○ transition
                 // [○] mapRegionCity
-                <animated.g {...style} >
+                <animated.g {...style}
+
+                >
                   <title>{item.name}</title>
                   <animated.path
                     id={item.id}
                     d={item.d}
                     data-name={item.name}
-                    data-type={"city"}
+                    data-type="city"
                     className={classNames(
                       "path-hover cls-city",
                       city.active === item.id ? "fill-slate-100" : getThermometerColor(item.id, regionValues, COLORS2[variable])
                     )}
+                    onMouseEnter={() => handleMouseEnter(item.name)}
+                    onMouseLeave={handleMouseLeave}
                   />
+
                 </animated.g>
               ))}
             </g>
+
 
             <circle
               // . . . . . . .
@@ -532,29 +582,13 @@ const MapMenu = () => {
             />
 
           </animated.svg>
-
         </div>
 
-        <div
-          //── ⋙── ── ── ── ──➤
-          id='thermometer' // HERE thermometer
-          className="flex flex-col justify-end h-full w-24 bg-purple-700 p-4">
-          <div className="w-10 h-48 bg-gradient-to-b from-neutral-50 to-neutral-950 rounded-lg shadow-md"></div>
-
-        </div>
 
         <div
           //── ⋙── ── ── ── ──➤
           className="flex flex-col justify-center items-center gap-3 bg-purple-900"
         >
-          {/* <div>
-            <button 
-              onClick={getBahiaValues}
-              className="rounded-full p-6 bg-blue-950"
-            >
-              <h1 className="text-2xl">LOG ⊡</h1>
-            </button>
-          </div> */}
           <div
           // HERE City Info
           >

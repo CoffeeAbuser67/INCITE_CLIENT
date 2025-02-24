@@ -75,6 +75,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   //  ✳ [year, setYear]
   const [year, setYear] = useState<number>(2023);
 
+
   //  ✳ [variable, setVariable]
   const [variable, setVariable] = useState<keyof typeof VARIABLES>('valor_da_producao');
 
@@ -390,8 +391,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                   content={<PieTooltip />} />
               </PieChart>
             </ResponsiveContainer>
-
-
           </Card>
 
           <Card
