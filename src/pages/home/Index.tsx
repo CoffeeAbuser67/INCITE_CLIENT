@@ -539,7 +539,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
               height={500}
               data={seriesVData?.data} // ⊙ seriesVData
               margin={{
-                top: 5,
+                top: 20,
                 right: 20,
                 left: 20,
                 bottom: 5,
@@ -565,6 +565,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                 stroke="#8884d8"
                 travellerWidth={10}
               />
+
             </LineChart>
           </ResponsiveContainer>
         </Box>
