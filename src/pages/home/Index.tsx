@@ -191,8 +191,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   const BarTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // (●) BarTooltip
     if (active && payload && payload.length) {
-      const { id, name, v } = payload[0].payload; // Extract id from payload
-
+      const { name, v } = payload[0].payload; // Extract id from payload
       return (
         <Card>
           <Text as="div"> <Strong>{`${name}`}</Strong> </Text>
@@ -222,7 +221,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   const QMRMTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // {●} QMRMTooltip
     if (active && payload && payload.length) {
-      const { id, name, qp, rm } = payload[0].payload; // Extract id from payload
+      const { id, name, qp, rm } = payload[0].payload;
 
       return (
         <Card>
@@ -235,105 +234,53 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
-  // const CustomizedDot = (props) => { 
-  //   const { cx, cy, stroke, payload, value } = props;
 
-  //   return (
-  //     <svg
-  //       width={20}
-  //       height={20}
-  //       viewBox="0 0 150 150"
-  //       x={cx - 10}
-  //       y={cy - 12}
-  //     >
-  //       <path
-  //         d="M77.81 50.35S84.1 20.61 71.77 9"
-  //         style={{
-  //           stroke: "#000",
-  //           strokeWidth: 4,
-  //           fill: "none",
-  //           strokeLinecap: "round",
-  //           strokeLinejoin: "round",
-  //         }}
-  //       />
 
-  //       <circle
-  //         cx={71.77}
-  //         cy={94.09}
-  //         r={50.79}
-  //         style={{
-  //           strokeMiterlimit: 10,
-  //           fill: "#ffa300",
-  //           stroke: "#000",
-  //           strokeWidth: 4,
-  //         }}
-  //       />
+  const CustomizedDot = (props) => { // ● CustomizedDot
+    const { cx, cy, datakey } = props;
+    const SvgComponent = Icons[datakey as keyof typeof Icons];
 
-  //       <path
-  //         d="M50.76 84.82a12.69 12.69 0 1 1 12.69-12.69 12.7 12.7 0 0 1-12.69 12.69Z"
-  //         style={{
-  //           fill: "#fff",
-  //         }}
-  //       />
+    if (!SvgComponent) return null;
 
-  //       <path
-  //         d="M81.58 30c-2.23-18.52 26.61-32.34 46-20.54-17.22 14.86-20.27 33.96-46 20.54Z"
-  //         style={{
-  //           fill: "#49af20",
-  //           strokeMiterlimit: 10,
-  //           stroke: "#000",
-  //           strokeWidth: 4,
-  //         }}
-  //       />
-  //     </svg>
-  //   );
-  // };
+    return (
+      <g transform={`translate(${cx - 15}, ${cy - 15})`}>
+        <circle cx="15" cy="15" r="18" fill="gray" stroke="black" strokeWidth="2" />
+        <defs>
+          <clipPath id={`clip-${datakey}`}>
+            <circle cx="15" cy="15" r="15" />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#clip-${datakey})`}>
+          <SvgComponent />
+        </g>
+      </g>
+    );
+  };
 
-  // const [zoomDomain, setZoomDomain] = useState<ZoomState>(['dataMin', 'dataMax']);
-  // const [isDragging, setIsDragging] = useState(false);
-  // const [dragStart, setDragStart] = useState(0);
-  // const [dragEnd, setDragEnd] = useState(0);
-  // const containerRef = useRef<HTMLDivElement>(null);
 
-  // // Mouse handlers for drag-to-zoom
-  // const handleMouseDown = (e: React.MouseEvent) => {
-  //   if (!containerRef.current) return;
-  //   const { left } = containerRef.current.getBoundingClientRect();
-  //   setDragStart(e.clientX - left);
-  //   setIsDragging(true);
-  // };
+  const SeriesTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // ● SeriesTooltip
+    if (active && payload && payload.length) {
+      console.log('payload : ', payload[0].payload) // [LOG] payload
+      // return (
+      //   <Card>
+      //     <Text as="div"> <Strong>{`${name}`}</Strong> </Text>
+      //     <div>{`${v.toLocaleString('de-DE')} R$`}</div>
+      //   </Card>
+      // );
 
-  // const handleMouseMove = (e: React.MouseEvent) => {
-  //   if (!isDragging || !containerRef.current) return;
-  //   const { left } = containerRef.current.getBoundingClientRect();
-  //   setDragEnd(e.clientX - left);
-  // };
+      return (
+        <Card>
+          S
+        </Card>
+      );
 
-  // const handleMouseUp = () => {
-  //   if (!isDragging || !seriesVData?.data) return;
-
-  //   const [start, end] = [Math.min(dragStart, dragEnd), Math.max(dragStart, dragEnd)];
-  //   const containerWidth = containerRef.current?.offsetWidth || 0;
-
-  //   const startIndex = Math.floor((start / containerWidth) * seriesVData.data.length);
-  //   const endIndex = Math.ceil((end / containerWidth) * seriesVData.data.length);
-
-  //   const newDomain = [
-  //     seriesVData.data[startIndex]?.year || 'dataMin',
-  //     seriesVData.data[endIndex]?.year || 'dataMax'
-  //   ];
-
-  //   setZoomDomain(newDomain);
-  //   setIsDragging(false);
-  // };
+    }
+    return null;
+  };
 
 
 
-
-
-
-
-  return (// ── ⋙DOM── ── ── ── ── ── ── ──⫸
+  return (// ── ⋙DOM── ── ── ── ── ── ── ── ── ── ──⫸
     <>
       <p
         // HERE windowSize ↯
@@ -354,15 +301,16 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
       <Box
         id='MC' //_PIN_ MC⊛×⁕◉▣ 
-        className='flex flex-col justify-start items-center gap-10'>
+        className='flex flex-col justify-start items-center gap-10 px-10'>
 
         <Box // ── ⋙── ── MapMenu ── ── ──➤
-        // <○> MapMenu 
+          // <○> MapMenu 
+          className="w-full"
         >
           <MapMenu />
         </Box>
 
-        <Box //── ⋙── ── ── TopValuesBox ── ── ── ──➤
+        <Box //── ⋙── ── TopValuesBox ── ──➤
           id='TopValuesBox'
           className='flex gap-8 rounded-xl h-[440px] w-full'
         >
@@ -394,13 +342,12 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           </Card>
 
           <Card
-            // . . . . . . . . . . . .bar
             id='bar'
             variant="ghost"
             className='flex flex-col items-center gap-0 w-full h-[460px] z-0 bg-emerald-700 '
           >
             <Box
-              //HERE DropDownComponent
+              // . . . . . . . . . . . . DropDown
               id="DropDownComponent"
               className="flex justify-end gap-6 mt-2 w-full mr-[30px]"
             >
@@ -449,7 +396,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
             </Box >
 
             <ResponsiveContainer
-              // . . . 
+              // . . . . . . . . . . . .bar
               width="100%" height="100%">
               <BarChart
                 width={700}
@@ -481,11 +428,11 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <BarLegend /> {/* //(○) BarLegend */}
+            <BarLegend />   {/* //(○) BarLegend */}
           </Card>
         </Box>
 
-        <Box // ── ⋙── ── ── QPRM_bars ── ── ── ──➤
+        <Box // ── ⋙──  ── QPRM_bars ── ──➤
           id='QPRM_bars'
           className='flex gap-8 rounded-xl h-[440px] w-full'
         >
@@ -530,7 +477,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
 
         <Box
-          // ── ⋙── ── ── TopSeriesBox ── ── ── ──➤
+          // ── ⋙── ── TopSeriesBox ── ──➤
           id='TopSeriesBox'
           className='rounded-xl bg-neutral-50/80 bg-opacity-20 w-full h-[700px] p-10'>
           <ResponsiveContainer width="100%" height="100%">
@@ -542,25 +489,29 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                 top: 20,
                 right: 20,
                 left: 20,
-                bottom: 5,
+                bottom: 20,
               }}
             >
-
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="year" stroke="#000" />
               <YAxis stroke="#000" scale="log"
-                domain={['auto', 'auto']} 
+                domain={['auto', 'auto']}
               />
 
-              <Tooltip />
+              <Tooltip content={SeriesTooltip} />
 
               {seriesVData?.keys.map((key) => (
-                <Line key={key} type="monotone" dataKey={key} stroke="#000" dot={{ r: 15 }} />
+                <Line
+                  key={key}
+                  type="monotone"
+                  dataKey={key}
+                  stroke="#000"
+                  // ○ CustomizedDot
+                  dot={<CustomizedDot datakey={key} />} />
               ))}
 
-      
               <Brush
-                dataKey="year" 
+                dataKey="year"
                 height={30}
                 stroke="#8884d8"
                 travellerWidth={10}
@@ -569,7 +520,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
             </LineChart>
           </ResponsiveContainer>
         </Box>
-
 
       </Box >
 

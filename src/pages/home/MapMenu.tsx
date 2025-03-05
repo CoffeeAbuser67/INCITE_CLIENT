@@ -15,6 +15,14 @@ import {
   useSpringRef,
 } from "@react-spring/web";
 
+import {
+  Blockquote,
+  Card,
+  Heading,
+  Separator,
+  Text
+} from "@radix-ui/themes";
+
 import classNames from "classnames";
 import { useWindowResize } from "../../hooks/useWindowResize";
 
@@ -27,6 +35,7 @@ import regionCityData from "../../assets/BahiaRegiaoMuni.json";
 import regionData from "../../assets/BahiaRegiao.json";
 
 import { COLORS2, VARIABLES } from "../../assets/auxData";
+
 
 
 interface City {
@@ -64,15 +73,15 @@ interface BoundingBox {
 // ── ⋙──
 
 
-// ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
-const MapMenu = () => {
+
+const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
 
   const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
   const c1Ref = useRef<SVGCircleElement | null>(null); // HERE c1Ref
   const originalBBoxRef = useRef<BoundingBox | null>(null); // HERE originalBBoxRef
   // ── ⋙── ── ── ── ── ── ── ──➤
 
-  // HERE TOOLTIP
+  // ✳ [tooltip, setTooltip]
   const [tooltip, setTooltip] = useState<{ name: string | null }>({
     name: null,
   });
@@ -204,43 +213,46 @@ const MapMenu = () => {
     return colors[Math.min(index, colors.length - 1)];
   } // ── ⋙── ── ── ── ── ── ──➤
 
-  // ● getLegendValues
-  function getLegendValues(data: regionValuesI[], steps: number) {
-    const totals = data.map(d => d.total);
-    const min = Math.min(...totals);
-    const max = Math.max(...totals);
+  // // ● getLegendValues
+  // function getLegendValues(data: regionValuesI[], steps: number) {
+  //   const totals = data.map(d => d.total);
+  //   const min = Math.min(...totals);
+  //   const max = Math.max(...totals);
 
-    return Array.from({ length: steps }, (_, i) => {
-      const value = Math.pow(10, Math.log10(min + 1) + (i / (steps - 1)) * (Math.log10(max + 1) - Math.log10(min + 1)));
-      return Math.round(value);
-    });
-  }
+  //   return Array.from({ length: steps }, (_, i) => {
+  //     const value = Math.pow(10, Math.log10(min + 1) + (i / (steps - 1)) * (Math.log10(max + 1) - Math.log10(min + 1)));
+  //     return Math.round(value);
+  //   });
+  // }
 
-  // ✪ThermometerLegend
-  const ThermometerLegend: React.FC = () => {
-    const COLORS = COLORS2[variable]
-    const legendValues = getLegendValues(bahiaValues, COLORS.length);
-    return (
-      <div className="flex flex-col items-center">
-        <div className="flex flex-col">
-          {COLORS.map((color, i) => (
-            <div key={i} className="flex items-center">
-              <div className={classNames("w-full h-10", color)}>
-                <span>{legendValues[i]}</span>
-              </div>
+  // // ✪ThermometerLegend
+  // const ThermometerLegend: React.FC = () => {
+  //   const COLORS = COLORS2[variable]
+  //   const legendValues = getLegendValues(bahiaValues, COLORS.length);
+  //   return (
+  //     <div className="flex flex-col items-center">
+  //       <div className="flex flex-col">
+  //         {COLORS.map((color, i) => (
+  //           <div key={i} className="flex items-center">
+  //             <div className={classNames("w-full h-10", color)}>
+  //               <span>{legendValues[i]}</span>
+  //             </div>
 
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };  // ── ⋙── ── ── ── ── ── ──➤
+  //           </div>
+  //         ))}
+  //       </div>
+  //     </div>
+  //   );
+
+  // };  // ── ⋙── ── ── ── ── ── ──➤
 
   // {✪} resetMap
   const resetMap = () => {
     setCurrentLevel(0); // ↺ setCurrentLevel
     setCurrentScale(1); // ↺ setCurrentScale
-    setRegion("bahia", ""); // ↺ setRegion
+    setRegion("bahia", "Bahia"); // ↺ setRegion
+    setCity("", ""); // ↺ setCity
+
     api.start({
       transform: "scale(1) translate(0px, 0px)",
     });
@@ -426,7 +438,7 @@ const MapMenu = () => {
       if (target_type === "city") {
         setCurrentLevel(1); // ↺ setCurrentLevel
         setCity(target_id, target_name) // ↺ setCity
-        runToFit(target.getBBox(), target.getBoundingClientRect()); // {○} runToFit
+        // runToFit(target.getBBox(), target.getBoundingClientRect()); // {○} runToFit
         console.log(target_id, "↯"); // [LOG] target_id  ↯
       } else {
         resetMap(); // {○} resetMap
@@ -458,10 +470,10 @@ const MapMenu = () => {
     // ── ⋙DOM ── ── ── ── ── ── ──➤  ↯
     <>
       <div
-        className="flex gap-10 items-center"
+        className="flex gap-10 w-full"
       >
         <div
-          // _PIN_ canvas-wrapper
+          // _PIN_ canvas-wrapper  
           id="canvas-wrapper"
           className="relative bg-transparent rounded-3xl"
           style={{
@@ -493,7 +505,7 @@ const MapMenu = () => {
               bottom: "0.5rem",  // Um pequeno espaçamento da borda superior
               right: "0.5rem", // Um pequeno espaçamento da borda direita
               pointerEvents: "none",
-              zIndex: 10, // Garante que o tooltip fica acima do SVG
+              zIndex: 10,
             }}
           ></div>
 
@@ -536,7 +548,7 @@ const MapMenu = () => {
                   y={-2000}
                   width="4000"
                   height="4000"
-                  fill="gray"
+                  fill="white"
                 />
               )}
 
@@ -551,7 +563,7 @@ const MapMenu = () => {
                 <animated.g {...style}
 
                 >
-                  <title>{item.name}</title>
+                  <title >{item.name}</title>s
                   <animated.path
                     id={item.id}
                     d={item.d}
@@ -559,7 +571,7 @@ const MapMenu = () => {
                     data-type="city"
                     className={classNames(
                       "path-hover cls-city",
-                      city.active === item.id ? "fill-slate-100" : getThermometerColor(item.id, regionValues, COLORS2[variable])
+                      city.active === item.id ? "fill-red-900" : getThermometerColor(item.id, regionValues, COLORS2[variable])
                     )}
                     onMouseEnter={() => handleMouseEnter(item.name)}
                     onMouseLeave={handleMouseLeave}
@@ -585,17 +597,30 @@ const MapMenu = () => {
         </div>
 
 
-        <div
+
+
+        <Card
           //── ⋙── ── ── ── ──➤
-          className="flex flex-col justify-center items-center gap-3 bg-purple-900"
+          id='REGION_info'// HERE REGION_info
+          variant="ghost"
+          className="flex flex-col flex-1 justify-start items-start gap-3 w-full h-full bg-white opacity-95"
         >
-          <div
-          // HERE City Info
-          >
-            <p className="text-2xl">🦀{`${region.name}`}</p>
-            <p className="text-2xl">🦀{`${city.name}`}</p>
-          </div>
-        </div>
+
+          <Heading weight="bold" size="9" highContrast>
+            Escolha uma região ou município para começar!
+          </Heading>
+
+          <Separator my='4' color="bronze" size="4" />
+
+          <Blockquote size="9" highContrast>
+            {region.name}
+          </Blockquote>
+
+          <Blockquote size="9" highContrast>
+            {city.name}
+          </Blockquote>
+
+        </Card>
 
       </div>
     </>

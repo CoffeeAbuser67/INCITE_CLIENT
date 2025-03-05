@@ -14,7 +14,7 @@ interface mapStoreI {
 }
 // [✪] mapStore
 export const mapStore = create<mapStoreI>((set) => ({
-  region: { active: "bahia", name: "" },
+  region: { active: "bahia", name: "Bahia" },
   city: { active: "", name: "" },
   setRegion: (active, name) => set({ region: { active, name } }),
   setCity: (active, name) => set({ city: { active, name } }),
