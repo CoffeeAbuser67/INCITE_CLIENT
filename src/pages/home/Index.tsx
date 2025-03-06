@@ -64,7 +64,7 @@ import { VARIABLES, YEARS, COLORS } from "../../assets/auxData";
 // . . . . . . .
 
 
-const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤
+const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤ 
 
   // ✳ [windowSize, setWindowSize]
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
@@ -235,7 +235,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   }; // . . . . . . . . . . . .
 
 
-
   const CustomizedDot = (props) => { // ● CustomizedDot
     const { cx, cy, datakey } = props;
     const SvgComponent = Icons[datakey as keyof typeof Icons];
@@ -256,7 +255,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
       </g>
     );
   };
-
 
   const SeriesTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // ● SeriesTooltip
     if (active && payload && payload.length) {
@@ -279,7 +277,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   };
 
 
-
   return (// ── ⋙DOM── ── ── ── ── ── ── ── ── ── ──⫸
     <>
       <p
@@ -295,12 +292,58 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         id="AuxButton"// HERE AuxButton
         onClick={getSeriesValues} // {○} getSeriesValues
         size="3"
-        variant="soft">
+        variant="soft"
+        className="fixed"
+      >
         <Text >🦀</Text>
       </Button>
 
+
+      <div className="relative mb-20">
+        {/* WARN fallback NONE */}
+        {/* [MEDIA] output_half */}
+        <video autoPlay loop muted playsInline className="w-full h-auto">
+          <source src="/output_half.mp4" type="video/mp4" />
+        </video>
+
+        <Box className={classNames(
+          'absolute flex flex-col items-center text-white',
+          "left-1/2 -translate-x-1/2",
+          'rounded-t-lg bottom-0 ',
+          "bg-gradient-to-b from-white/0 to-white/100 bg-clip-padding backdrop-filter backdrop-blur-3xl bg-opacity-100",
+          'p-14'
+        )}>
+
+          <Heading weight="bold" size="9" highContrast>
+            INCITE
+          </Heading>
+
+          <div className="mt-4" >
+            <Heading size="8" highContrast>
+              AGRICULTURA FAMILIAR
+            </Heading>
+          </div>
+
+          <div className="mt-4">
+            <Heading size="8" highContrast>
+              DIVERSIFICADA E SUSTENTÁVEL
+            </Heading>
+          </div>
+
+        </Box>
+      </div>
+
+
+
+
+
+
+
+
+
       <Box
-        id='MC' //_PIN_ MC⊛×⁕◉▣ 
+        // . . . . .
+        id='MC' //_PIN_⋙── ── ──  MC⊛×⁕◉▣  ── ── ── ──➤
         className='flex flex-col justify-start items-center gap-10 px-10'>
 
         <Box // ── ⋙── ── MapMenu ── ── ──➤

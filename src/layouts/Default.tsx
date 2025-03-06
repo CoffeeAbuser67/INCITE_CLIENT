@@ -5,14 +5,11 @@ import Wrapper from "../components/Wrapper";
 import Content from "../components/Content";
 import Loader from "../components/Loader";
 
-
 import Navbar from "../components/navbar/Navbar";
-
 
 interface DashboardProps {
   children?: ReactNode;
 }
-
 
 // HERE
 const Default: React.FC<DashboardProps> = ({ children }) => (

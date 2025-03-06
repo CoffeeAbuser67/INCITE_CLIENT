@@ -9,7 +9,7 @@ const Main = ({ children }: PropType) => (
   <div
     id="main"
     className={classNames(
-      "flex flex-col w-full min-h-screen min-w-0 gap-5",
+      "flex flex-col w-full min-h-screen min-w-0",
       "transition-all duration-500 ease-in-out",
       "sidebar-transition"
     )}

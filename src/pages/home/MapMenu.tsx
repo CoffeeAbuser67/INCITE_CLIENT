@@ -243,7 +243,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   //       </div>
   //     </div>
   //   );
-
   // };  // ── ⋙── ── ── ── ── ── ──➤
 
   // {✪} resetMap
@@ -603,7 +602,9 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
           //── ⋙── ── ── ── ──➤
           id='REGION_info'// HERE REGION_info
           variant="ghost"
-          className="flex flex-col flex-1 justify-start items-start gap-3 w-full h-full bg-white opacity-95"
+          className={classNames(
+            "flex flex-col flex-1 justify-start items-start gap-3 w-full h-full bg-white opacity-95"
+          )}
         >
 
           <Heading weight="bold" size="9" highContrast>
