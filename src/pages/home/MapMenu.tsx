@@ -17,7 +17,10 @@ import {
 
 import {
   Blockquote,
+  Box,
+  Button,
   Card,
+  DropdownMenu,
   Heading,
   Separator,
   Text
@@ -34,7 +37,9 @@ import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
 import regionCityData from "../../assets/BahiaRegiaoMuni.json";
 import regionData from "../../assets/BahiaRegiao.json";
 
-import { COLORS2, VARIABLES } from "../../assets/auxData";
+import { COLORS2, VARIABLES, YEARS } from "../../assets/auxData";
+
+// . . . . . . .
 
 
 
@@ -67,12 +72,6 @@ interface BoundingBox {
   height: number;
 }
 
-// ── ──➤
-// ── ──➤
-// ── ⋙──
-// ── ⋙──
-
-
 
 const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
 
@@ -97,7 +96,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
   // ── ⋙── ── ── ── ── ── ── ──➤
 
-  type levels = 0 | 1 | 2;
+  type levels = 0 | 1;
   // ✳ [currentLevel, setCurrentLevel]
   const [currentLevel, setCurrentLevel] = useState<levels>(0);
 
@@ -110,7 +109,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
   // ✳ { variable, setVariable } 
   const { variable, setVariable } = variableStore();
-
   // ✳ { year, setYear } 
   const { year, setYear } = yearStore();
 
@@ -171,7 +169,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
   useEffect(() => {
     //HERE useEffect
-    getBahiaValues(); // (○) getRegionValues
+    getBahiaValues(); // (○) getBahiaValues
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year, variable]); // ── ⋙── ── ── ── ── ── ──➤
 
@@ -335,9 +333,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   //   console.log(". . . . . . . . . . . . ");
   //   console.log("currentScale:", currentScale);
   //   console.log("✦────────────────────────────➤");
-
   //   // console.log("c1Rect ");
-
   //   // console.log("rect ↯");
   //   // console.log("x:", c1Rect.x);
   //   // console.log("y:", c1Rect.y);
@@ -406,7 +402,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   } // ── ⋙── ── ── ── ── ── ── ──➤
 
 
-
   // {✪} handleClick
   const handleClick = (event) => {
     const target = event.target;
@@ -466,140 +461,191 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
 
   return (
-    // ── ⋙DOM ── ── ── ── ── ── ──➤  ↯
+    // ── ⋙── DOM ── ── ── ── ── ── ── ── ──⫸ 🌠
     <>
       <div
         className="flex gap-10 w-full"
       >
-        <div
-          // _PIN_ canvas-wrapper  
-          id="canvas-wrapper"
-          className="relative bg-transparent rounded-3xl"
-          style={{
-            width: "715px",
-            height: "760px",
-            overflow: "hidden",
-            // border: "1px solid black",
-          }}
-        >
+        <div className=" flex flex-col">
+
+          <Box
+            // . . . . . . . . . DropDown . . . 
+            id="DropDownComponent"
+            className="flex justify-start gap-6 w-full"
+          >
+            <DropdownMenu.Root
+            // ⊙  Variable
+            // ↺ setVariable
+            >
+              <DropdownMenu.Trigger>
+                <Button color="gray" variant="solid" highContrast>
+                  {variable ? VARIABLES[variable] : "Variável medida"}
+                  <DropdownMenu.TriggerIcon />
+                </Button>
+              </DropdownMenu.Trigger>
+
+              <DropdownMenu.Content color="gray" variant="soft" highContrast>
+                <DropdownMenu.Item onSelect={() => setVariable("valor_da_producao")} shortcut="💵">
+                  Valor da produção
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator />
+                <DropdownMenu.Item onSelect={() => setVariable("area_plantada_ou_destinada_a_colheita")} shortcut="🌱">
+                  Área plantada ou destinada a colheita
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={() => setVariable("area_colhida")} shortcut="🥗">
+                  Área colhida
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+
+            </DropdownMenu.Root>
+
+            <DropdownMenu.Root
+            // ⊙ Year 
+            // ↺ setYear
+            >
+              <DropdownMenu.Trigger>
+                <Button color="gray" variant="solid" highContrast>
+                  {year ?? "Ano"}
+                  <DropdownMenu.TriggerIcon />
+                </Button>
+              </DropdownMenu.Trigger>
+
+              <DropdownMenu.Content color="gray" variant="soft" highContrast>
+                {YEARS.map((y, i) => (
+                  <DropdownMenu.Item key={i} onSelect={() => setYear(y)} shortcut="●">{y}</DropdownMenu.Item>
+                ))}
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
+
+
+          </Box >
 
           <div
-            id="TOOLTIP" // HERE TOOLTIP
-            className="absolute bg-gray-900 text-white text-sm p-2 rounded shadow-lg"
+            //_PIN_ ⋙── ── canvas-wrapper ── ──➤
+            id="canvas-wrapper"
+            className="relative bg-transparent rounded-3xl"
             style={{
-              top: "0.5rem",  // Um pequeno espaçamento da borda superior
-              left: "0.5rem", // Um pequeno espaçamento da borda direita
-              pointerEvents: "none",
-              zIndex: 10, // Garante que o tooltip fica acima do SVG
+              width: "715px",
+              height: "760px",
+              overflow: "hidden",
+              // border: "1px solid black",
             }}
           >
-            {tooltip.name}
+
+            <div
+              id="TOOLTIP" // HERE TOOLTIP
+              className="absolute bg-gray-900 text-white text-sm p-2 rounded shadow-lg"
+              style={{
+                top: "0.5rem",  // Um pequeno espaçamento da borda superior
+                left: "0.5rem", // Um pequeno espaçamento da borda direita
+                pointerEvents: "none",
+                zIndex: 10, // Garante que o tooltip fica acima do SVG
+              }}
+            >
+              {tooltip.name}
+            </div>
+
+            <div
+              id='thermometerLegend' // HERE TOOLthermometerLegend
+              className="absolute w-10 h-48 bg-gradient-to-b from-neutral-50 to-neutral-950 rounded-lg shadow-md"
+              style={{
+                bottom: "0.5rem",  // Um pequeno espaçamento da borda superior
+                right: "0.5rem", // Um pequeno espaçamento da borda direita
+                pointerEvents: "none",
+                zIndex: 10,
+              }}
+            ></div>
+
+            <animated.svg
+              // . . . ⋙── SVGCanvas ──➤
+              id="SVGCanvas"
+              ref={svgRef}
+              viewBox="0 0 715 760"
+              overflow={"visible"}
+              style={{
+                width: "100%",
+                height: "100%",
+                ...springStyles, // ○ springStyles
+              }}
+              // (○) handleClick
+              onClick={handleClick}
+            >
+              <g>
+                <defs>
+                  <style>
+                    {
+                      ".cls-region{stroke:#000;stroke-linejoin:round;stroke-width:.8px}"
+                    }
+                    {
+                      ".cls-city{stroke:#000;stroke-linejoin:round;stroke-width:.5px}"
+                    }
+                  </style>
+                </defs>
+
+                {/* // [○] memoizedRegions */}
+                {memoizedRegions}
+
+                {currentLevel === 1 && (
+                  // . . . . . . .
+                  // HERE Overlay
+                  <rect
+                    opacity={0.95}
+                    x={-2000}
+                    y={-2000}
+                    width="4000"
+                    height="4000"
+                    fill="white"
+                  />
+                )}
+
+                {transition((style, item) => (
+                  // . . . . . . .
+                  // ○ transition
+                  // [○] mapRegionCity
+                  <animated.g {...style}
+
+                  >
+                    <title >{item.name}</title>s
+                    <animated.path
+                      id={item.id}
+                      d={item.d}
+                      data-name={item.name}
+                      data-type="city"
+                      className={classNames(
+                        "path-hover cls-city",
+                        city.active === item.id ? "fill-red-900" : getThermometerColor(item.id, regionValues, COLORS2[variable])
+                      )}
+                      onMouseEnter={() => handleMouseEnter(item.name)}
+                      onMouseLeave={handleMouseLeave}
+                    />
+
+                  </animated.g>
+                ))}
+              </g>
+
+
+              <circle
+                // . . . . . . .
+                // HERE c1Ref
+                ref={c1Ref}
+                cx={30}
+                cy={30}
+                r={12}
+                className="fill-lime-950"
+                transform={`translate(${crabPos.X}, ${crabPos.Y})`}
+              />
+
+            </animated.svg>
+
           </div>
 
-
-          <div
-            id='thermometerLegend' // HERE TOOLthermometerLegend
-            className="absolute w-10 h-48 bg-gradient-to-b from-neutral-50 to-neutral-950 rounded-lg shadow-md"
-            style={{
-              bottom: "0.5rem",  // Um pequeno espaçamento da borda superior
-              right: "0.5rem", // Um pequeno espaçamento da borda direita
-              pointerEvents: "none",
-              zIndex: 10,
-            }}
-          ></div>
-
-
-          <animated.svg
-            // ── ⋙── SVGCanvas ──➤
-            id="SVGCanvas"
-            ref={svgRef}
-            viewBox="0 0 715 760"
-            overflow={"visible"}
-            style={{
-              width: "100%",
-              height: "100%",
-              ...springStyles, // ○ springStyles
-            }}
-            // (○) handleClick
-            onClick={handleClick}
-          >
-            <g>
-              <defs>
-                <style>
-                  {
-                    ".cls-region{stroke:#000;stroke-linejoin:round;stroke-width:.8px}"
-                  }
-                  {
-                    ".cls-city{stroke:#000;stroke-linejoin:round;stroke-width:.5px}"
-                  }
-                </style>
-              </defs>
-
-              {/* // [○] memoizedRegions */}
-              {memoizedRegions}
-
-              {currentLevel === 1 && (
-                // . . . . . . .
-                // HERE Overlay
-                <rect
-                  opacity={0.95}
-                  x={-2000}
-                  y={-2000}
-                  width="4000"
-                  height="4000"
-                  fill="white"
-                />
-              )}
-
-
-              <rect width='20' height='20' x={20} y={20} fill='purple'>H </rect>
-
-
-              {transition((style, item) => (
-                // . . . . . . .
-                // ○ transition
-                // [○] mapRegionCity
-                <animated.g {...style}
-
-                >
-                  <title >{item.name}</title>s
-                  <animated.path
-                    id={item.id}
-                    d={item.d}
-                    data-name={item.name}
-                    data-type="city"
-                    className={classNames(
-                      "path-hover cls-city",
-                      city.active === item.id ? "fill-red-900" : getThermometerColor(item.id, regionValues, COLORS2[variable])
-                    )}
-                    onMouseEnter={() => handleMouseEnter(item.name)}
-                    onMouseLeave={handleMouseLeave}
-                  />
-
-                </animated.g>
-              ))}
-            </g>
-
-
-            <circle
-              // . . . . . . .
-              // HERE c1Ref
-              ref={c1Ref}
-              cx={30}
-              cy={30}
-              r={12}
-              className="fill-lime-950"
-              transform={`translate(${crabPos.X}, ${crabPos.Y})`}
-            />
-
-          </animated.svg>
         </div>
 
 
 
 
         <Card
-          //── ⋙── ── ── ── ──➤
+          //── ⋙── ── REGION_info ── ──➤
           id='REGION_info'// HERE REGION_info
           variant="ghost"
           className={classNames(
@@ -607,17 +653,17 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
           )}
         >
 
-          <Heading weight="bold" size="9" highContrast>
+          <Heading weight="bold" size="8" highContrast>
             Escolha uma região ou município para começar!
           </Heading>
 
           <Separator my='4' color="bronze" size="4" />
 
-          <Blockquote size="9" highContrast>
+          <Blockquote size="8" highContrast>
             {region.name}
           </Blockquote>
 
-          <Blockquote size="9" highContrast>
+          <Blockquote size="8" highContrast>
             {city.name}
           </Blockquote>
 

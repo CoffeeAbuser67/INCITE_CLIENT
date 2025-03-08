@@ -60,7 +60,8 @@ import MapMenu from "./MapMenu";
 import Icons from "../../assets/Icons";
 import ICON_SIZES from "../../assets/IconsSizes";
 
-import { VARIABLES, YEARS, COLORS } from "../../assets/auxData";
+import { VARIABLES, COLORS } from "../../assets/auxData";
+import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
 // . . . . . . .
 
 
@@ -72,12 +73,14 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     setWindowSize({ width, height });
   });
 
-  //  ✳ [year, setYear]
-  const [year, setYear] = useState<number>(2023);
+  // ✳ {region, city} 
+  const { region, city } = mapStore();
 
+  //  ✳ {year}
+  const { year } = yearStore();
 
-  //  ✳ [variable, setVariable]
-  const [variable, setVariable] = useState<keyof typeof VARIABLES>('valor_da_producao');
+  //  ✳ {variable}
+  const { variable } = variableStore();
 
 
   type A_Item = { id: string; name: string; v: number };
@@ -106,7 +109,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   //  ✳ [seriesVData, setSeriesVData]
   const [seriesVData, setSeriesVData] = useState<DataSeries | null>(null);
 
-
   // variables = [
   //   'area plantada',
   //   'area plantada percentual total',
@@ -131,12 +133,15 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     const axios = axiosDefault;
     try {
 
+      const area = city.active === '' ? region.active : city.active
+      const TYPE = city.active === '' ? "regiao" : "municipio"
+
       const url = "/getTopValues/";
       const params = {
         year: year,
-        area: 'bahia',
+        area: area,
         variable: variable,
-        type: 'regiao'
+        type: TYPE
       };
 
       const response = await axios.get(url, { params }); // _PIN_ getTopValues  ✉ 
@@ -153,12 +158,13 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   const getSeriesValues = async () => { // {✪} getSeriesValues
     const axios = axiosDefault;
     try {
-
+      const area = city.active === '' ? region.active : city.active
+      const TYPE = city.active === '' ? "regiao" : "municipio"
       const url = "/getTopSeries/";
       const params = {
-        area: 'bahia',
+        area: area,
         variable: variable,
-        type: 'regiao'
+        type: TYPE
       };
 
       const response = await axios.get(url, { params }); // _PIN_ getTopSeries  ✉ 
@@ -241,24 +247,30 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
     if (!SvgComponent) return null;
 
+
     return (
-      <g transform={`translate(${cx - 15}, ${cy - 15})`}>
-        <circle cx="15" cy="15" r="18" fill="gray" stroke="black" strokeWidth="2" />
-        <defs>
-          <clipPath id={`clip-${datakey}`}>
-            <circle cx="15" cy="15" r="15" />
-          </clipPath>
-        </defs>
-        <g clipPath={`url(#clip-${datakey})`}>
-          <SvgComponent />
-        </g>
-      </g>
-    );
+      <SvgComponent />
+    )
+
+    // ⁜
+    // return (
+    //   <g transform={`translate(${cx - 15}, ${cy - 15})`}>
+    //     <circle cx="15" cy="15" r="18" fill="gray" stroke="black" strokeWidth="2" />
+    //     <defs>
+    //       <clipPath id={`clip-${datakey}`}>
+    //         <circle cx="15" cy="15" r="15" />
+    //       </clipPath>
+    //     </defs>
+    //     <g clipPath={`url(#clip-${datakey})`}>
+    //       <SvgComponent />
+    //     </g>
+    //   </g>
+    // );
+
   };
 
   const SeriesTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // ● SeriesTooltip
     if (active && payload && payload.length) {
-      console.log('payload : ', payload[0].payload) // [LOG] payload
       // return (
       //   <Card>
       //     <Text as="div"> <Strong>{`${name}`}</Strong> </Text>
@@ -277,18 +289,16 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   };
 
 
-  return (// ── ⋙DOM── ── ── ── ── ── ── ── ── ── ──⫸
+  return (// ── ⋙── ── ── ── DOM ── ── ── ── ── ──⫸
     <>
-      <p
-        // HERE windowSize ↯
+      <p // HERE windowSize ↯
         className="fixed right-10 top-30 text-xl text-slate-950"
       >
         🦀{` wdith: ${windowSize.width}`} <br />
         🦀{` height: ${windowSize.height}`}
       </p>
 
-      <Button
-        // . . .
+      <Button // . . . AuxButton
         id="AuxButton"// HERE AuxButton
         onClick={getSeriesValues} // {○} getSeriesValues
         size="3"
@@ -298,20 +308,21 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         <Text >🦀</Text>
       </Button>
 
-
-      <div className="relative mb-20">
-        {/* WARN fallback NONE */}
-        {/* [MEDIA] output_half */}
+      <div //_PIN_⋙── ── ── BANNER ── ── ── ──➤
+        // [MEDIA] output_half
+        //  WARN fallback NONE
+        id="BANNER"
+        className="relative">
         <video autoPlay loop muted playsInline className="w-full h-auto">
           <source src="/output_half.mp4" type="video/mp4" />
         </video>
 
         <Box className={classNames(
-          'absolute flex flex-col items-center text-white',
+          'absolute flex flex-col items-center text-black',
           "left-1/2 -translate-x-1/2",
-          'rounded-t-lg bottom-0 ',
+          'bottom-0 ',
           "bg-gradient-to-b from-white/0 to-white/100 bg-clip-padding backdrop-filter backdrop-blur-3xl bg-opacity-100",
-          'p-14'
+          'p-14 rounded-t-lg '
         )}>
 
           <Heading weight="bold" size="9" highContrast>
@@ -334,29 +345,28 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
       </div>
 
 
+      <Box // _PIN_ ⋙── ── ── MapMenu ── ── ──➤
+        id="MapMenu" // <○> MapMenu 
+        className={classNames(
+          "w-full  px-10 pt-24",
+          "bg-white",
+        )}
+      >
+        <MapMenu />
+      </Box>
 
-
-
-
-
-
-
-      <Box
-        // . . . . .
-        id='MC' //_PIN_⋙── ── ──  MC⊛×⁕◉▣  ── ── ── ──➤
-        className='flex flex-col justify-start items-center gap-10 px-10'>
-
-        <Box // ── ⋙── ── MapMenu ── ── ──➤
-          // <○> MapMenu 
-          className="w-full"
-        >
-          <MapMenu />
-        </Box>
+      <Box //_PIN_⋙── ── ──MC⊛×⁕ ── ── ──➤
+        id='MC'
+        className={classNames(
+          'flex flex-col justify-start items-center',
+          // 'bg-gradient-to-b from-white via-emerald-900 to-green-900',
+          'gap-10 px-10 pt-24')}>
 
         <Box //── ⋙── ── TopValuesBox ── ──➤
           id='TopValuesBox'
-          className='flex gap-8 rounded-xl h-[440px] w-full'
+          className='flex gap-8 rounded-xl h-[440px] w-full '
         >
+
           <Card
             // . . . . . . . . . . . .pie
             id='pie'
@@ -389,54 +399,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
             variant="ghost"
             className='flex flex-col items-center gap-0 w-full h-[460px] z-0 bg-emerald-700 '
           >
-            <Box
-              // . . . . . . . . . . . . DropDown
-              id="DropDownComponent"
-              className="flex justify-end gap-6 mt-2 w-full mr-[30px]"
-            >
-              <DropdownMenu.Root
-              // ⊙  DropdownMenu Year
-              >
-                <DropdownMenu.Trigger>
-                  <Button color="gray" variant="solid" highContrast>
-                    {year ?? "Ano"}
-                    <DropdownMenu.TriggerIcon />
-                  </Button>
-                </DropdownMenu.Trigger>
-
-                <DropdownMenu.Content color="gray" variant="soft" highContrast>
-                  {YEARS.map((y, i) => (
-                    <DropdownMenu.Item key={i} onSelect={() => setYear(y)} shortcut="●">{y}</DropdownMenu.Item>
-                  ))}
-                </DropdownMenu.Content>
-              </DropdownMenu.Root>
-
-              <DropdownMenu.Root
-              // ⊙  DropdownMenu Variable
-              >
-                <DropdownMenu.Trigger>
-                  <Button color="gray" variant="solid" highContrast>
-                    {variable ? VARIABLES[variable] : "Variável medida"}
-                    <DropdownMenu.TriggerIcon />
-                  </Button>
-                </DropdownMenu.Trigger>
-
-
-                <DropdownMenu.Content color="gray" variant="soft" highContrast>
-                  <DropdownMenu.Item onSelect={() => setVariable("valor_da_producao")} shortcut="R$">
-                    Valor da produção
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Separator />
-                  <DropdownMenu.Item onSelect={() => setVariable("area_plantada_ou_destinada_a_colheita")} shortcut="▣">
-                    Área plantada ou destinada a colheita
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Item onSelect={() => setVariable("area_colhida")} shortcut="▢">
-                    Área colhida
-                  </DropdownMenu.Item>
-                </DropdownMenu.Content>
-
-              </DropdownMenu.Root>
-            </Box >
 
             <ResponsiveContainer
               // . . . . . . . . . . . .bar
@@ -477,52 +439,58 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
         <Box // ── ⋙──  ── QPRM_bars ── ──➤
           id='QPRM_bars'
-          className='flex gap-8 rounded-xl h-[440px] w-full'
+          className={classNames(
+            'rounded-xl h-[440px] w-full',
+            'bg-gradient-to-r from-emerald-50 to-green-50',
+          )}
+
         >
-          <Card
-            variant="ghost"
-            className="w-full h-full bg-neutral-50/80"
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                width={500}
-                height={300}
-                data={topVData?.QP_RM} // ⊙ topVData
-                margin={{
-                  top: 46,
-                  right: 30,
-                  left: 20,
-                  bottom: 5,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis yAxisId="left" orientation="left" stroke="#AC4D39" />
-                <YAxis yAxisId="right" orientation="right" stroke="#FFC53D" />
-                <Tooltip
-                  // {○} QMRMTooltip
-                  content={<QMRMTooltip />} />
-                <Legend />
-                <Bar name='Quantidade Produzida' yAxisId="left" dataKey="qp" fill="#AC4D39" activeBar={<Rectangle stroke="#000" />}  >
-                  <LabelList
-                    dataKey="name"
-                    content={BarTopLabels}  // (○) BarTopLabels
-                  />
-                </Bar>
 
 
-                <Bar name="Rendimento Médio" yAxisId="right" dataKey="rm" fill="#FFC53D" activeBar={<Rectangle stroke="#000" />} />
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              width={500}
+              height={300}
+              data={topVData?.QP_RM} // ⊙ topVData
+              margin={{
+                top: 46,
+                right: 20,
+                left: 20,
+                bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis yAxisId="left" orientation="left" stroke="#AC4D39" />
+              <YAxis yAxisId="right" orientation="right" stroke="#FFC53D" />
+              <Tooltip
+                // {○} QMRMTooltip
+                content={<QMRMTooltip />} />
+              <Legend />
+              <Bar name='Quantidade Produzida' yAxisId="left" dataKey="qp" fill="#AC4D39" activeBar={<Rectangle stroke="#000" />}  >
+                <LabelList
+                  dataKey="name"
+                  content={BarTopLabels}  // (○) BarTopLabels
+                />
+              </Bar>
 
-              </BarChart>
-            </ResponsiveContainer>
-          </Card>
+
+              <Bar name="Rendimento Médio" yAxisId="right" dataKey="rm" fill="#FFC53D" activeBar={<Rectangle stroke="#000" />} />
+
+            </BarChart>
+          </ResponsiveContainer>
+
         </Box>
 
 
-        <Box
-          // ── ⋙── ── TopSeriesBox ── ──➤
+        <Box // ── ⋙── ── TopSeriesBox ── ──➤
+          // WARN PROBLEMA VEIU!
           id='TopSeriesBox'
-          className='rounded-xl bg-neutral-50/80 bg-opacity-20 w-full h-[700px] p-10'>
+          className={classNames(
+            'rounded-xl w-full h-[700px] p-10',
+            'bg-gradient-to-r from-violet-100 to-fuchsia-100',
+          )}
+        >
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               width={700}
