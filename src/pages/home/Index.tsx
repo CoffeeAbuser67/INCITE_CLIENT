@@ -103,7 +103,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   type DataSeries = {
     data: DataS[]
-    keys: string[];
+    keys: { [key: string]: string };
   };
 
   //  ✳ [seriesVData, setSeriesVData]
@@ -124,9 +124,11 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   // ]
   // ── ⋙── ── ── ── ── ── ── ──➤
 
+  const seriesKeys = seriesVData?.keys ? Object.keys(seriesVData?.keys) : [] // HERE seriesKeys
+
   useEffect(() => {   // HERE useEffect
     getTopValues()
-  }, [year, variable])
+  }, [region, city, year, variable])
   // ── ⋙── ── ── ── ── ── ── ──➤
 
   const getTopValues = async () => { // (✪) getTopValues
@@ -240,51 +242,58 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
-
   const CustomizedDot = (props) => { // ● CustomizedDot
     const { cx, cy, datakey } = props;
+
+    if (cx == null || cy == null) return null;
     const SvgComponent = Icons[datakey as keyof typeof Icons];
 
     if (!SvgComponent) return null;
 
-
     return (
-      <SvgComponent />
-    )
-
-    // ⁜
-    // return (
-    //   <g transform={`translate(${cx - 15}, ${cy - 15})`}>
-    //     <circle cx="15" cy="15" r="18" fill="gray" stroke="black" strokeWidth="2" />
-    //     <defs>
-    //       <clipPath id={`clip-${datakey}`}>
-    //         <circle cx="15" cy="15" r="15" />
-    //       </clipPath>
-    //     </defs>
-    //     <g clipPath={`url(#clip-${datakey})`}>
-    //       <SvgComponent />
-    //     </g>
-    //   </g>
-    // );
+      <g transform={`translate(${cx - 15}, ${cy - 15})`}>
+        <circle cx="15" cy="15" r="18" fill="gray" stroke="black" strokeWidth="2" />
+        <defs>
+          <clipPath id={`clip-${datakey}`}>
+            <circle cx="15" cy="15" r="15" />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#clip-${datakey})`}>
+          <SvgComponent />
+        </g>
+      </g>
+    );
 
   };
 
   const SeriesTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // ● SeriesTooltip
     if (active && payload && payload.length) {
-      // return (
-      //   <Card>
-      //     <Text as="div"> <Strong>{`${name}`}</Strong> </Text>
-      //     <div>{`${v.toLocaleString('de-DE')} R$`}</div>
-      //   </Card>
-      // );
+
+      // ⁂
+      const Items = payload
+        .sort((a, b) => b.value - a.value)
+        .map(({ name, value }) => ({ [seriesVData?.keys[name]]: value }));
+
+      console.log('payload:', payload)
 
       return (
         <Card>
-          S
-        </Card>
+          <Text as="div"> <Strong>Ano: </Strong> {payload[0].payload['year']} </Text>
+          <Separator my="1" color="gray" size="4" />
+          {
+            Items.map((item) => {
+              const key = Object.keys(item)[0];
+              const value = item[key];
+              return (
+                <Text as="div"> <Strong>{`${key} :`}</Strong> {value.toLocaleString('de-DE')} </Text>
+              )
+            })
+          }
+        </Card >
       );
 
     }
+
     return null;
   };
 
@@ -511,7 +520,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
               <Tooltip content={SeriesTooltip} />
 
-              {seriesVData?.keys.map((key) => (
+              {seriesKeys.map((key) => (
                 <Line
                   key={key}
                   type="monotone"
