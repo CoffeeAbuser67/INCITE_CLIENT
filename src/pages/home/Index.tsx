@@ -60,10 +60,11 @@ import MapMenu from "./MapMenu";
 import Icons from "../../assets/Icons";
 import ICON_SIZES from "../../assets/IconsSizes";
 
-import { VARIABLES, COLORS } from "../../assets/auxData";
+import { VARIABLES, COLORS, SCOLORS } from "../../assets/auxData";
 import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
 // . . . . . . .
 
+//  WARN Xique-xique | santa teresinha | Muquém de São Francisco
 
 const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤ 
 
@@ -95,7 +96,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   //  ✳ [topVData, setTopVData]
   const [topVData, setTopVData] = useState<AgriculturalData | null>(null);
 
-
   type DataS = {
     [key: string]: number;
     year: number;
@@ -108,28 +108,42 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   //  ✳ [seriesVData, setSeriesVData]
   const [seriesVData, setSeriesVData] = useState<DataSeries | null>(null);
-
-  // variables = [
-  //   'area plantada',
-  //   'area plantada percentual total',
-
-  //   'area colhida',
-  //   'area colhida percentual total',
-
-  //   'valor da producao',
-  //   'valor da producao percentual total',
-
-  //   'quantidade produzida',
-  //   'rendimento medio',
-  // ]
   // ── ⋙── ── ── ── ── ── ── ──➤
 
   const seriesKeys = seriesVData?.keys ? Object.keys(seriesVData?.keys) : [] // HERE seriesKeys
 
   useEffect(() => {   // HERE useEffect
+    getSeriesValues()
+  }, [region, city, variable])
+
+  useEffect(() => {   // HERE useEffect
     getTopValues()
   }, [region, city, year, variable])
   // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+  const getSeriesValues = async () => { // {✪} getSeriesValues
+    const axios = axiosDefault;
+    try {
+      const area = city.active === '' ? region.active : city.active
+      const TYPE = city.active === '' ? "regiao" : "municipio"
+      const url = "/getTopSeries/";
+      const params = {
+        area: area,
+        variable: variable,
+        type: TYPE
+      };
+
+      const response = await axios.get(url, { params }); // _PIN_ getTopSeries  ✉ 
+      setSeriesVData(response.data); // ↺ setSeriesVData
+      console.log(response.data); // [LOG] seriesVData
+
+    } catch (err: unknown) {
+      if (err) {
+        handleAxiosError(err);
+      }
+    }
+  } // ── ⋙── ── ── ── ── ── ── ──➤
 
   const getTopValues = async () => { // (✪) getTopValues
     const axios = axiosDefault;
@@ -157,28 +171,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     }
   } // ── ⋙── ── ── ── ── ── ── ──➤
 
-  const getSeriesValues = async () => { // {✪} getSeriesValues
-    const axios = axiosDefault;
-    try {
-      const area = city.active === '' ? region.active : city.active
-      const TYPE = city.active === '' ? "regiao" : "municipio"
-      const url = "/getTopSeries/";
-      const params = {
-        area: area,
-        variable: variable,
-        type: TYPE
-      };
-
-      const response = await axios.get(url, { params }); // _PIN_ getTopSeries  ✉ 
-      setSeriesVData(response.data); // ↺ setSeriesVData
-      console.log(response.data); // [LOG] seriesVData
-
-    } catch (err: unknown) {
-      if (err) {
-        handleAxiosError(err);
-      }
-    }
-  } // ── ⋙── ── ── ── ── ── ── ──➤
 
   const PieTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {   // <●> PieTooltip
     if (active && payload && payload.length) {
@@ -208,7 +200,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
       );
     }
     return null;
-  };
+  }; // . . .
 
   const BarTopLabels = (props) => {  // (●) BarTopLabels
     const { x, y, width, index } = props;
@@ -222,14 +214,9 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return <SvgComponent x={centerX} y={centerY} />;
   }; // . . .
 
-
-  const BarLegend = () => { // (●) BarLegend
-    return <Text as='div' size="4" highContrast> <Strong>{VARIABLES[variable]} </Strong></Text>;
-  };// . . . . . . . . . . . .
-
   const QMRMTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // {●} QMRMTooltip
     if (active && payload && payload.length) {
-      const { id, name, qp, rm } = payload[0].payload;
+      const { name, qp, rm } = payload[0].payload;
 
       return (
         <Card>
@@ -297,7 +284,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   };
 
-
   return (// ── ⋙── ── ── ── DOM ── ── ── ── ── ──⫸
     <>
       <p // HERE windowSize ↯
@@ -306,16 +292,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         🦀{` wdith: ${windowSize.width}`} <br />
         🦀{` height: ${windowSize.height}`}
       </p>
-
-      <Button // . . . AuxButton
-        id="AuxButton"// HERE AuxButton
-        onClick={getSeriesValues} // {○} getSeriesValues
-        size="3"
-        variant="soft"
-        className="fixed"
-      >
-        <Text >🦀</Text>
-      </Button>
 
       <div //_PIN_⋙── ── ── BANNER ── ── ── ──➤
         // [MEDIA] output_half
@@ -353,7 +329,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         </Box>
       </div>
 
-
       <Box // _PIN_ ⋙── ── ── MapMenu ── ── ──➤
         id="MapMenu" // <○> MapMenu 
         className={classNames(
@@ -376,11 +351,12 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           className='flex gap-8 rounded-xl h-[440px] w-full '
         >
 
-          <Card
+          <Box
             // . . . . . . . . . . . .pie
             id='pie'
-            variant="ghost"
-            className='flex z10 bg-neutral-400 overflow-visible w-2/5 h-[460px]'
+            className={classNames(
+              'flex z10 rounded-xl',
+              'bg-neutral-400 overflow-visible w-2/5 h-[460px]')}
           >
             <ResponsiveContainer width="100%" height="100%">
               <PieChart width={420} height={420}>
@@ -401,16 +377,20 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                   content={<PieTooltip />} />
               </PieChart>
             </ResponsiveContainer>
-          </Card>
 
-          <Card
+          </Box>
+
+          <Box
+            // . . . . . . . . . . . .bar
             id='bar'
-            variant="ghost"
-            className='flex flex-col items-center gap-0 w-full h-[460px] z-0 bg-emerald-700 '
+            className={classNames(
+              'flex flex-col items-center w-full h-[460px] z-0',
+              'rounded-xl bg-emerald-700 p-5')}
           >
 
+            <Text as='div' size="4" highContrast> <Strong>{VARIABLES[variable]} </Strong></Text>
+
             <ResponsiveContainer
-              // . . . . . . . . . . . .bar
               width="100%" height="100%">
               <BarChart
                 width={700}
@@ -442,8 +422,8 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <BarLegend />   {/* //(○) BarLegend */}
-          </Card>
+
+          </Box>
         </Box>
 
         <Box // ── ⋙──  ── QPRM_bars ── ──➤
@@ -493,7 +473,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
 
         <Box // ── ⋙── ── TopSeriesBox ── ──➤
-          // WARN PROBLEMA VEIU!
           id='TopSeriesBox'
           className={classNames(
             'rounded-xl w-full h-[700px] p-10',

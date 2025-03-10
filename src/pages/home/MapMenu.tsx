@@ -37,12 +37,9 @@ import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
 import regionCityData from "../../assets/BahiaRegiaoMuni.json";
 import regionData from "../../assets/BahiaRegiao.json";
 
-import { COLORS2, VARIABLES, YEARS } from "../../assets/auxData";
+import { COLORSTW, VARIABLES, YEARS } from "../../assets/auxData";
 
 // . . . . . . .
-
-
-
 interface City {
   id: string;
   d: string;
@@ -55,13 +52,11 @@ interface RegionCity {
 
 // [●] mapRegionCity
 const mapRegionCity: RegionCity = regionCityData;
-
 interface Region {
   id: string;
   d: string;
   name: string;
 }
-
 // [●] mapRegion
 const mapRegion: Region[] = regionData;
 
@@ -72,9 +67,7 @@ interface BoundingBox {
   height: number;
 }
 
-
 const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
-
   const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
   const c1Ref = useRef<SVGCircleElement | null>(null); // HERE c1Ref
   const originalBBoxRef = useRef<BoundingBox | null>(null); // HERE originalBBoxRef
@@ -84,17 +77,12 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   const [tooltip, setTooltip] = useState<{ name: string | null }>({
     name: null,
   });
-
   const handleMouseEnter = (name: string) => {
     setTooltip({ name });
   };
-
   const handleMouseLeave = () => {
     setTooltip({ name: null });
-  };
-
-
-  // ── ⋙── ── ── ── ── ── ── ──➤
+  };// ── ⋙── ── ── ── ── ── ── ──➤
 
   type levels = 0 | 1;
   // ✳ [currentLevel, setCurrentLevel]
@@ -109,6 +97,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
   // ✳ { variable, setVariable } 
   const { variable, setVariable } = variableStore();
+
   // ✳ { year, setYear } 
   const { year, setYear } = yearStore();
 
@@ -117,11 +106,8 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   // ✳ [bahiaValues, setBahiaValues]
   const [bahiaValues, setBahiaValues] = useState<regionValuesI[]>([]);
   const [regionValues, setRegionValues] = useState<regionValuesI[]>([]);
-
-
   // const [rect, setRect] = useState<DOMRect | null>(null);
   // const [bbox, setBbox] = useState<DOMRect | null>(null);
-
   // ✳ [crabPos, setCrabPos]
   const [crabPos, setCrabPos] = useState({ X: 300, Y: 300 }); // ── ⋙── ── ── ── ── ── ──➤
 
@@ -164,8 +150,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     //HERE useEffect
     getRegionValues(); // (○) getRegionValues
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [region, year, variable,]); // ── ⋙── ── ── ── ── ── ──➤
-
+  }, [region, year, variable,]); // . . . . . 
 
   useEffect(() => {
     //HERE useEffect
@@ -173,8 +158,56 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year, variable]); // ── ⋙── ── ── ── ── ── ──➤
 
+  const getBahiaValues = async () => { // (✪) getBahiaValues 
+    const axios = axiosDefault;
+    try {
+      const url = "/getRegionValues/";
+      // ⊙ year ⊙ variable
+      const params = {
+        region: 'bahia',
+        year: year,
+        variable: variable,
+      };
 
-  // ● transition
+      const response = await axios.get(url, { params }); // _PIN_ getRegionValues  ✉ 
+      const data = response?.data
+      setBahiaValues(data) // ↺ setBahiaValues
+      console.log(data); // [LOG] 
+
+    } catch (err: unknown) {
+      if (err) {
+        handleAxiosError(err);
+      }
+    }
+
+  } // ── ⋙── ── ── ── ── ── ── ──➤
+
+  const getRegionValues = async () => { // (✪) getRegionValues 
+    const axios = axiosDefault;
+    try {
+
+      const url = "/getRegionValues/";
+      // ⊙ region.active ⊙ year ⊙ variable
+      const params = {
+        region: region.active,
+        year: year,
+        variable: variable,
+      };
+
+      const response = await axios.get(url, { params }); // _PIN_ getRegionValues  ✉ 
+      const data = response?.data
+      setRegionValues(data) // ↺ setRegionValues
+      console.log(data); // [LOG] 
+
+    } catch (err: unknown) {
+      if (err) {
+        handleAxiosError(err);
+      }
+    }
+
+  } // ── ⋙── ── ── ── ── ── ── ──➤
+
+  // ✪ transition
   const transition = useTransition(mapRegionCity[region.active] || [], {
     trail: 600 / mapRegionCity[region.active].length || 1,
     from: { opacity: 0, transform: "scale(0)" },
@@ -183,8 +216,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     config: { mass: 10, tension: 63, friction: 16, clamp: true },
     keys: (mapRegionCity[region.active] || []).map((el) => el.id),
   });
-
-  // ● springStyles
+  // ✪ springStyles
   const [springStyles, api] = useSpring(() => ({
     transform: `scale(1) translate(0px, 0px)`,
     config: { tension: 62, friction: 35, mass: 7 },
@@ -211,38 +243,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     return colors[Math.min(index, colors.length - 1)];
   } // ── ⋙── ── ── ── ── ── ──➤
 
-  // // ● getLegendValues
-  // function getLegendValues(data: regionValuesI[], steps: number) {
-  //   const totals = data.map(d => d.total);
-  //   const min = Math.min(...totals);
-  //   const max = Math.max(...totals);
-
-  //   return Array.from({ length: steps }, (_, i) => {
-  //     const value = Math.pow(10, Math.log10(min + 1) + (i / (steps - 1)) * (Math.log10(max + 1) - Math.log10(min + 1)));
-  //     return Math.round(value);
-  //   });
-  // }
-
-  // // ✪ThermometerLegend
-  // const ThermometerLegend: React.FC = () => {
-  //   const COLORS = COLORS2[variable]
-  //   const legendValues = getLegendValues(bahiaValues, COLORS.length);
-  //   return (
-  //     <div className="flex flex-col items-center">
-  //       <div className="flex flex-col">
-  //         {COLORS.map((color, i) => (
-  //           <div key={i} className="flex items-center">
-  //             <div className={classNames("w-full h-10", color)}>
-  //               <span>{legendValues[i]}</span>
-  //             </div>
-
-  //           </div>
-  //         ))}
-  //       </div>
-  //     </div>
-  //   );
-  // };  // ── ⋙── ── ── ── ── ── ──➤
-
   // {✪} resetMap
   const resetMap = () => {
     setCurrentLevel(0); // ↺ setCurrentLevel
@@ -255,8 +255,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     });
   }; // ── ⋙── ── ── ── ── ── ──➤
 
-
-  // {✪} runToFit
+  // <✪> runToFit
   const runToFit = (bbox: BoundingBox, rect: BoundingBox) => {
     const svgRect = svgRef.current?.getBoundingClientRect();
     // const svgBox = svgRef.current?.getBBox()
@@ -306,103 +305,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     });
   }; // ── ⋙── ── ── ── ── ── ──➤
 
-  // const buttonClickLog = () => {
-  //   const svgRect = svgRef.current?.getBoundingClientRect();
-  //   const svgBox = svgRef.current?.getBBox();
-
-  //   const c1Box = c1Ref.current?.getBBox();
-  //   const c1Rect = c1Ref.current?.getBoundingClientRect();
-
-  //   // if (!svgRect || !svgBox || !c1Rect || !c1Box) return;
-  //   if (!svgRect || !svgBox) return;
-
-  //   console.log("Svg viebox");
-
-  //   console.log("rect ↯");
-  //   console.log("x:", svgRect.x);
-  //   console.log("y:", svgRect.y);
-  //   console.log("width:", svgRect.width);
-  //   console.log("height:", svgRect.height);
-  //   console.log(". . . . . . . . . . . . ");
-
-  //   console.log("bbox ↯");
-  //   console.log("x:", svgBox.x);
-  //   console.log("y:", svgBox.y);
-  //   console.log("width:", svgBox.width);
-  //   console.log("height:", svgBox.height);
-  //   console.log(". . . . . . . . . . . . ");
-  //   console.log("currentScale:", currentScale);
-  //   console.log("✦────────────────────────────➤");
-  //   // console.log("c1Rect ");
-  //   // console.log("rect ↯");
-  //   // console.log("x:", c1Rect.x);
-  //   // console.log("y:", c1Rect.y);
-  //   // console.log("width:", c1Rect.width);
-  //   // console.log("height:", c1Rect.height);
-  //   // console.log(". . . . . . . . . . . . ");
-  //   // console.log("c1Box ↯");
-  //   // console.log("x:", c1Box.x);
-  //   // console.log("y:", c1Box.y);
-  //   // console.log("width:", c1Box.width);
-  //   // console.log("height:", c1Box.height);
-  //   // console.log(". . . . . . . . . . . . ");
-  //   // console.log("currentScale:", currentScale);
-  //   // console.log("✦────────────────────────────➤");
-  // };
-
-  const getBahiaValues = async () => { // (✪) getBahiaValues 
-    const axios = axiosDefault;
-    try {
-      const url = "/getRegionValues/";
-      // ⊙ year ⊙ variable
-      const params = {
-        region: 'bahia',
-        year: year,
-        variable: variable,
-      };
-
-      const response = await axios.get(url, { params }); // _PIN_ getRegionValues  ✉ 
-      const data = response?.data
-      setBahiaValues(data) // ↺ setBahiaValues
-      console.log(data); // [LOG] 
-
-    } catch (err: unknown) {
-      if (err) {
-        handleAxiosError(err);
-      }
-    }
-
-  } // ── ⋙── ── ── ── ── ── ── ──➤
-
-
-
-  const getRegionValues = async () => { // (✪) getRegionValues 
-    const axios = axiosDefault;
-    try {
-
-      const url = "/getRegionValues/";
-      // ⊙ region.active ⊙ year ⊙ variable
-      const params = {
-        region: region.active,
-        year: year,
-        variable: variable,
-      };
-
-      const response = await axios.get(url, { params }); // _PIN_ getRegionValues  ✉ 
-      const data = response?.data
-      setRegionValues(data) // ↺ setRegionValues
-      console.log(data); // [LOG] 
-
-    } catch (err: unknown) {
-      if (err) {
-        handleAxiosError(err);
-      }
-    }
-
-  } // ── ⋙── ── ── ── ── ── ── ──➤
-
-
-  // {✪} handleClick
+  // <✪> handleClick
   const handleClick = (event) => {
     const target = event.target;
     const target_id = target?.id;
@@ -440,11 +343,10 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     }
   }  // ── ⋙── ── ── ── ── ── ── ──➤
 
-
   // [✪] memoizedRegions
   const memoizedRegions = useMemo(() => (
     mapRegion.map((el, i) => (
-      <g key={i} className={`cls-region ${getThermometerColor(el.id, bahiaValues, COLORS2[variable])}`}>
+      <g key={i} className={`cls-region ${getThermometerColor(el.id, bahiaValues, COLORSTW[variable])}`}>
         <title>{el.name}</title>
         <animated.path
           id={el.id}
@@ -459,7 +361,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     ))
   ), [mapRegion, bahiaValues, variable, year]);
 
-
   return (
     // ── ⋙── DOM ── ── ── ── ── ── ── ── ──⫸ 🌠
     <>
@@ -467,7 +368,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
         className="flex gap-10 w-full"
       >
         <div className=" flex flex-col">
-
           <Box
             // . . . . . . . . . DropDown . . . 
             id="DropDownComponent"
@@ -601,11 +501,9 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
                 {transition((style, item) => (
                   // . . . . . . .
                   // ○ transition
-                  // [○] mapRegionCity
-                  <animated.g {...style}
-
-                  >
-                    <title >{item.name}</title>s
+                  // [○] mapRegionCity ⊛
+                  <animated.g {...style}>
+                    <title >{item.name}</title>
                     <animated.path
                       id={item.id}
                       d={item.d}
@@ -613,20 +511,18 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
                       data-type="city"
                       className={classNames(
                         "path-hover cls-city",
-                        city.active === item.id ? "fill-red-900" : getThermometerColor(item.id, regionValues, COLORS2[variable])
+                        city.active === item.id ? "fill-emerald-600" : getThermometerColor(item.id, regionValues, COLORSTW[variable])
                       )}
                       onMouseEnter={() => handleMouseEnter(item.name)}
                       onMouseLeave={handleMouseLeave}
                     />
-
                   </animated.g>
                 ))}
               </g>
 
-
-              <circle
-                // . . . . . . .
-                // HERE c1Ref
+              <circle // . . . . . . .
+                // HERE c1Ref 🦀
+                id = "🦀" 
                 ref={c1Ref}
                 cx={30}
                 cy={30}
@@ -634,14 +530,9 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
                 className="fill-lime-950"
                 transform={`translate(${crabPos.X}, ${crabPos.Y})`}
               />
-
             </animated.svg>
-
           </div>
-
         </div>
-
-
 
 
         <Card

@@ -9,8 +9,14 @@ export const VARIABLES = {
 //  [●] YEARS
 export const YEARS = Array.from({ length: 2024 - 2000 }, (_, i) => 2000 + i);
 
-//  [●] COLORS2
-export const COLORS2 = {
+export const SCOLORS = {
+  valor_da_producao: "gray",
+  area_colhida: "crimson",
+  area_plantada_ou_destinada_a_colheita: "blue",
+};
+
+//  [●] COLORSTW
+export const COLORSTW = {
   valor_da_producao: [
     "fill-neutral-50",
     "fill-neutral-100",

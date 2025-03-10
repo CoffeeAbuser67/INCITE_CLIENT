@@ -8,9 +8,9 @@
   }
   
   .path-hover:hover {
-    fill: rgb(154, 34, 34);
+    fill: rgb(5 150 105);
   }
-  
+
   svg{
     pointer-events: auto;
     transform-origin: center;
