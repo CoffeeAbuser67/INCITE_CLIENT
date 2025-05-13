@@ -40,25 +40,16 @@ import regionData from "../../assets/BahiaRegiao.json";
 import { COLORSTW, VARIABLES, YEARS } from "../../assets/auxData";
 
 // . . . . . . .
-interface City {
+
+interface Region {
   id: string;
   d: string;
   name: string;
 }
 
 interface RegionCity {
-  [key: string]: City[];
+  [key: string]: Region[];
 }
-
-// [●] mapRegionCity
-const mapRegionCity: RegionCity = regionCityData;
-interface Region {
-  id: string;
-  d: string;
-  name: string;
-}
-// [●] mapRegion
-const mapRegion: Region[] = regionData;
 
 interface BoundingBox {
   x: number;
@@ -67,22 +58,33 @@ interface BoundingBox {
   height: number;
 }
 
+// [●] mapRegionCity
+const mapRegionCity: RegionCity = regionCityData;
+
+// [●] mapRegion
+const mapRegion: Region[] = regionData;
+
+// 🧿
+
 const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
   const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
   const c1Ref = useRef<SVGCircleElement | null>(null); // HERE c1Ref
   const originalBBoxRef = useRef<BoundingBox | null>(null); // HERE originalBBoxRef
+
+  const handleMouseEnter = useCallback((name: string) => {
+    setTooltip({ name });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setTooltip({ name: null });
+  }, []);
   // ── ⋙── ── ── ── ── ── ── ──➤
+
 
   // ✳ [tooltip, setTooltip]
   const [tooltip, setTooltip] = useState<{ name: string | null }>({
     name: null,
   });
-  const handleMouseEnter = (name: string) => {
-    setTooltip({ name });
-  };
-  const handleMouseLeave = () => {
-    setTooltip({ name: null });
-  };// ── ⋙── ── ── ── ── ── ── ──➤
 
   type levels = 0 | 1;
   // ✳ [currentLevel, setCurrentLevel]
@@ -106,13 +108,14 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   // ✳ [bahiaValues, setBahiaValues]
   const [bahiaValues, setBahiaValues] = useState<regionValuesI[]>([]);
   const [regionValues, setRegionValues] = useState<regionValuesI[]>([]);
+
   // const [rect, setRect] = useState<DOMRect | null>(null);
   // const [bbox, setBbox] = useState<DOMRect | null>(null);
+
   // ✳ [crabPos, setCrabPos]
   const [crabPos, setCrabPos] = useState({ X: 300, Y: 300 }); // ── ⋙── ── ── ── ── ── ──➤
 
-  useEffect(() => {
-    //HERE useEffect
+  useEffect(() => { //HERE uE
     if (svgRef.current && !originalBBoxRef.current) {
       // Assign the value from getBBox to the ref
       originalBBoxRef.current = svgRef.current.getBBox();
@@ -120,8 +123,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     }
   }, []); // . . . . . . .
 
-  useEffect(() => {
-    //HERE useEffect
+  useEffect(() => { //HERE uE
     if (c1Ref.current) {
       const bbox = c1Ref.current.getBBox();
       const rect = c1Ref.current.getBoundingClientRect();
@@ -144,45 +146,9 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       console.log("── ⋙── ── ── ── ── ── ── ──➤");
     }
 
-  }, [crabPos, currentScale]); // . . . . . 
+  }, [crabPos, currentScale]); // ── ⋙── ── ── ── ── ── ── ──➤
 
-  useEffect(() => {
-    //HERE useEffect
-    getRegionValues(); // (○) getRegionValues
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [region, year, variable,]); // . . . . . 
-
-  useEffect(() => {
-    //HERE useEffect
-    getBahiaValues(); // (○) getBahiaValues
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [year, variable]); // ── ⋙── ── ── ── ── ── ──➤
-
-  const getBahiaValues = async () => { // (✪) getBahiaValues 
-    const axios = axiosDefault;
-    try {
-      const url = "/getRegionValues/";
-      // ⊙ year ⊙ variable
-      const params = {
-        region: 'bahia',
-        year: year,
-        variable: variable,
-      };
-
-      const response = await axios.get(url, { params }); // _PIN_ getRegionValues  ✉ 
-      const data = response?.data
-      setBahiaValues(data) // ↺ setBahiaValues
-      console.log(data); // [LOG] 
-
-    } catch (err: unknown) {
-      if (err) {
-        handleAxiosError(err);
-      }
-    }
-
-  } // ── ⋙── ── ── ── ── ── ── ──➤
-
-  const getRegionValues = async () => { // (✪) getRegionValues 
+  const getRegionValues = useCallback(async () => { // (✪) getRegionValues 
     const axios = axiosDefault;
     try {
 
@@ -205,7 +171,41 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       }
     }
 
-  } // ── ⋙── ── ── ── ── ── ── ──➤
+  }, [region.active, year, variable]
+
+  ) // . . . 
+
+  useEffect(() => { // (●) uE
+    getRegionValues(); // (○) getRegionValues
+  }, [getRegionValues]); // ── ⋙── ── ── ── ── ── ── ──➤
+
+  const getBahiaValues = useCallback(async () => { // (✪) getBahiaValues 
+    const axios = axiosDefault;
+    try {
+      const url = "/getRegionValues/";
+      // ⊙ year ⊙ variable
+      const params = {
+        region: 'bahia',
+        year: year,
+        variable: variable,
+      };
+
+      const response = await axios.get(url, { params }); // _PIN_ getRegionValues  ✉ 
+      const data = response?.data
+      setBahiaValues(data) // ↺ setBahiaValues
+      console.log(data); // [LOG] 
+
+    } catch (err: unknown) {
+      if (err) {
+        handleAxiosError(err);
+      }
+    }
+
+  }, [year, variable]) 
+  //  . . .
+  useEffect(() => { // (●) uE
+    getBahiaValues(); // (○) getBahiaValues
+  }, [getBahiaValues]); // ── ⋙── ── ── ── ── ── ──➤
 
   // ✪ transition
   const transition = useTransition(mapRegionCity[region.active] || [], {
@@ -220,28 +220,32 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   const [springStyles, api] = useSpring(() => ({
     transform: `scale(1) translate(0px, 0px)`,
     config: { tension: 62, friction: 35, mass: 7 },
-  })); // ── ⋙── ── ── ── ── ── ──➤
+  }));
 
-  // {✪} getThermometerColor
-  function getThermometerColor(name_id: string, data: regionValuesI[], colors: string[]): string | undefined {
-    const totals = data.map(d => d.total);
-    const min = Math.min(...totals);
-    const max = Math.max(...totals);
+  // {✪} calculateItemColorClass
+  function calculateItemColorClass(
+    itemTotal: number,
+    logMin: number,
+    logMax: number,
+    colors: string[], // Assumindo que é sempre um array válido de classes Tailwind
+  ): string { // Retorna sempre uma string de classe de cor
 
-    const logMin = Math.log10(min + 1);
-    const logMax = Math.log10(max + 1);
+    // Se, por algum motivo, logMin e logMax forem iguais (ex: todos os valores são 0),
+    // o que levaria a uma divisão por zero.
+    if (logMin === logMax) {
+      return colors[Math.floor(colors.length / 2)] || colors[0] || "";
+    }
 
-    const item = data.find(d => d.name_id === name_id);
+    const logValue = Math.log10(itemTotal + 1);
 
-    // console.log('item:', item); // [LOG] item
+    let index = Math.floor(((logValue - logMin) / (logMax - logMin)) * (colors.length - 1));
+    index = Math.max(0, Math.min(index, colors.length - 1)); // Garante que o índice esteja nos limites
 
-    if (!item) return undefined;
-
-    const logValue = Math.log10(item.total + 1);
-    const index = Math.floor(((logValue - logMin) / (logMax - logMin)) * (colors.length - 1));
-
-    return colors[Math.min(index, colors.length - 1)];
-  } // ── ⋙── ── ── ── ── ── ──➤
+    if (isNaN(index)) { // Segurança extra
+      return colors[0] || "";
+    }
+    return colors[index];
+  }// ── ⋙── ── ── ── ── ── ──➤
 
   // {✪} resetMap
   const resetMap = () => {
@@ -279,8 +283,10 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     const scaleY = svgRect.height / rect.height;
     const maxScale = Math.min(scaleX, scaleY);
 
+
+    const SCALE_ADJUSTMENT = 0.35
     setCrabPos({ X: CBX, Y: CBY }); // ↺ setCrabPos
-    setCurrentScale(maxScale - 0.35); // ↺ setCurrentScale
+    setCurrentScale(maxScale - SCALE_ADJUSTMENT); // ↺ setCurrentScale
     // (maxScale - 0.3) -0.3 is an adjustment on the scale.
 
     // // [LOG] rect
@@ -300,7 +306,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     // console.log("✦────────────────────────────➤");
 
     api.start({
-      transform: `scale(${maxScale - 0.35
+      transform: `scale(${maxScale - SCALE_ADJUSTMENT
         }) translate(${translateX}px, ${translateY}px)`,
     });
   }; // ── ⋙── ── ── ── ── ── ──➤
@@ -343,26 +349,121 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     }
   }  // ── ⋙── ── ── ── ── ── ── ──➤
 
-  // [✪] memoizedRegions
-  const memoizedRegions = useMemo(() => (
-    mapRegion.map((el, i) => (
-      <g key={i} className={`cls-region ${getThermometerColor(el.id, bahiaValues, COLORSTW[variable])}`}>
-        <title>{el.name}</title>
-        <animated.path
-          id={el.id}
-          d={el.d}
-          data-name={el.name}
-          data-type="region"
-          className="path-hover"
-          onMouseMove={() => handleMouseEnter(el.name)}
-          onMouseLeave={handleMouseLeave}
-        />
-      </g>
-    ))
-  ), [mapRegion, bahiaValues, variable, year]);
+  // [✪] memoizedRegions 
+  const memoizedRegions = useMemo(() => {
+    const currentColors = COLORSTW[variable] || []; // Garante que currentColors seja um array
+
+    // Se não houver dados ou cores, renderiza as regiões com estilo padrão
+    if (!bahiaValues || bahiaValues.length === 0 || currentColors.length === 0) {
+      return mapRegion.map((el, i) => (
+        <g key={i} className="cls-region">
+          <title>{el.name}</title>
+          <animated.path
+            id={el.id}
+            d={el.d}
+            data-name={el.name}
+            data-type="region"
+            className="path-hover"
+            onMouseMove={() => handleMouseEnter(el.name)}
+            onMouseLeave={handleMouseLeave}
+          />
+        </g>
+      ));
+    }
+
+    const totals = bahiaValues.map(d => d.total);
+    const min = Math.min(...totals);
+    const max = Math.max(...totals);
+
+    const dataIsUniform = min === max; 
+    let logMin = 0;
+    let logMax = 0;
+
+    // Só calcula logs se os dados não forem uniformes (min !== max)
+    if (!dataIsUniform) {
+      logMin = Math.log10(min + 1);
+      logMax = Math.log10(max + 1);
+    }
+
+    // Opcional: Criar um mapa para acesso rápido aos totais, se `bahiaValues` for grande
+    // e `mapRegion` não corresponder diretamente em ordem ou tiver itens faltantes.
+    // Se `mapRegion` e `bahiaValues` são correspondentes e `el.id` é usado para encontrar em `bahiaValues`
+    // que já tem o `total`, a busca pode ser feita diretamente.
+    // Para simplificar, assumindo que cada `el` de `mapRegion` precisa ter seu `total` encontrado em `bahiaValues`.
+    const bahiaValuesMap = new Map(bahiaValues.map(item => [item.name_id, item.total]));
+
+    return mapRegion.map((el, i) => {
+      const itemTotal = bahiaValuesMap.get(el.id);
+      let colorClass = ""; // Cor padrão ou nenhuma cor específica
+
+      if (itemTotal !== undefined) { // Se a região tem um valor correspondente
+        colorClass = calculateItemColorClass(
+          itemTotal,
+          logMin,
+          logMax,
+          currentColors,
+        );
+      }
+
+      return (
+        <g key={i} className={classNames("cls-region", colorClass)}>
+          <title>{el.name}</title>
+          <animated.path
+            id={el.id}
+            d={el.d}
+            data-name={el.name}
+            data-type="region"
+            className="path-hover"
+            onMouseMove={() => handleMouseEnter(el.name)}
+            onMouseLeave={handleMouseLeave}
+          />
+        </g>
+      );
+    });
+  }, [bahiaValues, variable, handleMouseEnter, handleMouseLeave]);
+
+  // [✪] cityColoringParams
+  const cityColoringParams = useMemo(() => {
+    const currentColors = COLORSTW[variable] || [];
+
+    if (!regionValues || regionValues.length === 0 || currentColors.length === 0) {
+      return null; // Indica que não há parâmetros para colorir
+    }
+
+    const totals = regionValues.map(d => d.total);
+    const min = Math.min(...totals);
+    const max = Math.max(...totals);
+
+    const dataIsUniform = min === max;
+    let logMin = 0;
+    let logMax = 0;
+
+    if (!dataIsUniform) {
+      logMin = Math.log10(min + 1);
+      logMax = Math.log10(max + 1);
+    }
+
+    // Os itens da transição (`item` em `transition((style, item) => ...)`)
+    // já contêm `item.id` e `item.total` (se `mapRegionCity` tiver `total`).
+    // Se `mapRegionCity` não tiver `total`, precisamos de um mapa como no passo anterior.
+    // Seu `RegionCity` tem `City[]`, e `City` não tem `total`.
+    // `regionValues` (que é `regionValuesI[] = { total: number; name_id: string }[]`)
+    // é quem tem os totais para os municípios.
+    // Então, precisamos de um mapa para os totais dos municípios.
+    const cityTotalsMap = new Map(regionValues.map(rv => [rv.name_id, rv.total]));
+
+
+    return {
+      logMin,
+      logMax,
+      currentColors,
+      dataIsUniform,
+      cityTotalsMap // Mapa para buscar o total do município pelo ID
+    };
+  }, [regionValues, variable]); // Depende de regionValues e da variável selecionada
 
   return (
-    // ── ⋙── DOM ── ── ── ── ── ── ── ── ──⫸ 🌠
+    // ── ◯─◡◠◡◠◡◠◡◠ DOM ◡◠◡◠◡◠─⫸ 🌑
     <>
       <div
         className="flex gap-10 w-full"
@@ -419,9 +520,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
 
           </Box >
-
-          <div
-            //_PIN_ ⋙── ── canvas-wrapper ── ──➤
+          <div //── ⋙── ── canvas-wrapper ── ──➤
             id="canvas-wrapper"
             className="relative bg-transparent rounded-3xl"
             style={{
@@ -432,8 +531,8 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
             }}
           >
 
-            <div
-              id="TOOLTIP" // HERE TOOLTIP
+            <div // HERE TOOLTIP
+              id="TOOLTIP"
               className="absolute bg-gray-900 text-white text-sm p-2 rounded shadow-lg"
               style={{
                 top: "0.5rem",  // Um pequeno espaçamento da borda superior
@@ -445,8 +544,8 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
               {tooltip.name}
             </div>
 
-            <div
-              id='thermometerLegend' // HERE TOOLthermometerLegend
+            <div // HERE TOOLthermometerLegend
+              id='thermometerLegend'
               className="absolute w-10 h-48 bg-gradient-to-b from-neutral-50 to-neutral-950 rounded-lg shadow-md"
               style={{
                 bottom: "0.5rem",  // Um pequeno espaçamento da borda superior
@@ -456,8 +555,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
               }}
             ></div>
 
-            <animated.svg
-              // . . . ⋙── SVGCanvas ──➤
+            <animated.svg // . . . SVGCanvas
               id="SVGCanvas"
               ref={svgRef}
               viewBox="0 0 715 760"
@@ -482,8 +580,10 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
                   </style>
                 </defs>
 
-                {/* // [○] memoizedRegions */}
-                {memoizedRegions}
+
+                { // [○] memoizedRegions
+                  memoizedRegions
+                }
 
                 {currentLevel === 1 && (
                   // . . . . . . .
@@ -498,31 +598,48 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
                   />
                 )}
 
-                {transition((style, item) => (
+                {transition((style, cityItem) => { // ○ transition
                   // . . . . . . .
-                  // ○ transition
-                  // [○] mapRegionCity ⊛
-                  <animated.g {...style}>
-                    <title >{item.name}</title>
-                    <animated.path
-                      id={item.id}
-                      d={item.d}
-                      data-name={item.name}
-                      data-type="city"
-                      className={classNames(
-                        "path-hover cls-city",
-                        city.active === item.id ? "fill-emerald-600" : getThermometerColor(item.id, regionValues, COLORSTW[variable])
-                      )}
-                      onMouseEnter={() => handleMouseEnter(item.name)}
-                      onMouseLeave={handleMouseLeave}
-                    />
-                  </animated.g>
-                ))}
+                  // [○] mapRegionCity 
+                  let citySpecificColorClass = "";
+
+                  if (city.active === cityItem.id) {
+                    citySpecificColorClass = "fill-emerald-600";
+                  } else if (cityColoringParams && cityColoringParams.cityTotalsMap.has(cityItem.id)) {
+                    const itemTotal = cityColoringParams.cityTotalsMap.get(cityItem.id)!; // Sabemos que existe
+                    citySpecificColorClass = calculateItemColorClass(
+                      itemTotal,
+                      cityColoringParams.logMin,
+                      cityColoringParams.logMax,
+                      cityColoringParams.currentColors,
+                    );
+                  }
+
+                  return (
+                    <animated.g {...style}>
+                      <title>{cityItem.name}</title>
+                      <animated.path
+                        id={cityItem.id}
+                        d={cityItem.d}
+                        data-name={cityItem.name}
+                        data-type="city"
+                        className={classNames(
+                          "path-hover",
+                          "cls-city",
+                          citySpecificColorClass
+                        )}
+                        onMouseEnter={() => handleMouseEnter(cityItem.name)}
+                        onMouseLeave={handleMouseLeave}
+                      />
+                    </animated.g>
+                  );
+                })}
+
               </g>
 
               <circle // . . . . . . .
                 // HERE c1Ref 🦀
-                id = "🦀" 
+                id="🦀"
                 ref={c1Ref}
                 cx={30}
                 cy={30}
@@ -532,6 +649,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
               />
             </animated.svg>
           </div>
+
         </div>
 
 
