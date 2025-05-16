@@ -1,4 +1,3 @@
-// HERE MapMenu
 import React, {
   useState,
   useCallback,
@@ -11,8 +10,6 @@ import {
   useSpring,
   useTransition,
   animated,
-  useSpringValue,
-  useSpringRef,
 } from "@react-spring/web";
 
 import {
@@ -23,11 +20,9 @@ import {
   DropdownMenu,
   Heading,
   Separator,
-  Text
 } from "@radix-ui/themes";
 
 import classNames from "classnames";
-import { useWindowResize } from "../../hooks/useWindowResize";
 
 import { axiosDefault } from "../../services/axios";
 import handleAxiosError from "../../utils/handleAxiosError";
@@ -39,7 +34,171 @@ import regionData from "../../assets/BahiaRegiao.json";
 
 import { COLORSTW, VARIABLES, YEARS } from "../../assets/auxData";
 
-// . . . . . . .
+
+const SVG_TEST = () => ( // [MEDIA] SVG_TEST
+  <svg
+    fill="none"
+    viewBox="0 0 24 24"
+    x={562.684}
+    y={481.65}
+    width={12}
+    height={12}
+  >
+    <g fill="#292D32">
+      <path d="M16.65 20.2v.29a9.513 9.513 0 0 1-10.38-.06v-.23c0-2.33 2.33-4.23 5.19-4.23 2.87 0 5.19 1.9 5.19 4.23Z" />
+      <path
+        d="M21 12.5c0 3.35-1.73 6.29-4.35 7.99v-.29c0-2.33-2.32-4.23-5.19-4.23-2.86 0-5.19 1.9-5.19 4.23v.23A9.487 9.487 0 0 1 2 12.5C2 7.25 6.25 3 11.5 3c1.31 0 2.56.26 3.7.74-.13.4-.2.82-.2 1.26 0 .75.21 1.46.58 2.06.2.34.46.65.76.91C17.04 8.61 17.97 9 19 9c.44 0 .86-.07 1.25-.21.48 1.14.75 2.4.75 3.71Z"
+      />
+      <path d="M21.97 2.33A3.944 3.944 0 0 0 19 1a3.995 3.995 0 0 0-4 4c0 .75.21 1.46.58 2.06.2.34.46.65.76.91C17.04 8.61 17.97 9 19 9c.44 0 .86-.07 1.25-.21.92-.29 1.69-.92 2.17-1.73.21-.34.37-.73.46-1.13.08-.3.12-.61.12-.93 0-1.02-.39-1.96-1.03-2.67Zm-1.48 3.4h-.74v.78c0 .41-.34.75-.75.75s-.75-.34-.75-.75v-.78h-.74c-.41 0-.75-.34-.75-.75s.34-.75.75-.75h.74v-.71c0-.41.34-.75.75-.75s.75.34.75.75v.71h.74a.749.749 0 1 1 0 1.5ZM11.46 14.73a2.81 2.81 0 1 0 0-5.62 2.81 2.81 0 0 0 0 5.62Z" />
+    </g>
+  </svg>
+)// . . . . . . .
+
+const SVG_TEST2 = () => ( // [MEDIA] SVG_TEST
+  <svg
+
+    width={22}
+    height={22}
+    x={562.684}
+    y={481.65}
+  >
+    <g >
+      <circle cx="11" cy="11" r="11" fill="green" />
+      <text x="11" y="12.5" font-size="20" text-anchor="middle" fill="white" font-family="Arial" dominant-baseline="middle">
+        2
+      </text>
+    </g>
+  </svg>
+)// . . . . . . .
+
+interface lixo { w: number; h: number; x: number; y: number; qtd: number;  correction: number }
+
+// NOTE
+//  As dimensoes dos a
+const SVG_MARKER = ({ w, h, x, y, qtd, correction }: lixo) => ( // [MEDIA] SVG_MARKER
+  <svg
+    data-name="Marker"
+    viewBox="0 0 587 622"
+    width={w}
+    height={h}
+    x={x - w / 2} // menos metade da largura
+    y={y - h / 2} // menos metade da altura
+    className=" overflow-visible pointer-events-none"
+  >
+
+    <defs>
+      <filter id="shadow" x="-100%" y="-100%" width="200%" height="200%">
+        <feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="black" flood-opacity="0.4" />
+      </filter>
+    </defs>
+
+    <g id="Marker">
+      <rect
+        width={585}
+        height={620}
+        x={1}
+        y={1}
+        rx={75}
+        ry={75}
+        style={{
+          fill: "#0952aa",
+          strokeWidth: 0,
+        }}
+        filter="url(#shadow)" // Aqui está o segredo!
+      />
+
+      <g id="i">
+        <path
+          d="M138 580.2h311L363 423V189.3h26.1v-52.2H197.9v52.2H224V423l-86 157.2z"
+          style={{
+            fill: "#9ee3e5",
+            strokeWidth: 0,
+          }}
+        />
+        <path
+          d="M250.1 451.7 198 554.2h191.2l-37.4-69.5c-40.8-.9-75.6-14.8-101.7-33Z"
+          style={{
+            fill: "#34b515",
+            strokeWidth: 0,
+          }}
+        />
+        <path
+          d="m250.1 451.7 45.2 102.5h93.8l-37.4-69.5c-40.8-.9-75.6-14.8-101.7-33Z"
+          style={{
+            fill: "#239b02",
+            strokeWidth: 0,
+          }}
+        />
+        <path
+          d="M224 189.3h139v43.4"
+          style={{
+            fill: "#69bcba",
+            strokeWidth: 0,
+          }}
+        />
+        <path
+          d="M267.4 319.6v-26.1c0-5.2-3.5-8.7-8.7-8.7s-8.7 4.3-8.7 8.7v26.1h17.4ZM250.1 337v74.7c0 5.2 3.5 8.7 8.7 8.7s8.7-4.3 8.7-8.7V337h-17.4Z"
+          style={{
+            fill: "#e1f9f8",
+            strokeWidth: 0,
+          }}
+        />
+        <path
+          d="M284.8 137.1v300.6c0 5.2 3.5 9.6 8.7 9.6s8.7-4.3 8.7-9.6V137.1h-17.4Z"
+          style={{
+            fill: "#42a8a3",
+            strokeWidth: 0,
+          }}
+        />
+        <path
+          d="M292.6 78c-19.1-22.6-52.1-40-73-35.6-7.8 20 5.2 54.7 24.3 77.3 19.1 22.6 40 26.1 60.8 21.7 7.8-20 7-40.8-12.2-63.4Z"
+          style={{
+            fill: "#239b02",
+            strokeWidth: 0,
+          }}
+        />
+        <path
+          d="M304.8 141.5c7.8-20 7-40.8-12.2-63.4-19.1-22.6-52.1-40-73-35.6"
+          style={{
+            fill: "#34b515",
+            strokeWidth: 0,
+          }}
+        />
+        <path
+          d="M294.4 78c19.1-22.6 52.1-40 73-35.6 7.8 20-5.2 54.7-24.3 77.3-19.1 22.6-40 26.1-60.8 21.7-7.8-20-7-40.8 12.2-63.4Z"
+          style={{
+            fill: "#239b02",
+            strokeWidth: 0,
+          }}
+        />
+        <path
+          d="M282.2 141.5c-7.8-20-7-40.8 12.2-63.4 19.1-22.6 52.1-40 73-35.6"
+          style={{
+            fill: "#34b515",
+            strokeWidth: 0,
+          }}
+        />
+      </g>
+
+
+      <g id='indicator'>
+        <circle cx="570" cy="1" r="150" fill="pink" />
+        <text x="570" y="12.5" font-size="200" text-anchor="middle" fill="black" font-family="Arial" dominant-baseline="middle">
+          {qtd}
+        </text>
+      </g>
+
+
+    </g>
+  </svg>
+); // . . . . . . .
+
+
+
+
+
+
+const SCALE_ADJUSTMENT = 0.35
 
 interface Region {
   id: string;
@@ -66,7 +225,9 @@ const mapRegion: Region[] = regionData;
 
 // 🧿
 
+
 const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
+  let CORRECTION = 1
   const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
   const c1Ref = useRef<SVGCircleElement | null>(null); // HERE c1Ref
   const originalBBoxRef = useRef<BoundingBox | null>(null); // HERE originalBBoxRef
@@ -123,31 +284,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     }
   }, []); // . . . . . . .
 
-  useEffect(() => { //HERE uE
-    if (c1Ref.current) {
-      const bbox = c1Ref.current.getBBox();
-      const rect = c1Ref.current.getBoundingClientRect();
-      console.log(" useEffect log");
-      // // [LOG] c1Rect
-      // console.log("rect ↯");
-      // console.log("x:", rect.x);
-      // console.log("y:", rect.y);
-      // console.log("width:", rect.width);
-      // console.log("height:", rect.height);
-      // console.log(". . . . . . . . . . . . ");
-      // // [LOG] c1Box
-      // console.log("c1Box useEffect log ↯");
-      // console.log("x:", bbox.x);
-      // console.log("y:", bbox.y);
-      // console.log("width:", bbox.width);
-      // console.log("height:", bbox.height);
-      // console.log(". . . . . . . . . . . . ");
-      // console.log("currentScale:", currentScale);
-      console.log("── ⋙── ── ── ── ── ── ── ──➤");
-    }
-
-  }, [crabPos, currentScale]); // ── ⋙── ── ── ── ── ── ── ──➤
-
   const getRegionValues = useCallback(async () => { // (✪) getRegionValues 
     const axios = axiosDefault;
     try {
@@ -201,7 +337,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       }
     }
 
-  }, [year, variable]) 
+  }, [year, variable])
   //  . . .
   useEffect(() => { // (●) uE
     getBahiaValues(); // (○) getBahiaValues
@@ -283,27 +419,8 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     const scaleY = svgRect.height / rect.height;
     const maxScale = Math.min(scaleX, scaleY);
 
-
-    const SCALE_ADJUSTMENT = 0.35
     setCrabPos({ X: CBX, Y: CBY }); // ↺ setCrabPos
     setCurrentScale(maxScale - SCALE_ADJUSTMENT); // ↺ setCurrentScale
-    // (maxScale - 0.3) -0.3 is an adjustment on the scale.
-
-    // // [LOG] rect
-    // console.log("target rect ↯");
-    // console.log("x:", rect.x);
-    // console.log("y:", rect.y);
-    // console.log("width:", rect.width);
-    // console.log("height:", rect.height);
-    // console.log(". . . . . . . . . . . . ");
-
-    // // [LOG] bbox
-    // console.log("target bbox ↯");
-    // console.log("x:", bbox.x);
-    // console.log("y:", bbox.y);
-    // console.log("width:", bbox.width);
-    // console.log("height:", bbox.height);
-    // console.log("✦────────────────────────────➤");
 
     api.start({
       transform: `scale(${maxScale - SCALE_ADJUSTMENT
@@ -375,7 +492,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     const min = Math.min(...totals);
     const max = Math.max(...totals);
 
-    const dataIsUniform = min === max; 
+    const dataIsUniform = min === max;
     let logMin = 0;
     let logMax = 0;
 
@@ -446,12 +563,12 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     // Os itens da transição (`item` em `transition((style, item) => ...)`)
     // já contêm `item.id` e `item.total` (se `mapRegionCity` tiver `total`).
     // Se `mapRegionCity` não tiver `total`, precisamos de um mapa como no passo anterior.
-    // Seu `RegionCity` tem `City[]`, e `City` não tem `total`.
+    // `RegionCity` tem `City[]`, e `City` não tem `total`.
     // `regionValues` (que é `regionValuesI[] = { total: number; name_id: string }[]`)
     // é quem tem os totais para os municípios.
     // Então, precisamos de um mapa para os totais dos municípios.
-    const cityTotalsMap = new Map(regionValues.map(rv => [rv.name_id, rv.total]));
 
+    const cityTotalsMap = new Map(regionValues.map(rv => [rv.name_id, rv.total]));
 
     return {
       logMin,
@@ -462,8 +579,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     };
   }, [regionValues, variable]); // Depende de regionValues e da variável selecionada
 
-  return (
-    // ── ◯─◡◠◡◠◡◠◡◠ DOM ◡◠◡◠◡◠─⫸ 🌑
+  return ( // ── ◯─◡◠◡◠◡◠◡◠ DOM ◡◠◡◠◡◠─⫸ 🌑
     <>
       <div
         className="flex gap-10 w-full"
@@ -606,7 +722,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
                   if (city.active === cityItem.id) {
                     citySpecificColorClass = "fill-emerald-600";
                   } else if (cityColoringParams && cityColoringParams.cityTotalsMap.has(cityItem.id)) {
-                    const itemTotal = cityColoringParams.cityTotalsMap.get(cityItem.id)!; // Sabemos que existe
+                    const itemTotal = cityColoringParams.cityTotalsMap.get(cityItem.id)!;
                     citySpecificColorClass = calculateItemColorClass(
                       itemTotal,
                       cityColoringParams.logMin,
@@ -637,16 +753,20 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
               </g>
 
+
               <circle // . . . . . . .
                 // HERE c1Ref 🦀
                 id="🦀"
                 ref={c1Ref}
-                cx={30}
-                cy={30}
-                r={12}
-                className="fill-lime-950"
-                transform={`translate(${crabPos.X}, ${crabPos.Y})`}
+                cx={562.684}
+                cy={481.65}
+                r={12 / currentScale} // Mantenho o tamanho original do elemento sem variar junto com zoom do canvas
+                className="fill-lime-950 pointer-events-none"
+              // transform={`translate(${crabPos.X}, ${crabPos.Y})`}
               />
+
+              <SVG_MARKER w={32 / currentScale} h={32 / currentScale} x={562.684} y={481.65} qtd = {3} correction={currentScale} />
+
             </animated.svg>
           </div>
 

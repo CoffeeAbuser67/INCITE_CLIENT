@@ -3,11 +3,12 @@
 import { lazy } from "@loadable/component";
 import Default from "./layouts/Default";
 import AuthLayout from "./layouts/Auth";
-import RouteProtector from "./components/guard/RouteProtector";
 
 const Home = lazy(() => import("./pages/home/Index"));
 const Settings = lazy(() => import("./pages/settings/Settings"));
 const Login = lazy(() => import("./pages/auth/Login"));
+const AuxMap = lazy(() => import("./pages/aux_MapPositioning"));
+
 
 // . . . . . . . . . ➤
 
@@ -26,23 +27,31 @@ const routes = [
   {
     path: "/",
     element: (
-        <Default /> 
+      <Default />
     ),
     children: [
       {
         path: "", // [ROUTE]  /
-        element: <Home/>,
+        element: <Home />,
       },
-      
-      
+
+
       {
         path: "settings", // [ROUTE] /settings
         element: (
-          <RouteProtector allowedRoles={[ ROLES.Admin, ROLES.Super]}>
-            <Settings />
-          </RouteProtector>
+          <Settings />
         ),
       },
+
+
+      {
+        path: "auxMapPos", // [ROUTE] /auxMapPos
+        element: (
+          <AuxMap />
+        ),
+      },
+
+
 
     ],
   },
