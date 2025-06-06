@@ -223,8 +223,6 @@ const mapRegionCity: RegionCity = regionCityData;
 // [●] mapRegion
 const mapRegion: Region[] = regionData;
 
-// 🧿
-
 
 const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
   let CORRECTION = 1

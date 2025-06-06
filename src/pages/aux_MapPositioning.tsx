@@ -6,10 +6,6 @@ import React, {
 } from "react";
 
 import {
-    animated, 
-} from "@react-spring/web";
-
-import {
     Box,
     Button, 
     Card,
@@ -17,7 +13,7 @@ import {
     Text, 
 } from "@radix-ui/themes";
 
-import regionCityData from "../assets/BahiaRegiaoMuni.json"; // Caminho para seus dados
+import regionCityData from "../assets/BahiaCidades3.json"; // Caminho para seus dados
 // . . . . . . .
 
 interface CityDef { 
@@ -44,7 +40,32 @@ interface AllCalculatedCenters {
 const mapRegionCity: RegionCityData = regionCityData;
 
 
-const MapMenuBBoxCalculator = () => {
+// NOTE
+// MapMenuBBoxCalculator 
+// Estratégia para o Componente Utilitário de Pré-cálculo:
+
+// 1 Carregar Todas as Cidades: Obter uma lista plana de todos os objetos de cidade de mapRegionCity.
+
+// 2 Estado para Controle:
+//   allCities: Array com todas as cidades.
+//   currentCityIndex: Índice da cidade atual na lista allCities que está sendo processada.
+//   cityToMeasure: O objeto da cidade que está sendo renderizado atualmente para medição do BBox.
+//   cityPathRef: Uma useRef para o elemento <path> do cityToMeasure.
+//   calculatedCenters: Um objeto para acumular os IDs das cidades e seus centros calculados.
+//   startCalculation: Um booleano para iniciar o processo.
+//   isProcessing: Um booleano para indicar que uma medição está em andamento e evitar cliques múltiplos.
+
+// 3 Renderização Seletiva: No JSX, em vez de renderizar todas as regiões ou as cidades de uma região ativa, vamos renderizar apenas o path do cityToMeasure.
+
+// 4 Processo Iterativo com useEffect:
+//   Um useEffect observará startCalculation e currentCityIndex para definir qual é a próxima cityToMeasure.
+//   Outro useEffect observará cityToMeasure e cityPathRef.current. Quando ambos estiverem prontos (ou seja, a cidade está definida e seu path foi renderizado e o ref atribuído), ele calculará o getBBox(), armazenará o centro e avançará o currentCityIndex.
+
+// 5 Coleta e Saída dos Dados: Quando todas as cidades forem processadas, o objeto calculatedCenters será logado no console como uma string JSON, pronta para ser copiada.
+
+
+
+const MapMenuBBoxCalculator = () => {//  ★ ◯⫘⫘⫘⫘⫘⫘⫘⫘ MapMenuBBoxCalculator ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
     const svgRef = useRef<SVGSVGElement | null>(null);
     const cityPathRef = useRef<SVGPathElement | null>(null); // Ref para o path da cidade atual
 
@@ -158,7 +179,7 @@ const MapMenuBBoxCalculator = () => {
         setStartCalculation(true); // Dispara o processo
     };
 
-    return ( // [●] DOM
+    return ( // ── ── ⋙─◡◠◡◠◡◠ DOM ◡◠◡◠◡◠◡◠───➤
         <Box 
             className = "mt-20"
             style={{ padding: "20px", fontFamily: "sans-serif", maxWidth: "800px", }}>
@@ -197,19 +218,19 @@ const MapMenuBBoxCalculator = () => {
                 id="canvas-wrapper-calculator"
                 mt="4"
                 style={{
-                    width: "715px", // Mantenha as dimensões do seu SVG original
-                    height: "760px",
+                    width: "602px", // Mantenha as dimensões do seu SVG original
+                    height: "640px",
                     overflow: "hidden", // Esconde partes do path que saem do viewBox, se houver
-                    border: "1px dashed #ccc",
+                    border: "1px dashed c#cc",
                     position: "relative", // Importante se for querer esconder o SVG visualmente
                     // Para esconder visualmente mas manter no DOM para getBBox:
                     // opacity: 0, pointerEvents: 'none', position: 'absolute', top: '-9999px', left: '-9999px'
                 }}
             >
-                <animated.svg // ou apenas <svg> se não usar animações aqui
+                <svg // ou apenas <svg> se não usar animações aqui
                     id="SVGCanvasCalculator"
                     ref={svgRef}
-                    viewBox="0 0 715 760" // Crucial que seja o mesmo do seu mapa original
+                    viewBox="0 0 602 640" // WARN Crucial que seja o mesmo do seu mapa original
                     style={{ width: "100%", height: "100%" }}
                 >
                     <g>
@@ -225,7 +246,7 @@ const MapMenuBBoxCalculator = () => {
                             />
                         )}
                     </g>
-                </animated.svg>
+                </svg>
             </Box>
             <Box mt="4" p="3" style={{ background: "#f9f9f9", borderRadius: "8px" }}>
                 <Heading size="3" mb="2">Instruções de Uso:</Heading>
@@ -239,6 +260,6 @@ const MapMenuBBoxCalculator = () => {
             </Box>
         </Box>
     );
-};
+}; //  ★ ◯⫘⫘⫘⫘⫘⫘⫘⫘ MapMenuBBoxCalculator ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
 
 export default MapMenuBBoxCalculator;

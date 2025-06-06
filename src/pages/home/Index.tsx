@@ -66,7 +66,7 @@ import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
 
 //  WARN Xique-xique | santa teresinha | Muquém de São Francisco
 
-// 🧿
+
 
 // 
 const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤ 

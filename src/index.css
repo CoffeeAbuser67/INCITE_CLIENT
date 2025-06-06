@@ -6,10 +6,19 @@
 .path-hover {
     transition: transform 0.4s ease, fill 0.4s ease;
   }
-  
+
+
   .path-hover:hover {
     fill: rgb(5 150 105);
   }
+
+  .path-hover2 {
+    transition: transform 0.4s ease, fill 0.4s ease;
+  }
+  .path-hover2:hover {
+    fill: rgb(212, 212, 212);
+  }
+
 
   svg{
     pointer-events: auto;

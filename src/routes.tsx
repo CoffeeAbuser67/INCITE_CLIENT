@@ -5,6 +5,8 @@ import Default from "./layouts/Default";
 import AuthLayout from "./layouts/Auth";
 
 const Home = lazy(() => import("./pages/home/Index"));
+
+const Incite = lazy(() => import("./pages/home/IndexOfficial"));
 const Settings = lazy(() => import("./pages/settings/Settings"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const AuxMap = lazy(() => import("./pages/aux_MapPositioning"));
@@ -33,6 +35,12 @@ const routes = [
       {
         path: "", // [ROUTE]  /
         element: <Home />,
+      },
+
+
+      {
+        path: "incite", // [ROUTE]  /
+        element: <Incite />,
       },
 
 
