@@ -1,505 +1,243 @@
-import { useEffect, useState } from "react";
-import {
-  Badge,
-  Box,
-  Card,
-  Flex,
-  IconButton,
-  Button,
-  Heading,
-  Table,
-  Dialog,
-  Text,
-  TextField,
-  Switch,
-  AlertDialog,
-} from "@radix-ui/themes";
-import "yup-phone-lite";
-import { useFormik } from "formik";
-import handleAxiosError from "../../utils/handleAxiosError";
-import useAxiosErrorInterceptor from "../../hooks/useAxiosErrorInterceptor";
-import * as Yup from "yup";
-import useAuthService from "../../services/authService";
-import useUserService from "../../services/userService";
-import { useUserStore } from "../../store/userStore";
-import Loader from "../../components/Loader";
-import { toast } from "react-toastify";
+import React, { useCallback, useEffect, useState } from 'react';
 
-// [●] ROLES
-const ROLES = {
-  User: 4,
-  Staff: 3,
-  Admin: 2,
-  Super: 1
-};
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
+import TextAlign from '@tiptap/extension-text-align';
+import TextStyle from '@tiptap/extension-text-style';
 
-// <●> DeleteSVG
-const DeleteSVG = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={18}
-    height={18}
-    fill="#990000"
-    viewBox="0 0 24 24"
-  >
-    <path
-      stroke="#990000"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 7h16M6 10l1.701 9.358A2 2 0 0 0 9.67 21h4.662a2 2 0 0 0 1.968-1.642L18 10M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2H9V5Z"
-    />
-  </svg>
-);
+import { Box } from '@radix-ui/themes';
+import { Mark, mergeAttributes } from '@tiptap/core';
 
-// <●> AddButtonSVG
-const AddButtonSVG = () => (
-  <>
-    <svg
-      width="24px"
-      height="24px"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        id="Vector"
-        d="M6 12H12M12 12H18M12 12V18M12 12V6"
-        stroke="#eceeec"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  </>
-);
 
-// <●> UserIconSVG
-const UserIconSVG: React.FC<{ u_color: string }> = ({ u_color }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={24}
-    height={24}
-    fill="none"
-    viewBox="0 0 24 24"
-  >
-    <path
-      fill={u_color}
-      fillRule="evenodd"
-      d="M6 8a6 6 0 1 1 12 0A6 6 0 0 1 6 8ZM5.43 16.902C7.057 16.223 9.224 16 12 16c2.771 0 4.935.22 6.559.898 1.742.727 2.812 1.963 3.382 3.76A1.03 1.03 0 0 1 20.959 22H3.035c-.69 0-1.188-.67-.978-1.335.568-1.797 1.634-3.033 3.374-3.762Z"
-      clipRule="evenodd"
-    />
-  </svg>
-); // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+const TextClass = Mark.create({
+  name: 'textClass',
+  addAttributes() {
+    return {
+      class: {
+        default: null,
+        parseHTML: element => element.getAttribute('class'),
+        renderHTML: attributes => {
+          if (!attributes.class) {
+            return {};
+          }
+          return { class: attributes.class };
+        },
+      },
+    };
+  },
 
-// <●> AddUser
-const AddUser = () => {
-  const [open, setOpen] = useState(false);
+  parseHTML() {
+    return [{ tag: 'span[class]', getAttrs: node => node.getAttribute('class') ? {} : false }];
+  },
 
-  const axios = useAxiosErrorInterceptor();
-  const { loadUsers } = useUserService();
+  renderHTML({ HTMLAttributes }) {
+    return ['span', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+  },
 
-  const passwordRules = /^(?=.*\d).{8,}$/;
-  // min 8 characters, 1 upper case letter, 1 lower case letter, 1 numeric digit.
+  addCommands() {
+    return {
+      setTextClass:
+        (className: string) =>
+          ({ commands }: { commands: any }) => {
+            if (!className) {
+              return commands.unsetMark(this.name);
+            }
+            return commands.setMark(this.name, { class: className });
+          },
+    } as Partial<Record<string, any>>;
+  },
 
-  const validationSchema = Yup.object({
-    first_name: Yup.string().required("Patient name is required"),
-    last_name: Yup.string().required("Parent name is required"),
-    email: Yup.string().email("Invalid email address"),
+});
 
-    password1: Yup.string()
-      .matches(passwordRules, {
-        message:
-          "Password must have: 1 numeric digit, and at least 8 characters",
-      })
-      .required("Required"),
-    password2: Yup.string()
-      .oneOf([Yup.ref("password1"), undefined], "Passwords must match")
-      .required("Required"),
-  });
 
-  const formik = useFormik({
-    initialValues: {
-      first_name: "",
-      last_name: "",
-      email: "",
-      password1: "",
-      password2: "",
-      isAdmin: false, // Add checkbox initial value
-    },
+const Toolbar = ({ editor }) => {
+  if (!editor) return null;
 
-    validationSchema,
+  // Opções para o seletor de tamanho
+  const FONT_OPTIONS = [
+    { label: 'Pequeno', value: 'text-small' },
+    { label: 'Grande', value: 'text-large' },
+    { label: 'Subtítulo', value: 'text-subtitle' },
+  ];
 
-    onSubmit: async (values) => {
-      // _PIN_ ✦── Add User ✉ ──➤
+  // Lógica para o seletor de tamanho
+  const activeFontSize = FONT_OPTIONS.find(option => editor.isActive('textClass', { class: option.value }))?.value || '';
 
-      console.log("start values:", values); // [LOG] Patient saved
+  const handleFontSizeChange = (e) => {
+    const className = e.target.value;
+    editor.chain().focus().setTextClass(className).run();
+  };
 
-      const { isAdmin, ...rest } = values;
-      let group_id = 3;
-      if (isAdmin) {
-        group_id = 2;
-      }
-      const newValues = { ...rest, user_group: group_id };
-      console.log("end values:", newValues); // [LOG] Patient saved
-
-      try {
-        const url = "/auth/registration/";
-        const res = await axios.post(url, newValues);
-        console.log("response status:", res.status); // [LOG] response status
-        await loadUsers();
-        toast.success("User created!");
-      } catch (err) {
-        console.log("err", err); // [LOG] err
-        handleAxiosError(err);
-      }
-      setOpen(false);
-    },
-  });
-
-  return (
-    <>
-      <Dialog.Root open={open} onOpenChange={setOpen}>
-        <Dialog.Trigger>
-          {/* //<○>  AddButtonSVG */}
-          <IconButton color="orange" className="cursor-pointer">
-            <AddButtonSVG />
-          </IconButton>
-        </Dialog.Trigger>
-
-        <Dialog.Content maxWidth="450px">
-          <form onSubmit={formik.handleSubmit}>
-            <Dialog.Title>Add User</Dialog.Title>
-
-            <Flex align="center" justify={"between"} gap="2" my="5">
-              <Dialog.Description size="2">
-                Create a new User.
-              </Dialog.Description>
-
-              <Flex gap="4">
-                <Text size="2" weight="bold">
-                  Admin
-                </Text>
-                <Switch
-                  checked={formik.values.isAdmin}
-                  onCheckedChange={(checked) =>
-                    formik.setFieldValue("isAdmin", checked)
-                  }
-                  name="isAdmin"
-                  size="2"
-                />
-              </Flex>
-            </Flex>
-
-            <Flex direction="column" gap="3">
-              <label>
-                <Text as="div" size="2" mb="1" weight="bold">
-                  First Name
-                </Text>
-                <TextField.Root
-                  type="text"
-                  name="first_name"
-                  value={formik.values.first_name}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                {formik.touched.first_name && formik.errors.first_name && (
-                  <Text size="2" color="red">
-                    {formik.errors.first_name}
-                  </Text>
-                )}
-              </label>
-
-              <label>
-                <Text as="div" size="2" mb="1" weight="bold">
-                  Last Name
-                </Text>
-                <TextField.Root
-                  type="text"
-                  name="last_name"
-                  value={formik.values.last_name}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                {formik.touched.last_name && formik.errors.last_name && (
-                  <Text size="2" color="red">
-                    {formik.errors.last_name}
-                  </Text>
-                )}
-              </label>
-
-              <label>
-                <Text as="div" size="2" mb="1" weight="bold">
-                  Email
-                </Text>
-                <TextField.Root
-                  type="email"
-                  name="email"
-                  value={formik.values.email}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-                {formik.touched.email && formik.errors.email && (
-                  <Text size="2" color="red">
-                    {formik.errors.email}
-                  </Text>
-                )}
-              </label>
-
-              <label>
-                <Text as="div" size="2" mb="1" weight="bold">
-                  Password
-                </Text>
-                <TextField.Root
-                  type="password"
-                  name="password1"
-                  value={formik.values.password1}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-
-                {formik.touched.password1 && formik.errors.password1 && (
-                  <Text size="2" color="red">
-                    {formik.errors.password1}
-                  </Text>
-                )}
-              </label>
-
-              <label>
-                <Text as="div" size="2" mb="1" weight="bold">
-                  Confirm Password
-                </Text>
-                <TextField.Root
-                  type="password"
-                  name="password2"
-                  value={formik.values.password2}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
-
-                {formik.touched.password2 && formik.errors.password2 && (
-                  <Text size="2" color="red">
-                    {formik.errors.password2}
-                  </Text>
-                )}
-              </label>
-
-              {/* -------------------------------------------- */}
-            </Flex>
-
-            <Flex gap="3" mt="4" justify="end">
-              <Dialog.Close>
-                <Button variant="soft" color="gray">
-                  Cancel
-                </Button>
-              </Dialog.Close>
-
-              <Button type="submit">Save</Button>
-            </Flex>
-          </form>
-        </Dialog.Content>
-      </Dialog.Root>
-    </>
-  );
-}; // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-
-// <●> RemoveUser
-const RemoveUser = ({
-  user_id,
-  user_name,
-}: {
-  user_id: number | undefined;
-  user_name: string | undefined;
-}) => {
-  const axios = useAxiosErrorInterceptor();
-  const { loadUsers } = useUserService();
-  const { logout } = useAuthService();
-  const active_user = useUserStore((state) => state.user);
-
-  // _PIN_ ✦── peformRemove ✉ ──➤
-  const peformRemove = async () => {
-    try {
-      console.log("id is :", user_id); // [LOG]
-
-      const url = `/auth/deleteUser/${user_id}/`;
-      if (user_id == active_user?.pkid) {
-        logout();
-      }
-      const res = await axios.delete(url);
-      console.log("response :", res); // [LOG]
-
-      await loadUsers();
-    } catch (err) {
-      console.log("err", err); // [LOG]
-      handleAxiosError(err);
+  const addImage = () => {
+    const url = window.prompt('URL da Imagem:'); // Placeholder
+    if (url) {
+      editor.chain().focus().setImage({ src: url }).run();
     }
   };
 
+  // Classes base para os botões
+  const baseButtonClass = "px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500";
+  const activeButtonClass = "bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700";
+
   return (
-    <>
-      <AlertDialog.Root>
-        <AlertDialog.Trigger>
-          <IconButton
-            color="crimson"
-            variant="ghost"
-            size="1"
-            className="cursor-pointer"
-          >
-            {/* // <○> DeleteSVG */}
-            <DeleteSVG />
-          </IconButton>
-        </AlertDialog.Trigger>
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 p-2 bg-gray-100 border-b border-gray-300">
 
-        <AlertDialog.Content maxWidth="500px">
-          {user_id == active_user?.pkid ? (
-            <>
-              <AlertDialog.Title>Delete your own user?</AlertDialog.Title>
-              <AlertDialog.Description size="2">
-                Are you sure you want to delete your user? This action is
-                permanent and cannot be undone.
-              </AlertDialog.Description>
-            </>
-          ) : (
-            <>
-              <AlertDialog.Title>Delete {user_name}</AlertDialog.Title>
-              <AlertDialog.Description size="2">
-                Are you sure you want to delete this user? This action is
-                permanent and cannot be undone.
-              </AlertDialog.Description>
-            </>
-          )}
+      {/* --- BOTÃO DE NEGRITO CORRIGIDO --- */}
+      <button
+        onClick={() => editor.chain().focus().toggleBold().run()} // A CORREÇÃO ESTÁ AQUI
+        className={`${baseButtonClass} ${editor.isActive('bold') ? activeButtonClass : ''}`}
+      >
+        Negrito
+      </button>
 
-          <Flex gap="3" justify="end">
-            <AlertDialog.Cancel>
-              <Button variant="soft" color="gray">
-                Cancel
-              </Button>
-            </AlertDialog.Cancel>
+      <button
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className={`${baseButtonClass} ${editor.isActive('italic') ? activeButtonClass : ''}`}
+      >
+        Itálico
+      </button>
 
-            <AlertDialog.Action>
-              <Button onClick={peformRemove} color="red">
-                Delete
-              </Button>
-            </AlertDialog.Action>
-          </Flex>
-        </AlertDialog.Content>
-      </AlertDialog.Root>
-    </>
+      {/* --- SELETOR DE TAMANHO --- */}
+      <select
+        value={activeFontSize}
+        onChange={handleFontSizeChange}
+        className={baseButtonClass}
+      >
+        <option value="">Normal</option>
+        {FONT_OPTIONS.map(option => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+
+      {/* --- BOTÕES DE ALINHAMENTO --- */}
+      <div className="flex items-center">
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          className={`${baseButtonClass} rounded-r-none ${editor.isActive({ textAlign: 'left' }) ? activeButtonClass : ''}`}
+        >
+          Esq.
+        </button>
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          className={`${baseButtonClass} rounded-none border-x-0 ${editor.isActive({ textAlign: 'center' }) ? activeButtonClass : ''}`}
+        >
+          Centro
+        </button>
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          className={`${baseButtonClass} rounded-l-none border-x-0 ${editor.isActive({ textAlign: 'right' }) ? activeButtonClass : ''}`}
+        >
+          Dir.
+        </button>
+        <button
+          onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+          className={`${baseButtonClass} rounded-l-none ${editor.isActive({ textAlign: 'justify' }) ? activeButtonClass : ''}`}
+        >
+          Just.
+        </button>
+      </div>
+
+      {/* --- BOTÃO DE IMAGEM --- */}
+      <button onClick={addImage} className={baseButtonClass}>
+        Imagem
+      </button>
+    </div>
   );
-}; //  . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+};
 
-// <✪> UserTable
-const UserTable = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const { loadUsers } = useUserService();
 
-  const active_user = useUserStore((state) => state.user);
-  const userList = useUserStore((state) => state.userList);
+const PostEditor = ({ onContentChange }) => {
+  const editor = useEditor({
 
-  useEffect(() => {
-    // _PIN_ ✦── reloadUsers ✉ ──➤
-    const reloadUsers = async () => {
-      console.log("active_user id", active_user?.pkid); //[LOG]
-      setLoading(true);
-      await loadUsers();
-      setLoading(false);
+    extensions: [
+      StarterKit.configure({
+        // O bold, italic, etc., já vêm no StarterKit, por isso eles funcionam
+        heading: { levels: [2, 3] },
+      }),
+      Image,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      TextClass,
+    ],
+
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm sm:prose-base focus:outline-none p-4 min-h-[400px] w-full',
+      },
+    },
+    content: '<p>Comece a escrever o corpo do seu post aqui...</p>',
+    onUpdate: ({ editor }) => onContentChange(editor.getHTML()),
+  });
+
+  return (
+    <div className="border border-gray-300 rounded-lg overflow-hidden">
+      <Toolbar editor={editor} />
+      <EditorContent editor={editor} />
+    </div>
+  );
+
+};
+
+
+function BlogDashboard() {
+  const [postTitle, setPostTitle] = useState('');
+  const [postContent, setPostContent] = useState('');
+
+  const handleSavePost = () => {
+
+    // Agora você slva o título e o conteúdo!
+    const postData = {
+      title: postTitle,
+      content: postContent,
+
     };
+    console.log("Salvando o post no backend:", postData);
+    alert("Post pronto para ser salvo!");
+  };
 
-    reloadUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ── DOM
   return (
-    <>
-      <Card size="4">
-        <Box className="flex flex-col justify-center">
-          <Box className="flex justify-between items-center">
-            <Heading as="h3" size="6" trim="start" mb="2">
-              Users
-            </Heading>
 
-            {/* //<○> AddUser */}
-            <AddUser />
-          </Box>
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">Criar Novo Post</h1>
+      {/* -> Campo de Título Dedicado <- */}
 
-          <Text as="p" size="2" mb="5" color="gray">
-            Create or delete system users.
-          </Text>
-        </Box>
+      <input
+        type="text"
+        value={postTitle}
+        onChange={(e) => setPostTitle(e.target.value)}
+        placeholder="Título do Post"
+        className="w-full text-4xl font-extrabold p-2 mb-6 border-b-2 border-gray-300 focus:border-indigo-500 focus:outline-none"
+      />
 
-        <Table.Root>
-          <Table.Body>
-            {loading ? (
-              <Table.Row>
-                <Table.RowHeaderCell>
-                  <Loader />
-                </Table.RowHeaderCell>
-              </Table.Row>
-            ) : (
-              userList.map((user, i) => (
-                <Table.Row key={i}>
-                  <Table.RowHeaderCell>
-                    {/* // <○> UserIconSVG */}
-                    {user.pkid == active_user?.pkid ? (
-                      <UserIconSVG u_color="green" />
-                    ) : (user.user_group == ROLES["Admin"] || user.user_group == ROLES["Super"] ) ? (
-                      <UserIconSVG u_color="#ffa057" />
-                    ) : (
-                      <UserIconSVG u_color="gray" />
-                    )}
-                  </Table.RowHeaderCell>
+      <PostEditor onContentChange={setPostContent} />
+      <button
+        onClick={handleSavePost}
+        className="mt-6 px-6 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75"
+      >
+        Salvar Post
+      </button>
 
-                  <Table.Cell>
-                    <Text size="2">{`${user?.first_name} ${user?.last_name}`}</Text>{" "}
-                  </Table.Cell>
-
-                  <Table.Cell>
-                    <Text size="2" color="gray">
-                      {user?.email}
-                    </Text>
-                  </Table.Cell>
-
-                  <Table.Cell>
-                    {(user.user_group == ROLES["Admin"] || user.user_group == ROLES["Super"]) ? (
-                      <Badge color="orange" variant="soft" radius="full">
-                        Admin
-                      </Badge>
-                    ) : (
-                      <Badge color="gray" variant="soft" radius="full">
-                        Staff
-                      </Badge>
-                    )}
-                  </Table.Cell>
-
-                  <Table.Cell>
-                    <Flex flexGrow="1" justify="end" align="center">
-                      {/* // <○> RemoveUser */}
-                      <RemoveUser
-                        user_id={user.pkid}
-                        user_name={user.first_name}
-                      />
-                    </Flex>
-                  </Table.Cell>
-                </Table.Row>
-              ))
-            )}
-          </Table.Body>
-        </Table.Root>
-      </Card>
-    </>
+    </div>
   );
-}; // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+}
 
-// ★ Settings ✦───────────────────────────────────────────────────➤
-const Settings = () => {
-  // ── ✦─DOM─➤
-  return (
+
+const Settings = () => { // ★ Settings ✦───────────────────────────────────────────────────➤
+  return (   // ── ◯─◡◠◡◠◡◠ DOM ◡◠◡◠◡◠◡◠─➤
     <div
       id="canvas"
       className="flex flex-col gap-10 justify-center items-center p-6"
     >
-      {/* //<○>  UserTable */}
-      <UserTable />
+      {/* <Box // <○> UserPanel
+      >
+        <UserPanel />
+      </Box> */}
+
+      <Box>
+        <BlogDashboard />
+      </Box>
     </div>
   );
 }; // ★ ✦─────────────────────────────────────────────────────➤

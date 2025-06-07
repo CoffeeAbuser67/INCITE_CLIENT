@@ -35,3 +35,15 @@
     transform-origin: center;
     transform-box: fill-box;
   }
+
+
+  /* Nossas classes customizadas para o editor */
+.text-small {
+  @apply text-sm; /* ~14px */
+}
+.text-large {
+  @apply text-xl; /* ~20px */
+}
+.text-subtitle {
+  @apply text-2xl font-semibold; /* ~24px e com peso de fonte maior */
+}
