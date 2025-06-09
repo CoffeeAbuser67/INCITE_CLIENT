@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Heading, Button, Flex, Card, Text, Dialog, Separator } from '@radix-ui/themes';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
+import { axiosPlain } from '../../utils/axios';
 
 // Props que o nosso gerenciador vai aceitar
 interface GerenciadorProps<T extends { id: number }> {
@@ -16,7 +17,9 @@ interface GerenciadorProps<T extends { id: number }> {
         onSave: (dados: Partial<T>) => void;
         onCancel: () => void;
     }>;
+    endpoint: string; // Ex: 'pesquisadores', 'pesquisas'
 }
+
 
 export const GerenciadorDeAba = <T extends { id: number }>({
     tituloAba,
@@ -24,6 +27,7 @@ export const GerenciadorDeAba = <T extends { id: number }>({
     items,
     renderItem,
     FormularioComponent,
+    endpoint,
 }: GerenciadorProps<T>) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [itemAlvo, setItemAlvo] = useState<T | null>(null);
@@ -38,16 +42,26 @@ export const GerenciadorDeAba = <T extends { id: number }>({
         setIsModalOpen(true);
     };
 
-    const handleSalvar = (dados: Partial<T>) => {
-        if (itemAlvo) {
-            console.log(`EDITANDO ${nomeItem} ID ${itemAlvo.id}`, dados);
-            alert(`${nomeItem} atualizado! (Simulado)`);
-        } else {
-            console.log(`CRIANDO novo ${nomeItem}`, dados);
-            alert(`Novo ${nomeItem} criado! (Simulado)`);
+    const handleSalvar = async (dados: Partial<T>) => {
+
+        try {
+            if (itemAlvo) { // Modo Edição
+                await axiosPlain.put(`/${endpoint}/${itemAlvo.id}/`, dados);
+                alert(`${nomeItem} atualizado com sucesso!`);
+            } else { // Modo Criação
+                await axiosPlain.post(`/${endpoint}/`, dados);
+                alert(`Novo ${nomeItem} criado com sucesso!`);
+            }
+            setIsModalOpen(false);
+            // Aqui, o ideal é chamar uma função para recarregar os dados da página
+            // que será passada como prop, como `onSaveSuccess()`.
+        } catch (err) {
+            console.error(`Erro ao salvar ${nomeItem}:`, err.response?.data || err.message);
+            alert(`Ocorreu um erro ao salvar ${nomeItem}.`);
         }
-        setIsModalOpen(false);
+
     };
+
 
     return (
         <div>
