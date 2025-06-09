@@ -18,7 +18,7 @@ import { mapStore } from "../../store/mapsStore";
 
 
 // . . . . . . .
-// 🧿
+
 const SCALE_ADJUSTMENT = 0.35
 
 interface BoundingBox {

@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 
 
 
-// 🧿
 
 // [MEDIA] ILOGO_SVG
 const ILOGO_SVG = (props: { x: number, y: number }) => (
