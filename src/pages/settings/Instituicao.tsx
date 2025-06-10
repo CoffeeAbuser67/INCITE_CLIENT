@@ -1,19 +1,22 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select } from '@radix-ui/themes';
+import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog } from '@radix-ui/themes';
 import { PlusCircle, Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import { Instituicao, Pesquisador, Pesquisa, AcaoExtensionista, ProdutoInovacao } from './mockData';
 import PostEditorDashboard from './PostEditor';
 import { GerenciadorDeAba } from './GerenciadorDeAba'
 import { axiosPlain } from '../../utils/axios';
 
+
+//🧿
 // HERE Interfaces & types
 
 type Postagem = Instituicao['postagens'][0];
 
-interface PostagensTabProps {
-    postagensIniciais: Postagem[];
-    instituicaoId: number;
+interface SubFormProps<T> {
+    dadosIniciais?: T | null;
+    onSave: (dados: Partial<T>) => void;
+    onCancel: () => void;
 }
 
 interface ListPageProps {
@@ -32,45 +35,25 @@ interface DetailPageProps {
     onBackToList: () => void;
 } // ── ⋙── ── ── ── ── ── ── ──➤
 
-
-const PesquisadorForm = ({ dadosIniciais, onSave, onCancel, instituicaoId, onSaveSuccess }) => {
+const PesquisadorForm = ({ dadosIniciais, onSave, onCancel }) => {
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [area, setArea] = useState(dadosIniciais?.area_atuacao || '');
     const [bolsista, setBolsista] = useState(dadosIniciais?.bolsista || false);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const payload = {
-            nome,
-            area_atuacao: area,
-            bolsista,
-            instituicao: instituicaoId, // <-- Adicionamos a FK da instituição!
-        };
-        // A lógica de `onSave` agora será a chamada de API
-        try {
-            if (dadosIniciais) {
-                await axiosPlain.put(`/pesquisadores/${dadosIniciais.id}/`, payload);
-            } else {
-                await axiosPlain.post('/pesquisadores/', payload);
-            }
-            alert('Pesquisador salvo com sucesso!');
-            onSaveSuccess(); // Chama a função para recarregar a página
-            onCancel(); // Fecha a modal
-        } catch (err) {
-            alert('Erro ao salvar pesquisador.');
-            console.error(err);
-        }
+        onSave({ nome, area_atuacao: area, bolsista });
     };
 
     return (
         <form onSubmit={handleSubmit}>
             <Flex direction="column" gap="3">
-                <label><Text as="div" size="2" weight="bold">Nome</Text><TextField.Root value={nome} onChange={e => setNome(e.target.value)} required /></label>
-                <label><Text as="div" size="2" weight="bold">Área de Atuação</Text><TextField.Root value={area} onChange={e => setArea(e.target.value)} /></label>
+                <label><Text as="div" size="2" mb="1" weight="bold">Nome do Pesquisador</Text><TextField.Root value={nome} onChange={e => setNome(e.target.value)} required /></label>
+                <label><Text as="div" size="2" mb="1" weight="bold">Área de Atuação</Text><TextField.Root value={area} onChange={e => setArea(e.target.value)} /></label>
                 <Text as="label" size="2"><Flex gap="2" align="center"><Switch checked={bolsista} onCheckedChange={setBolsista} /> Bolsista</Flex></Text>
                 <Flex gap="3" mt="4" justify="end">
                     <Button variant="soft" color="gray" type="button" onClick={onCancel}>Cancelar</Button>
-                    <Button type="submit">Salvar</Button>
+                    <Button type="submit">Salvar Pesquisador</Button>
                 </Flex>
             </Flex>
         </form>
@@ -82,33 +65,33 @@ const PesquisaForm = ({ dadosIniciais, onSave, onCancel }) => {
     const [info, setInfo] = useState(dadosIniciais?.info || '');
     const [ano, setAno] = useState(dadosIniciais?.ano_inicio || new Date().getFullYear());
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave({ nome, info, ano_inicio: ano });
-    }
+    };
 
     return (
         <form onSubmit={handleSubmit}>
             <Flex direction="column" gap="3">
                 <label><Text as="div" size="2" weight="bold">Nome da Pesquisa</Text><TextField.Root value={nome} onChange={e => setNome(e.target.value)} required /></label>
-                <label><Text as="div" size="2" weight="bold">Informações</Text><TextField.Root value={info} onChange={e => setInfo(e.target.value)} /></label>
+                <label><Text as="div" size="2" weight="bold">Informações</Text><TextArea value={info} onChange={e => setInfo(e.target.value)} /></label>
                 <label><Text as="div" size="2" weight="bold">Ano de Início</Text><TextField.Root type="number" value={ano} onChange={e => setAno(Number(e.target.value))} /></label>
                 <Flex gap="3" mt="4" justify="end">
                     <Button variant="soft" color="gray" type="button" onClick={onCancel}>Cancelar</Button>
-                    <Button type="submit">Salvar</Button>
+                    <Button type="submit">Salvar Pesquisa</Button>
                 </Flex>
             </Flex>
         </form>
     );
 }
 
-const AcaoExtensionistaForm = ({ dadosIniciais, onSave, onCancel }) => {
+const AcaoExtensionistaForm = ({ dadosIniciais, onSave, onCancel }) => { // ● AcaoExtensionistaForm
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [info, setInfo] = useState(dadosIniciais?.info || '');
     const [ano_inicio, setAnoInicio] = useState(dadosIniciais?.ano_inicio || new Date().getFullYear());
     const [tipo_comunidade, setTipoComunidade] = useState(dadosIniciais?.tipo_comunidade || '');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave({ nome, info, ano_inicio, tipo_comunidade });
     };
@@ -116,10 +99,18 @@ const AcaoExtensionistaForm = ({ dadosIniciais, onSave, onCancel }) => {
     return (
         <form onSubmit={handleSubmit}>
             <Flex direction="column" gap="3">
-                <label><Text as="div" size="2" weight="bold">Nome da Ação</Text><TextField.Root value={nome} onChange={e => setNome(e.target.value)} required /></label>
-                <label><Text as="div" size="2" weight="bold">Informações</Text><TextArea value={info} onChange={e => setInfo(e.target.value)} /></label>
-                <label><Text as="div" size="2" weight="bold">Ano de Início</Text><TextField.Root type="number" value={ano_inicio} onChange={e => setAnoInicio(Number(e.target.value))} /></label>
-                <label><Text as="div" size="2" weight="bold">Tipo de Comunidade</Text>
+                <label>
+                    <Text as="div" size="2" weight="bold">Nome da Ação</Text>
+                    <TextField.Root value={nome} onChange={e => setNome(e.target.value)} required />
+                </label>
+                <label>
+                    <Text as="div" size="2" weight="bold">Informações</Text>
+                    <TextArea value={info} onChange={e => setInfo(e.target.value)} />
+                </label>
+
+
+                <label>
+                    <Text as="div" size="2" weight="bold">Tipo de Comunidade Atendida</Text>
                     <Select.Root value={tipo_comunidade} onValueChange={setTipoComunidade}>
                         <Select.Trigger placeholder="Selecione..." />
                         <Select.Content>
@@ -130,6 +121,15 @@ const AcaoExtensionistaForm = ({ dadosIniciais, onSave, onCancel }) => {
                         </Select.Content>
                     </Select.Root>
                 </label>
+
+
+                <label>
+                    <Text as="div" size="2" weight="bold">Ano de Início</Text>
+                    <TextField.Root type="number" value={ano_inicio} onChange={e => setAnoInicio(Number(e.target.value))} />
+                </label>
+
+
+
                 <Flex gap="3" mt="4" justify="end">
                     <Button variant="soft" color="gray" type="button" onClick={onCancel}>Cancelar</Button>
                     <Button type="submit">Salvar Ação</Button>
@@ -137,14 +137,15 @@ const AcaoExtensionistaForm = ({ dadosIniciais, onSave, onCancel }) => {
             </Flex>
         </form>
     );
-};
 
-const ProdutoInovacaoForm = ({ dadosIniciais, onSave, onCancel }) => {
+}; // . . . 
+
+const ProdutoInovacaoForm = ({ dadosIniciais, onSave, onCancel }) => { // ● AcaoExtensionistaForm
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [info, setInfo] = useState(dadosIniciais?.info || '');
     const [ano_inicio, setAnoInicio] = useState(dadosIniciais?.ano_inicio || new Date().getFullYear());
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave({ nome, info, ano_inicio });
     };
@@ -152,9 +153,18 @@ const ProdutoInovacaoForm = ({ dadosIniciais, onSave, onCancel }) => {
     return (
         <form onSubmit={handleSubmit}>
             <Flex direction="column" gap="3">
-                <label><Text as="div" size="2" weight="bold">Nome do Produto/Inovação</Text><TextField.Root value={nome} onChange={e => setNome(e.target.value)} required /></label>
-                <label><Text as="div" size="2" weight="bold">Informações</Text><TextArea value={info} onChange={e => setInfo(e.target.value)} /></label>
-                <label><Text as="div" size="2" weight="bold">Ano de Início</Text><TextField.Root type="number" value={ano_inicio} onChange={e => setAnoInicio(Number(e.target.value))} /></label>
+                <label>
+                    <Text as="div" size="2" weight="bold">Nome do Produto/Inovação</Text>
+                    <TextField.Root value={nome} onChange={e => setNome(e.target.value)} required />
+                </label>
+                <label>
+                    <Text as="div" size="2" weight="bold">Informações</Text>
+                    <TextArea value={info} onChange={e => setInfo(e.target.value)} />
+                </label>
+                <label>
+                    <Text as="div" size="2" weight="bold">Ano de Início</Text>
+                    <TextField.Root type="number" value={ano_inicio} onChange={e => setAnoInicio(Number(e.target.value))} />
+                </label>
                 <Flex gap="3" mt="4" justify="end">
                     <Button variant="soft" color="gray" type="button" onClick={onCancel}>Cancelar</Button>
                     <Button type="submit">Salvar Produto</Button>
@@ -162,11 +172,15 @@ const ProdutoInovacaoForm = ({ dadosIniciais, onSave, onCancel }) => {
             </Flex>
         </form>
     );
-};
+}; // ── ⋙── ── ── ── ── ── ── ──➤
 
 const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }) => { // ✪ PostagensTab
     const [mode, setMode] = useState<'list' | 'editor'>('list');
     const [postAlvo, setPostAlvo] = useState<Partial<Postagem> | null>(null);
+
+
+    const [postParaExcluir, setPostParaExcluir] = useState<Postagem | null>(null);
+
 
     const mostrarFormCriacao = () => {
         setPostAlvo({ title: '', content: '' });
@@ -202,6 +216,24 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }) => { /
         }
     };
 
+    const handleConfirmarExclusaoPost = async () => {
+        if (!postParaExcluir) return;
+
+        try {
+            await axiosPlain.delete(`/postagens/${postParaExcluir.id}/`);
+            alert(`Postagem "${postParaExcluir.title}" excluída com sucesso!`);
+
+            // Chama a função do pai para recarregar todos os dados da instituição
+            onDataChange();
+        } catch (err) {
+            console.error("Erro ao excluir postagem:", err);
+            alert("Ocorreu um erro ao excluir a postagem.");
+        } finally {
+            // Fecha a modal
+            setPostParaExcluir(null);
+        }
+    };
+
     if (mode === 'editor') {
         return (
             <PostEditorDashboard
@@ -215,6 +247,7 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }) => { /
 
     return (
         <div>
+
             <Flex justify="between" align="center" mb="4">
                 <Heading size="5">Postagens do Blog</Heading>
                 <Button onClick={mostrarFormCriacao}>
@@ -222,7 +255,8 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }) => { /
                 </Button>
             </Flex>
             <div className="grid gap-4">
-                {postagensIniciais.length > 0 ? postagensIniciais.map(post => (
+
+                {postagensIniciais.length > 0 ? postagensIniciais.map((post: Postagem) => (
                     <Card key={post.id}>
                         <Flex justify="between" align="center">
                             <div>
@@ -233,18 +267,42 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }) => { /
                                 <Button variant="soft" onClick={() => mostrarFormEdicao(post)}>
                                     <Pencil className="h-4 w-4" />
                                 </Button>
-                                <Button variant="soft" color="red" onClick={() => alert(`Excluir post ${post.id}`)}>
+
+                                <Button variant="soft" color="red" onClick={() => setPostParaExcluir(post)}>
+
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
+
                             </Flex>
                         </Flex>
                     </Card>
                 )) : <Text color="gray">Nenhuma postagem encontrada.</Text>}
+
             </div>
+
+            <AlertDialog.Root open={!!postParaExcluir} onOpenChange={() => setPostParaExcluir(null)}>
+                <AlertDialog.Content style={{ maxWidth: 450 }}>
+                    <AlertDialog.Title>Confirmar Exclusão</AlertDialog.Title>
+                    <AlertDialog.Description size="2">
+                        Você tem certeza que deseja excluir a postagem
+                        <Text weight="bold"> "{postParaExcluir?.title}"</Text>?
+                    </AlertDialog.Description>
+                    <Flex gap="3" mt="4" justify="end">
+                        <AlertDialog.Cancel>
+                            <Button variant="soft" color="gray">Cancelar</Button>
+                        </AlertDialog.Cancel>
+                        <AlertDialog.Action>
+                            <Button variant="solid" color="red" onClick={handleConfirmarExclusaoPost}>
+                                Sim, Excluir Postagem
+                            </Button>
+                        </AlertDialog.Action>
+                    </Flex>
+                </AlertDialog.Content>
+            </AlertDialog.Root>
+
         </div>
     );
 }; // ── ⋙── ── ── ── ── ── ── ──➤
-
 
 export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }: FormProps) => {
     // Lógica simples de formulário com useState
@@ -335,11 +393,13 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
 
 }
 
-export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: ListPageProps) => {
+export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: ListPageProps) => { // ★ InstituicaoListPage
 
     const [instituicoes, setInstituicoes] = useState<Instituicao[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [alvoExclusao, setAlvoExclusao] = useState<Instituicao | null>(null);
 
 
     useEffect(() => {
@@ -356,9 +416,31 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
                 setLoading(false);
             }
         };
-
         fetchInstituicoes();
     }, []);
+
+
+    const handleConfirmarExclusao = async () => {
+        if (!alvoExclusao) return;
+
+        try {
+            // Faz a chamada DELETE para a API
+            await axiosPlain.delete(`/instituicoes/${alvoExclusao.id}/`);
+
+            // Atualiza a lista no frontend para remover o item deletado
+            setInstituicoes(prevInstituicoes =>
+                prevInstituicoes.filter(inst => inst.id !== alvoExclusao.id)
+            );
+
+            alert(`Instituição "${alvoExclusao.nome}" excluída com sucesso!`);
+        } catch (err) {
+            console.error("Erro ao excluir instituição:", err);
+            alert("Ocorreu um erro ao excluir a instituição.");
+        } finally {
+            // Fecha a modal de confirmação
+            setAlvoExclusao(null);
+        }
+    };
 
 
     if (loading) return <div>Carregando...</div>;
@@ -367,8 +449,6 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
 
     return (
         <div>
-
-
             <Flex justify="between" align="center" mb="6">
                 <Heading size="8">Painel de Instituições</Heading>
                 <Button size="3" onClick={onShowCreateForm}>
@@ -390,20 +470,59 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
                                 <Button variant="soft" onClick={() => onSelectInstituicao(inst.id)}>
                                     <Pencil className="mr-2 h-4 w-4" /> Gerenciar
                                 </Button>
-                                <Button variant="soft" color="red" onClick={() => alert(`Excluir instituição ${inst.id}`)}>
+
+
+
+                                <Button variant="soft" color="red" onClick={() => setAlvoExclusao(inst)}>
+
                                     <Trash2 className="mr-2 h-4 w-4" /> Excluir
                                 </Button>
+
                             </Flex>
                         </Flex>
                     </Card>
                 ))}
             </div>
-        </div>
-    );
-};
 
-export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPageProps) => {
+
+
+
+            <AlertDialog.Root open={!!alvoExclusao} onOpenChange={() => setAlvoExclusao(null)}>
+                <AlertDialog.Content style={{ maxWidth: 450 }}>
+                    <AlertDialog.Title>Confirmar Exclusão</AlertDialog.Title>
+                    <AlertDialog.Description size="2">
+                        Você tem certeza que deseja excluir a instituição
+                        <Text weight="bold"> "{alvoExclusao?.nome}"</Text>?
+                        Esta ação não pode ser desfeita.
+                    </AlertDialog.Description>
+
+                    <Flex gap="3" mt="4" justify="end">
+                        <AlertDialog.Cancel>
+                            <Button variant="soft" color="gray">
+                                Cancelar
+                            </Button>
+                        </AlertDialog.Cancel>
+                        <AlertDialog.Action>
+                            <Button variant="solid" color="red" onClick={handleConfirmarExclusao}>
+                                Sim, Excluir
+                            </Button>
+                        </AlertDialog.Action>
+                    </Flex>
+                </AlertDialog.Content>
+            </AlertDialog.Root>
+
+
+
+        </div>
+
+
+    );
+
+}; // ── ⋙── ── ── ── ── ── ── ──➤
+
+export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPageProps) => { // ★ InstituicaoDetailPage
     const [instituicao, setInstituicao] = useState<Instituicao | null>(null);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -422,7 +541,6 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
         }
     }, [instituicaoId]);
 
-
     useEffect(() => {
         setLoading(true);
         fetchInstituicaoDetails();
@@ -434,7 +552,6 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
     if (!instituicao) return <div>Instituição não encontrada.</div>;
 
 
-
     return (
         <div>
             <Button variant="soft" onClick={onBackToList} mb="4">
@@ -443,7 +560,6 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
             <Heading size="8" mb="6">{instituicao.nome}</Heading>
 
             <Tabs.Root defaultValue="info">
-
                 <Tabs.List>
                     <Tabs.Trigger value="info">Informações Gerais</Tabs.Trigger>
                     <Tabs.Trigger value="postagens">Postagens</Tabs.Trigger>
@@ -457,7 +573,7 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
                     <Tabs.Content value="info">
                         <InstituicaoForm
                             initialData={instituicao}
-                            onSaveSuccess={fetchInstituicaoDetails} // Recarrega os dados ao salvar
+                            onSaveSuccess={fetchInstituicaoDetails}
                             onCancel={() => { }}
                         />
                     </Tabs.Content>
@@ -466,7 +582,7 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
                         <PostagensTab
                             postagensIniciais={instituicao.postagens || []}
                             instituicaoId={instituicao.id}
-                            onDataChange={fetchInstituicaoDetails} // Passa a função de recarregar
+                            onDataChange={fetchInstituicaoDetails}
                         />
                     </Tabs.Content>
 
@@ -475,10 +591,10 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
                             tituloAba="Gerenciar Pesquisadores"
                             nomeItem="Pesquisador"
                             items={instituicao.pesquisadores || []}
-                            endpoint="pesquisadores" // Endpoint da API
+                            endpoint="pesquisadores"
                             instituicaoId={instituicao.id}
-                            onDataChange={fetchInstituicaoDetails} // Função para recarregar
-                            FormularioComponent={PesquisadorForm}
+                            onDataChange={fetchInstituicaoDetails}
+                            FormularioComponent={PesquisadorForm} // Passando o form "burro"
                             renderItem={(item: Pesquisador) => (
                                 <div>
                                     <Text as="p" weight="bold">{item.nome}</Text>
@@ -496,7 +612,7 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
                             endpoint="pesquisas"
                             instituicaoId={instituicao.id}
                             onDataChange={fetchInstituicaoDetails}
-                            FormularioComponent={PesquisaForm} // Corrigido para usar PesquisaForm
+                            FormularioComponent={PesquisaForm} // Passando o form "burro"
                             renderItem={(item: Pesquisa) => (
                                 <div>
                                     <Text as="p" weight="bold">{item.nome}</Text>
@@ -524,6 +640,7 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
                         />
                     </Tabs.Content>
 
+
                     <Tabs.Content value="produtos">
                         <GerenciadorDeAba
                             tituloAba="Gerenciar Produtos e Inovações"
@@ -545,8 +662,6 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
             </Tabs.Root>
         </div>
     );
-
-
-};
+}; // ── ⋙── ── ── ── ── ── ── ──➤
 
 

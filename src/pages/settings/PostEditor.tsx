@@ -5,14 +5,9 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
-
 import { Mark, mergeAttributes } from '@tiptap/core';
-
-
 import { UploadCloud, X, FileImage, LoaderCircle } from 'lucide-react';
-
 import { Dialog, Button, TextField, Text } from '@radix-ui/themes'; // Usando componentes Radix
-
 
 
 // Interface para as propriedades do nosso componente
@@ -226,11 +221,8 @@ const Toolbar = ({ editor }) => {
 
     return (
 
-
         <>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 p-2 bg-gray-100 border-b border-gray-300">
-
-
                 <button
                     onClick={() => editor.chain().focus().toggleBold().run()} // A CORREÇÃO ESTÁ AQUI
                     className={`${baseButtonClass} ${editor.isActive('bold') ? activeButtonClass : ''}`}
@@ -340,8 +332,7 @@ const PostEditorDashboard = ({
         },
     });
 
-    // Efeito para atualizar o editor se a prop `initialContent` mudar
-    // (útil ao alternar entre a edição de diferentes posts)
+
     useEffect(() => {
         if (editor && initialContent !== editor.getHTML()) {
             editor.commands.setContent(initialContent, false);
