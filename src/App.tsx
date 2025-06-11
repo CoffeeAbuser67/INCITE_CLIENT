@@ -12,7 +12,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
-  const content = useRoutes(routes); 
+  const content = useRoutes(routes);
   return (
     <HelmetProvider>
       <Helmet
@@ -23,7 +23,20 @@ function App() {
       <Theme appearance="light" accentColor="bronze" grayColor="sand">
         <Suspense fallback={<Loader />}>{content}</Suspense>
       </Theme>
-      <ToastContainer theme="dark" />
+
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+
 
     </HelmetProvider>
   );

@@ -3,25 +3,29 @@ import React, { useState } from 'react';
 import { Heading, Button, Flex, Card, Text, Dialog, Separator, AlertDialog } from '@radix-ui/themes';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import { axiosPlain } from '../../utils/axios';
+import { toast } from 'react-toastify'; 
 
-// Props que o nosso gerenciador vai aceitar
-interface GerenciadorProps<T extends { id: number }> {
+
+interface GerenciadorProps<T extends { id: number, nome?: string }> {
     tituloAba: string;
     nomeItem: string;
     items: T[];
     renderItem: (item: T) => React.ReactNode;
+
+
     FormularioComponent: React.FC<{
-        dadosIniciais?: T;
+        dadosIniciais?: T | null;
         onSave: (dados: Partial<T>) => void;
         onCancel: () => void;
     }>;
+
     endpoint: string;
     instituicaoId: number;
     onDataChange: () => void;
 }
 
 
-export const GerenciadorDeAba = <T extends { id: number }>({
+export const GerenciadorDeAba = <T extends { id: number ; nome?: string  }>({
     tituloAba,
     nomeItem,
     items,
@@ -30,10 +34,11 @@ export const GerenciadorDeAba = <T extends { id: number }>({
     endpoint,
     instituicaoId, // Adicione instituicaoId às props
     onDataChange, // Adicione onDataChange às props
+
 }: GerenciadorProps<T>) => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [itemAlvo, setItemAlvo] = useState<T | null>(null);
+    const [itemAlvo, setItemAlvo] = useState<T | null >(null);
     const [itemParaExcluir, setItemParaExcluir] = useState<T | null>(null);
 
 
@@ -52,10 +57,10 @@ export const GerenciadorDeAba = <T extends { id: number }>({
         try {
             if (itemAlvo) { // Modo Edição
                 await axiosPlain.put(`/${endpoint}/${itemAlvo.id}/`, payload);
-                alert(`${nomeItem} atualizado com sucesso!`);
+                toast.success(`${nomeItem} atualizado com sucesso!`);
             } else { // Modo Criação
                 await axiosPlain.post(`/${endpoint}/`, payload);
-                alert(`Novo ${nomeItem} criado com sucesso!`);
+                toast.success(`Novo ${nomeItem} criado com sucesso!`);
             }
             setIsModalOpen(false); // Fecha a modal
             onDataChange();    // Chama a função para recarregar os dados da página
@@ -64,7 +69,7 @@ export const GerenciadorDeAba = <T extends { id: number }>({
 
             // Tenta mostrar uma mensagem de erro mais útil vinda da API
             const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : `Ocorreu um erro ao salvar ${nomeItem}.`;
-            alert(errorMsg);
+            toast.error(errorMsg);
         }
     };
 
@@ -74,11 +79,11 @@ export const GerenciadorDeAba = <T extends { id: number }>({
         if (!itemParaExcluir) return;
         try {
             await axiosPlain.delete(`/${endpoint}/${itemParaExcluir.id}/`);
-            alert(`${nomeItem} excluído com sucesso!`);
+            toast.success(`${nomeItem} excluído com sucesso!`);
             onDataChange();
         } catch (err) {
             console.error(`Erro ao excluir ${nomeItem}:`, err);
-            alert(`Ocorreu um erro ao excluir o ${nomeItem}.`);
+            toast.warn(`Ocorreu um erro ao excluir o ${nomeItem}.`);
         } finally {
             setItemParaExcluir(null);
         }
@@ -120,7 +125,7 @@ export const GerenciadorDeAba = <T extends { id: number }>({
                     <Dialog.Title>{itemAlvo ? 'Editar' : 'Adicionar'} {nomeItem}</Dialog.Title>
                     <Separator my="3" size="4" />
                     <FormularioComponent
-                        dadosIniciais={itemAlvo}
+                        dadosIniciais={itemAlvo?? undefined }
                         onSave={handleSalvar}
                         onCancel={() => setIsModalOpen(false)}
                     />
@@ -131,6 +136,7 @@ export const GerenciadorDeAba = <T extends { id: number }>({
             <AlertDialog.Root open={!!itemParaExcluir} onOpenChange={() => setItemParaExcluir(null)}>
                 <AlertDialog.Content style={{ maxWidth: 450 }}>
                     <AlertDialog.Title>Confirmar Exclusão</AlertDialog.Title>
+
                     <AlertDialog.Description size="2">
                         Você tem certeza que deseja excluir este item?
                         {itemParaExcluir?.nome && <Text as="p" weight="bold">"{itemParaExcluir.nome}"</Text>}

@@ -2,16 +2,37 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog } from '@radix-ui/themes';
 import { PlusCircle, Pencil, Trash2, ArrowLeft } from 'lucide-react';
-import { Instituicao, Pesquisador, Pesquisa, AcaoExtensionista, ProdutoInovacao } from './mockData';
 import PostEditorDashboard from './PostEditor';
 import { GerenciadorDeAba } from './GerenciadorDeAba'
 import { axiosPlain } from '../../utils/axios';
-
+import { toast } from 'react-toastify';
 
 //🧿
 // HERE Interfaces & types
 
-type Postagem = Instituicao['postagens'][0];
+// --- Tipos para cada modelo ---
+export type Postagem = { id: number; title: string; content: string; created_at: string };
+export type Pesquisador = { id: number; nome: string; area_atuacao: string; desligado: boolean; bolsista: boolean };
+export type Pesquisa = { id: number; nome: string; info: string; ano_inicio: number; ano_fim?: number };
+export type AcaoExtensionista = { id: number; nome: string; info: string; ano_inicio: number; ano_fim?: number; tipo_comunidade: string };
+export type ProdutoInovacao = { id: number; nome: string; info: string; ano_inicio: number; ano_fim?: number };
+
+
+// --- Interface principal atualizada ---
+export interface Instituicao {
+    id: number;
+    nome: string;
+    cidade: string;
+    coordenador_responsavel: string;
+    email: string;
+    telefone: string;
+    informacoes_adicionais?: string;
+    postagens: Postagem[];
+    pesquisadores: Pesquisador[];
+    pesquisas: Pesquisa[];
+    acoes_extensionistas: AcaoExtensionista[];
+    produtos: ProdutoInovacao[];
+}
 
 interface SubFormProps<T> {
     dadosIniciais?: T | null;
@@ -33,13 +54,34 @@ interface FormProps {
 interface DetailPageProps {
     instituicaoId: number;
     onBackToList: () => void;
-} // ── ⋙── ── ── ── ── ── ── ──➤
+}
 
-const PesquisadorForm = ({ dadosIniciais, onSave, onCancel }) => {
+interface PostagensTabProps {
+    postagensIniciais: Postagem[];
+    instituicaoId: number;
+    onDataChange: () => void;
+}
+
+// ── ⋙── ── ── AUX  ── ── ── ──➤
+const formatarData = (timestamp: string): string => { // (●) formatarData
+    if (!timestamp) return 'Data indisponível';
+
+    const data = new Date(timestamp);
+
+    // Intl.DateTimeFormat é o jeito moderno e correto de formatar datas
+    return new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    }).format(data);
+}; 
+
+// ── ⋙── ── ── FORMS ── ── ── ──➤
+
+export const PesquisadorForm: React.FC<SubFormProps<Pesquisador>> = ({ dadosIniciais, onSave, onCancel }) => {// ✪ PesquisadorForm
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [area, setArea] = useState(dadosIniciais?.area_atuacao || '');
     const [bolsista, setBolsista] = useState(dadosIniciais?.bolsista || false);
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave({ nome, area_atuacao: area, bolsista });
@@ -58,16 +100,18 @@ const PesquisadorForm = ({ dadosIniciais, onSave, onCancel }) => {
             </Flex>
         </form>
     );
-};
+}; // . . . 
 
-const PesquisaForm = ({ dadosIniciais, onSave, onCancel }) => {
+export const PesquisaForm: React.FC<SubFormProps<Pesquisa>> = ({ dadosIniciais, onSave, onCancel }) => {// ✪ PesquisaForm
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [info, setInfo] = useState(dadosIniciais?.info || '');
     const [ano, setAno] = useState(dadosIniciais?.ano_inicio || new Date().getFullYear());
+    const [ano_fim, setAnoFim] = useState(dadosIniciais?.ano_fim || '');
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ nome, info, ano_inicio: ano });
+        onSave({ nome, info, ano_inicio: ano, ano_fim: ano_fim ? Number(ano_fim) : undefined });
     };
 
     return (
@@ -76,6 +120,11 @@ const PesquisaForm = ({ dadosIniciais, onSave, onCancel }) => {
                 <label><Text as="div" size="2" weight="bold">Nome da Pesquisa</Text><TextField.Root value={nome} onChange={e => setNome(e.target.value)} required /></label>
                 <label><Text as="div" size="2" weight="bold">Informações</Text><TextArea value={info} onChange={e => setInfo(e.target.value)} /></label>
                 <label><Text as="div" size="2" weight="bold">Ano de Início</Text><TextField.Root type="number" value={ano} onChange={e => setAno(Number(e.target.value))} /></label>
+
+                <label className="flex-1">
+                    <Text as="div" size="2" weight="bold">Ano de Conclusão (Opcional)</Text>
+                    <TextField.Root type="number" value={ano_fim} onChange={e => setAnoFim(e.target.value)} placeholder="" />
+                </label>
                 <Flex gap="3" mt="4" justify="end">
                     <Button variant="soft" color="gray" type="button" onClick={onCancel}>Cancelar</Button>
                     <Button type="submit">Salvar Pesquisa</Button>
@@ -83,17 +132,18 @@ const PesquisaForm = ({ dadosIniciais, onSave, onCancel }) => {
             </Flex>
         </form>
     );
-}
-
-const AcaoExtensionistaForm = ({ dadosIniciais, onSave, onCancel }) => { // ● AcaoExtensionistaForm
+} // . . . 
+export const AcaoExtensionistaForm: React.FC<SubFormProps<AcaoExtensionista>> = ({ dadosIniciais, onSave, onCancel }) => {// ✪ AcaoExtensionistaForm
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [info, setInfo] = useState(dadosIniciais?.info || '');
     const [ano_inicio, setAnoInicio] = useState(dadosIniciais?.ano_inicio || new Date().getFullYear());
     const [tipo_comunidade, setTipoComunidade] = useState(dadosIniciais?.tipo_comunidade || '');
+    const [ano_fim, setAnoFim] = useState(dadosIniciais?.ano_fim || '');
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ nome, info, ano_inicio, tipo_comunidade });
+        onSave({ nome, info, ano_inicio, tipo_comunidade, ano_fim: ano_fim ? Number(ano_fim) : undefined });
     };
 
     return (
@@ -128,6 +178,10 @@ const AcaoExtensionistaForm = ({ dadosIniciais, onSave, onCancel }) => { // ● 
                     <TextField.Root type="number" value={ano_inicio} onChange={e => setAnoInicio(Number(e.target.value))} />
                 </label>
 
+                <label className="flex-1">
+                    <Text as="div" size="2" weight="bold">Ano de Conclusão (Opcional)</Text>
+                    <TextField.Root type="number" value={ano_fim} onChange={e => setAnoFim(e.target.value)} placeholder="Deixe em branco se atual" />
+                </label>
 
 
                 <Flex gap="3" mt="4" justify="end">
@@ -140,14 +194,16 @@ const AcaoExtensionistaForm = ({ dadosIniciais, onSave, onCancel }) => { // ● 
 
 }; // . . . 
 
-const ProdutoInovacaoForm = ({ dadosIniciais, onSave, onCancel }) => { // ● AcaoExtensionistaForm
+export const ProdutoInovacaoForm: React.FC<SubFormProps<ProdutoInovacao>> = ({ dadosIniciais, onSave, onCancel }) => { // ✪ ProdutoInovacaoForm
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [info, setInfo] = useState(dadosIniciais?.info || '');
     const [ano_inicio, setAnoInicio] = useState(dadosIniciais?.ano_inicio || new Date().getFullYear());
+    const [ano_fim, setAnoFim] = useState(dadosIniciais?.ano_fim || '');
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ nome, info, ano_inicio });
+        onSave({ nome, info, ano_inicio, ano_fim: ano_fim ? Number(ano_fim) : undefined });
     };
 
     return (
@@ -165,6 +221,11 @@ const ProdutoInovacaoForm = ({ dadosIniciais, onSave, onCancel }) => { // ● Ac
                     <Text as="div" size="2" weight="bold">Ano de Início</Text>
                     <TextField.Root type="number" value={ano_inicio} onChange={e => setAnoInicio(Number(e.target.value))} />
                 </label>
+                <label className="flex-1">
+                    <Text as="div" size="2" weight="bold">Ano de Conclusão (Opcional)</Text>
+                    <TextField.Root type="number" value={ano_fim} onChange={e => setAnoFim(e.target.value)} placeholder="" />
+                </label>
+
                 <Flex gap="3" mt="4" justify="end">
                     <Button variant="soft" color="gray" type="button" onClick={onCancel}>Cancelar</Button>
                     <Button type="submit">Salvar Produto</Button>
@@ -174,7 +235,7 @@ const ProdutoInovacaoForm = ({ dadosIniciais, onSave, onCancel }) => { // ● Ac
     );
 }; // ── ⋙── ── ── ── ── ── ── ──➤
 
-const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }) => { // ✪ PostagensTab
+const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: PostagensTabProps) => { // {✪} PostagensTab
     const [mode, setMode] = useState<'list' | 'editor'>('list');
     const [postAlvo, setPostAlvo] = useState<Partial<Postagem> | null>(null);
 
@@ -202,17 +263,17 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }) => { /
         try {
             if (postAlvo && 'id' in postAlvo) {
                 await axiosPlain.put(`/postagens/${postAlvo.id}/`, payload);
-                alert('Postagem atualizada com sucesso!');
+                toast.success('Postagem atualizada com sucesso!');
             } else {
                 await axiosPlain.post('/postagens/', payload);
-                alert('Postagem criada com sucesso!');
+                toast.success('Postagem criada com sucesso!');
             }
             setMode('list');
             setPostAlvo(null);
             onDataChange(); // Pede para a página principal recarregar os dados
         } catch (err) {
             console.error("Erro ao salvar postagem:", err.response?.data || err);
-            alert("Erro ao salvar postagem.");
+            toast.error("Erro ao salvar postagem.");
         }
     };
 
@@ -221,13 +282,13 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }) => { /
 
         try {
             await axiosPlain.delete(`/postagens/${postParaExcluir.id}/`);
-            alert(`Postagem "${postParaExcluir.title}" excluída com sucesso!`);
+            toast.success(`Postagem "${postParaExcluir.title}" excluída com sucesso!`);
 
             // Chama a função do pai para recarregar todos os dados da instituição
             onDataChange();
         } catch (err) {
             console.error("Erro ao excluir postagem:", err);
-            alert("Ocorreu um erro ao excluir a postagem.");
+            toast.warn("Ocorreu um erro ao excluir a postagem.");
         } finally {
             // Fecha a modal
             setPostParaExcluir(null);
@@ -261,7 +322,7 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }) => { /
                         <Flex justify="between" align="center">
                             <div>
                                 <Text as="p" weight="bold">{post.title}</Text>
-                                <Text as="p" size="2" color="gray">Criado em: {post.createdAt}</Text>
+                                <Text as="p" size="2" color="gray">Criado em: {formatarData(post.created_at)}</Text>
                             </div>
                             <Flex gap="3">
                                 <Button variant="soft" onClick={() => mostrarFormEdicao(post)}>
@@ -304,7 +365,7 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }) => { /
     );
 }; // ── ⋙── ── ── ── ── ── ── ──➤
 
-export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }: FormProps) => {
+export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }: FormProps) => { // ★ InstituicaoForm
     // Lógica simples de formulário com useState
     const [nome, setNome] = useState(initialData?.nome || '');
     const [cidade, setCidade] = useState(initialData?.cidade || '');
@@ -331,19 +392,20 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
             if (initialData) {
                 // MODO EDIÇÃO: Requisição PUT para a URL do item específico
                 await axiosPlain.put(`/instituicoes/${initialData.id}/`, payload);
-                alert(`Instituição "${nome}" atualizada com sucesso!`);
+                toast.success(`Instituição "${nome}" atualizada com sucesso!`);
             } else {
                 // MODO CRIAÇÃO: Requisição POST para a URL da lista
                 await axiosPlain.post('/instituicoes/', payload);
-                alert(`Instituição "${nome}" criada com sucesso!`);
+                toast.success(`Instituição "${nome}" criada com sucesso!`);
             }
             onSaveSuccess(); // Notifica o componente pai para voltar para a lista
 
         } catch (err) {
             console.error('Erro ao salvar instituição:', err.response?.data || err.message);
-            alert('Ocorreu um erro ao salvar. Verifique o console.');
+            toast.error('Ocorreu um erro ao salvar. Verifique o console.');
         }
     };
+
 
 
     return (
@@ -391,7 +453,7 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
         </form>
     );
 
-}
+} // ── ⋙── ── ── ── ── ── ── ──➤
 
 export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: ListPageProps) => { // ★ InstituicaoListPage
 
@@ -432,10 +494,10 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
                 prevInstituicoes.filter(inst => inst.id !== alvoExclusao.id)
             );
 
-            alert(`Instituição "${alvoExclusao.nome}" excluída com sucesso!`);
+            toast.success(`Instituição "${alvoExclusao.nome}" excluída com sucesso!`);
         } catch (err) {
             console.error("Erro ao excluir instituição:", err);
-            alert("Ocorreu um erro ao excluir a instituição.");
+            toast.error("Ocorreu um erro ao excluir a instituição.");
         } finally {
             // Fecha a modal de confirmação
             setAlvoExclusao(null);
@@ -557,6 +619,7 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
             <Button variant="soft" onClick={onBackToList} mb="4">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Voltar para a Lista
             </Button>
+
             <Heading size="8" mb="6">{instituicao.nome}</Heading>
 
             <Tabs.Root defaultValue="info">
@@ -574,7 +637,7 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
                         <InstituicaoForm
                             initialData={instituicao}
                             onSaveSuccess={fetchInstituicaoDetails}
-                            onCancel={() => { }}
+                            onCancel={onBackToList}
                         />
                     </Tabs.Content>
 
