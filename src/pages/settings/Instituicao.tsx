@@ -1,15 +1,12 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog, Spinner } from '@radix-ui/themes';
-import { PlusCircle, Pencil, Trash2, ArrowLeft } from 'lucide-react';
+import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog, Spinner, Tooltip } from '@radix-ui/themes';
+import { PlusCircle, Pencil, Trash2, ArrowLeft, Info } from 'lucide-react';
 import PostEditorDashboard from './PostEditor';
 import { GerenciadorDeAba } from './GerenciadorDeAba'
 import { axiosPlain } from '../../utils/axios';
 import { toast } from 'react-toastify';
 import { CitySelect } from './CitySelect';
-
-
-
 
 
 // ● 🧿⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
@@ -37,6 +34,8 @@ export interface Instituicao {
     pesquisas: Pesquisa[];
     acoes_extensionistas: AcaoExtensionista[];
     produtos: ProdutoInovacao[];
+    offset_x: number; // <-- Adicionado
+    offset_y: number; // <-- Adicionado
 }
 
 interface SubFormProps<T> {
@@ -379,7 +378,8 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
     const [telefone, setTelefone] = useState(initialData?.telefone || '');
     const [infoAdicionais, setInfoAdicionais] = useState(initialData?.informacoes_adicionais || '');
 
-
+    const [offsetX, setOffsetX] = useState(initialData?.offset_x || 0);
+    const [offsetY, setOffsetY] = useState(initialData?.offset_y || 0);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -391,6 +391,8 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
             email,
             telefone,
             informacoes_adicionais: infoAdicionais,
+            offset_x: Number(offsetX),
+            offset_y: Number(offsetY),
         };
 
         try {
@@ -456,6 +458,46 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
                 <label>
                     <TextArea size="3" value={infoAdicionais} onChange={(e) => setInfoAdicionais(e.target.value)} placeholder="Qualquer informação adicional relevante sobre a instituição..." />
                 </label>
+
+                <Separator my="3" size="4" />
+
+                {/* ▼▼▼ NOVA SEÇÃO PARA CONFIGURAÇÕES DO MAPA ▼▼▼ */}
+                <Heading size="3" color="gray" highContrast>Ajustes do Marcador no Mapa</Heading>
+                <Text as="p" size="2" color="gray" mb="3">
+                    Use as setas do teclado ou o scroll do mouse nos campos X e Y para ajustar a posição do pino no mapa, caso o centro da cidade não seja ideal ou para evitar sobreposição.
+                </Text>
+
+                <Flex gap="3">
+                    <label className="flex-1">
+                        <Text as="div" size="2" mb="1" weight="bold">Deslocamento Horizontal (X)</Text>
+                        <TextField.Root
+                            type="number"
+                            step="0.1" // Permite ajustes finos com decimais
+                            value={offsetX}
+                            onChange={(e) => setOffsetX(parseFloat(e.target.value) || 0)}
+                        />
+                    </label>
+
+
+                    <label className="flex-1">
+                        <Flex align="center" gap="2" mb="1">
+                            <Text as="div" size="2" weight="bold">Deslocamento Vertical (Y)</Text>
+                            <Tooltip content="No mapa, o eixo Y é invertido: valores positivos movem para baixo, valores negativos movem para cima.">
+                                {/* O ícone que, ao passar o mouse, mostrará o tooltip */}
+                                <Info size={16} style={{ color: 'var(--gray-a9)', cursor: 'help' }} />
+                            </Tooltip>
+                        </Flex>
+                        <TextField.Root
+                            type="number"
+                            step="0.1"
+                            value={offsetY}
+                            onChange={(e) => setOffsetY(parseFloat(e.target.value) || 0)}
+                        />
+                    </label>
+
+
+                </Flex>
+
 
                 <Flex gap="3" mt="4" justify="end">
                     <Button type="button" variant="soft" color="gray" size="3" onClick={onCancel}>Cancelar</Button>

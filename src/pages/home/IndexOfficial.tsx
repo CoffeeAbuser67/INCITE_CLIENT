@@ -27,6 +27,8 @@ interface Instituicao {
     id: number;
     nome: string;
     cidade_id_mapa: string;
+    offset_x: number; // <-- Adicionado
+    offset_y: number; // <-- Adicionado
 }
 
 
@@ -458,9 +460,8 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                                     key={instituicao.id}
                                                     content={<Text size="2" weight="bold">{instituicao.nome}</Text>}
                                                 >
-
                                                     <g
-                                                        transform={`translate(${coords.x + 5}, ${coords.y})`}
+                                                        transform={`translate(${coords.x + instituicao.offset_x}, ${coords.y + instituicao.offset_y})`}
                                                         style={{ cursor: 'pointer' }}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
