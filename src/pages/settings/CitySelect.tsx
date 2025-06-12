@@ -1,11 +1,12 @@
 // src/components/CitySelect.tsx
 import React from 'react';
-import Select from 'react-select';
+import Select , { StylesConfig } from 'react-select';
 
 
 // Importe os dados do mapa de sua localização central
-import  mapCity from '../../assets/BahiaCidades4.json';
-import  mapRegion from '../../assets/BahiaRegiao2.json';
+import mapCity from '../../assets/BahiaCidades4.json';
+import mapRegion from '../../assets/BahiaRegiao2.json';
+
 
 // --- Tipagem para as opções do react-select ---
 interface CityOption {
@@ -34,7 +35,41 @@ const opcoesDeCidadeAgrupadas: readonly GroupedCityOption[] = mapRegion
 
 // --- Estilos e Formatador para os Grupos do Select ---
 const groupStyles = { /* ... seu código de estilo ... */ };
-const groupBadgeStyles: React.CSSProperties = { /* ... seu código de estilo ... */ };
+
+
+const groupBadgeStyles: React.CSSProperties = {
+    backgroundColor: '#EBECF0',
+    borderRadius: '2em',
+    color: '#172B4D',
+    display: 'inline-block',
+    fontSize: 12,
+    fontWeight: 'normal',
+    lineHeight: '1',
+    minWidth: 1,
+    padding: '0.16666666666667em 0.5em',
+    textAlign: 'center',
+    marginLeft: '8px', // Adiciona um espaço de 8px entre o nome e o badge
+};
+
+
+
+const customSelectStyles: StylesConfig<CityOption, false, GroupedCityOption> = {
+    control: (baseStyles, state) => ({
+        ...baseStyles,
+        minHeight: '36px',
+        borderColor: state.isFocused ? '#8D6E63' : '#d1d5db', // Marrom quando focado, cinza normal
+        // Remove o brilho azul padrão e adiciona um anel marrom sutil
+        boxShadow: state.isFocused ? '0 0 0 1px #8D6E63' : 'none',
+        '&:hover': {
+            borderColor: state.isFocused ? '#8D6E63' : '#a1a1aa',
+        },
+    }),
+    // Você pode customizar outras partes também, se quiser
+    // option: (styles, { isFocused, isSelected }) => ({ ... }),
+    // groupHeading: (styles) => ({ ... }),
+};
+
+
 
 const formatGroupLabel = (data: GroupedCityOption) => (
     <div style={groupStyles}>
@@ -65,10 +100,7 @@ export const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
             formatGroupLabel={formatGroupLabel}
             placeholder="Digite ou selecione uma cidade..."
             isClearable
-            styles={{
-                control: (base) => ({ ...base, minHeight: '36px', borderColor: '#d1d5db' }),
-                menu: (base) => ({ ...base, zIndex: 10 }), // Garante que o menu flutue sobre outros elementos
-            }}
+            styles={customSelectStyles}
         />
     );
 };

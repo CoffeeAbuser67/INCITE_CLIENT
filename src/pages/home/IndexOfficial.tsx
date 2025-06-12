@@ -27,7 +27,6 @@ interface Instituicao {
     id: number;
     nome: string;
     cidade_id_mapa: string;
-
 }
 
 
@@ -78,9 +77,7 @@ const mapRegion: Region[] = regionData;
 const Incite = () => { // ★ Incite ⋙─────────────────────────────────────────➤ 
 
     const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
-
     const originalBBoxRef = useRef<BoundingBox | null>(null); // HERE originalBBoxRef
-
 
     // ── ⋙── ── ── ── ── ── ──➤
     type levels = 0 | 1;
@@ -103,9 +100,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
     // ✳  [instituicoes, setInstituicoes]
     const [instituicoes, setInstituicoes] = useState<Instituicao[]>([]);
 
-
     // ── ⋙── ── ── ── ── ── ──➤
-
 
     useEffect(() => { //HERE uE
         if (svgRef.current && !originalBBoxRef.current) {
@@ -114,8 +109,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
             console.log("Original BBox:", originalBBoxRef.current);
         }
     }, []); // . . . . . . .
-
-
 
     useEffect(() => { //HERE uE
         // Cache da BBox (sua lógica está perfeita)
@@ -136,8 +129,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
         fetchInstituicoes();
     }, []);  // ── ⋙── ── ── ── ── ── ── ──➤
-
-
 
     // (●) cityToRegionMap
     const cityToRegionMap = useMemo(() => {
@@ -185,9 +176,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         runToFit(regionElement.getBBox(), regionElement.getBoundingClientRect());
     }; // ── ⋙── ── ── ── ── ── ── ──➤
 
-
-
-
     // (●) mapaDeCoordenadas
     const mapaDeCoordenadas = useMemo(() => {
         const mapa = new Map<string, { x: number, y: number }>();
@@ -198,8 +186,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         }
         return mapa;
     }, []); // ── ⋙── ── ── ── ── ── ── ──➤
-
-
 
 
     // ✪ bahiaStrokeStyle
@@ -223,7 +209,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         transform: `scale(1) translate(0px, 0px)`,
         config: { tension: 62, friction: 35, mass: 7 },
     })); // ── ⋙── ── ── ── ── ── ──➤
-
 
     // <✪> runToFit
     const runToFit = (bbox: BoundingBox, rect: BoundingBox) => {
@@ -295,7 +280,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         }
     }  // ── ⋙── ── ── ── ── ── ── ──➤
 
-
     // {✪} resetMap
     const resetMap = () => {
         setCurrentLevel(0); // ↺ setCurrentLevel
@@ -305,7 +289,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
             transform: "scale(1) translate(0px, 0px)",
         });
     };
-
 
     return (// ── ⋙⇌⇌⇌⇌⇌⇌⇌ DOM ⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸
         <>
@@ -475,9 +458,9 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                                     key={instituicao.id}
                                                     content={<Text size="2" weight="bold">{instituicao.nome}</Text>}
                                                 >
-                                                    {/* O onClick agora chama nossa nova função handleMarkerClick */}
+
                                                     <g
-                                                        transform={`translate(${coords.x}, ${coords.y})`}
+                                                        transform={`translate(${coords.x + 5}, ${coords.y})`}
                                                         style={{ cursor: 'pointer' }}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -492,6 +475,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                                             className="transition-all duration-300 ease-in-out hover:fill-yellow-400"
                                                         />
                                                     </g>
+
                                                 </Tooltip>
                                             );
                                         }
@@ -528,6 +512,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
         </>
     );
+
 };  // ★ Incite ⋙─────────────────────────────────────────➤ 
 export default Incite;
 
