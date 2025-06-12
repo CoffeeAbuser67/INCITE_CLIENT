@@ -23,6 +23,7 @@ import { axiosPlain } from "../../utils/axios";
 const SCALE_ADJUSTMENT = 0.35
 
 
+
 interface Instituicao {
     id: number;
     nome: string;
@@ -116,8 +117,58 @@ const Incite = () => { // ★ Incite ⋙─────────────�
     }, []); // . . . . . . .
 
 
+    // (●) allCities
+    const allCities = useMemo(() => {
+        return Object.values(mapCity).flat();
+    }, []);  // ── ⋙── ── ── ── ── ── ── ──➤
 
-    useEffect(() => { //HERE uE
+
+    // (✪) handleAddMarker
+    const handleAddMarker = (cityId: string) => {
+        if (!cityId) return; // Não fazer nada se a opção default for selecionada
+
+        // Verificar se um marcador para esta cidade já existe
+        const markerExists = markers.some(marker => marker.id === cityId);
+        if (markerExists) {
+            alert("Já existe um marcador para este município!");
+            return;
+        }
+
+
+        // Encontrar os dados completos da cidade selecionada
+        const cityToAdd = allCities.find(city => city.id === cityId);
+
+
+        if (cityToAdd) {
+            const newMarker: Marker = {
+                id: cityToAdd.id,
+                name: cityToAdd.name,
+                x: cityToAdd.x,
+                y: cityToAdd.y
+            };
+
+            // Adicionar o novo marcador ao estado
+            setMarkers(prevMarkers => [...prevMarkers, newMarker]); // ↺ setMarkers
+            console.log("Marcador adicionado:", newMarker);
+
+        }
+    }; // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+    // HERE mapaDeCoordenadas
+    const mapaDeCoordenadas = useMemo(() => {
+        const mapa = new Map<string, { x: number, y: number }>();
+        for (const citiesInRegion of Object.values(mapCity)) {
+            for (const city of citiesInRegion) {
+                mapa.set(city.id, { x: city.x, y: city.y });
+            }
+        }
+        return mapa;
+    }, []); // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+
+    useEffect(() => {
         // Cache da BBox (sua lógica está perfeita)
         if (svgRef.current && !originalBBoxRef.current) {
             originalBBoxRef.current = svgRef.current.getBBox();
@@ -135,71 +186,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         };
 
         fetchInstituicoes();
-    }, []);  // ── ⋙── ── ── ── ── ── ── ──➤
-
-
-
-    // (●) cityToRegionMap
-    const cityToRegionMap = useMemo(() => {
-        const map: { [cityId: string]: string } = {};
-        for (const [regionId, citiesInRegion] of Object.entries(mapCity)) {
-            for (const city of citiesInRegion) {
-                map[city.id] = regionId;
-            }
-        }
-        return map;
     }, []);
-
-
-    // (✪) handleMarkerClick
-    const handleMarkerClick = (instituicao: Instituicao) => {
-        console.log("Marcador clicado:", instituicao.nome);
-
-        // 1. Mostra as informações da instituição no painel lateral
-        setSelectedInstituicao(instituicao);
-
-        // 2. Encontra o ID da região a que esta cidade/instituição pertence
-        const regionId = cityToRegionMap[instituicao.cidade_id_mapa];
-        if (!regionId) {
-            console.error("Não foi possível encontrar a região para o marcador:", instituicao.cidade_id_mapa);
-            return;
-        }
-
-        // 3. Encontra os dados da região (como o nome)
-        const regionObject = mapRegion.find(r => r.id === regionId);
-        if (!regionObject) {
-            console.error("Dados da região não encontrados:", regionId);
-            return;
-        }
-
-        // 4. Encontra o elemento SVG da região no DOM usando seu ID
-        const regionElement = svgRef.current?.querySelector(`#${regionId}`) as SVGPathElement;
-        if (!regionElement) {
-            console.error("Elemento SVG da região não encontrado no DOM:", regionId);
-            return;
-        }
-
-        // 5. Executa a mágica!
-        setCurrentLevel(1);
-        setRegion(regionId, regionObject.name);
-        runToFit(regionElement.getBBox(), regionElement.getBoundingClientRect());
-    }; // ── ⋙── ── ── ── ── ── ── ──➤
-
-
-
-
-    // (●) mapaDeCoordenadas
-    const mapaDeCoordenadas = useMemo(() => {
-        const mapa = new Map<string, { x: number, y: number }>();
-        for (const citiesInRegion of Object.values(mapCity)) {
-            for (const city of citiesInRegion) {
-                mapa.set(city.id, { x: city.x, y: city.y });
-            }
-        }
-        return mapa;
-    }, []); // ── ⋙── ── ── ── ── ── ── ──➤
-
-
 
 
     // ✪ bahiaStrokeStyle
@@ -366,6 +353,29 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
                     <div className="flex flex-col">
 
+                        <Box // HERE MARKER MANAGER BOX
+
+                            className="flex items-center gap-4 mb-4 p-4 bg-gray-100 rounded-lg">
+
+                            <Text weight="bold">Adicionar Marcador:</Text>
+                            <select
+                                onChange={(e) => handleAddMarker(e.target.value)}
+                                className="p-2 border rounded-md"
+                                defaultValue=""
+                            >
+                                <option value="" disabled>Selecione um município...</option>
+                                {allCities.map(city => (
+                                    <option key={city.id} value={city.id}>
+                                        {city.name}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <Text size="1" color="gray">
+                                {markers.length} marcador(es) adicionado(s)
+                            </Text>
+
+                        </Box>
 
                         <div // ⋙── ── canvas-wrapper ── ──➤
                             id="canvas-wrapper"
@@ -469,27 +479,30 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
                                     {instituicoes.map(instituicao => {
                                         const coords = mapaDeCoordenadas.get(instituicao.cidade_id_mapa);
+
                                         if (coords) {
                                             return (
                                                 <Tooltip
-                                                    key={instituicao.id}
-                                                    content={<Text size="2" weight="bold">{instituicao.nome}</Text>}
+                                                    key={instituicao.id} // A `key` deve estar no elemento mais externo do map
+                                                    content={
+                                                        <Text size="2" weight="bold">{instituicao.nome}</Text>
+                                                    }
                                                 >
-                                                    {/* O onClick agora chama nossa nova função handleMarkerClick */}
                                                     <g
                                                         transform={`translate(${coords.x}, ${coords.y})`}
                                                         style={{ cursor: 'pointer' }}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            handleMarkerClick(instituicao);
+                                                            setSelectedInstituicao(instituicao);
+                                                            console.log("Marcador clicado:", instituicao.nome);
                                                         }}
                                                     >
                                                         <circle
-                                                            r={currentLevel === 0 ? 5 : 12 / currentScale} // Raio ajustável
+                                                            r={5}
                                                             fill="#006400"
                                                             stroke="white"
-                                                            strokeWidth={currentLevel === 0 ? 0.5 : 0.5 / currentScale} // Borda ajustável
-                                                            className="transition-all duration-300 ease-in-out hover:fill-yellow-400"
+                                                            strokeWidth="1.5"
+                                                            className="transition-transform duration-200 ease-in-out hover:scale-150"
                                                         />
                                                     </g>
                                                 </Tooltip>
@@ -509,15 +522,22 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                     </div>
 
 
-                    <Card id="info-panel" /* ... */>
-                        {/* O painel de informações agora usa `selectedInstituicao` */}
+                    <Card id="info-panel" >
                         {selectedInstituicao ? (
                             <>
                                 <Heading size="5">{selectedInstituicao.nome}</Heading>
-                                {/* ... */}
+                                <Text as="p" className="my-4">
+                                    Aqui vai a descrição ou a última postagem da instituição {selectedInstituicao.nome}.
+                                </Text>
+                                {/* Este botão pode levar para uma página pública com todos os detalhes */}
+                                <a href={`/instituicao/${selectedInstituicao.id}`} target="_blank" rel="noopener noreferrer">
+                                    <button className="p-2 bg-green-600 text-white rounded">
+                                        Ver Página da Instituição
+                                    </button>
+                                </a>
                             </>
                         ) : (
-                            <Text color="gray">Clique em uma região ou marcador para explorar.</Text>
+                            <Text color="gray">Clique em um marcador no mapa para ver os detalhes da instituição.</Text>
                         )}
                     </Card>
 

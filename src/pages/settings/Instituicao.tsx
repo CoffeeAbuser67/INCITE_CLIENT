@@ -1,13 +1,19 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog } from '@radix-ui/themes';
+import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog, Spinner } from '@radix-ui/themes';
 import { PlusCircle, Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import PostEditorDashboard from './PostEditor';
 import { GerenciadorDeAba } from './GerenciadorDeAba'
 import { axiosPlain } from '../../utils/axios';
 import { toast } from 'react-toastify';
+import { CitySelect } from './CitySelect';
 
-//🧿
+
+
+
+
+// ● 🧿⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
+
 // HERE Interfaces & types
 
 // --- Tipos para cada modelo ---
@@ -18,11 +24,10 @@ export type AcaoExtensionista = { id: number; nome: string; info: string; ano_in
 export type ProdutoInovacao = { id: number; nome: string; info: string; ano_inicio: number; ano_fim?: number };
 
 
-// --- Interface principal atualizada ---
 export interface Instituicao {
     id: number;
     nome: string;
-    cidade: string;
+    cidade_id_mapa: string;
     coordenador_responsavel: string;
     email: string;
     telefone: string;
@@ -74,7 +79,7 @@ const formatarData = (timestamp: string): string => { // (●) formatarData
         month: '2-digit',
         year: 'numeric',
     }).format(data);
-}; 
+};
 
 // ── ⋙── ── ── FORMS ── ── ── ──➤
 
@@ -368,7 +373,7 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
 export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }: FormProps) => { // ★ InstituicaoForm
     // Lógica simples de formulário com useState
     const [nome, setNome] = useState(initialData?.nome || '');
-    const [cidade, setCidade] = useState(initialData?.cidade || '');
+    const [cidadeId, setCidadeId] = useState(initialData?.cidade_id_mapa || '');
     const [coordenador, setCoordenador] = useState(initialData?.coordenador_responsavel || '');
     const [email, setEmail] = useState(initialData?.email || '');
     const [telefone, setTelefone] = useState(initialData?.telefone || '');
@@ -381,7 +386,7 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
 
         const payload = {
             nome,
-            cidade,
+            cidade_id_mapa: cidadeId,
             coordenador_responsavel: coordenador,
             email,
             telefone,
@@ -419,10 +424,17 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
                     <Text as="div" size="2" mb="1" weight="bold">Nome da Instituição</Text>
                     <TextField.Root size="3" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Universidade Federal..." required />
                 </label>
+
                 <label>
                     <Text as="div" size="2" mb="1" weight="bold">Cidade</Text>
-                    <TextField.Root size="3" value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="Ex: Itabuna" required />
+
+                    <CitySelect // (○) CitySelect
+                        value={cidadeId}
+                        onChange={setCidadeId}
+                    />
+
                 </label>
+
                 <label>
                     <Text as="div" size="2" mb="1" weight="bold">Coordenador Responsável</Text>
                     <TextField.Root size="3" value={coordenador} onChange={(e) => setCoordenador(e.target.value)} placeholder="Nome completo do coordenador" required />
@@ -505,7 +517,16 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
     };
 
 
-    if (loading) return <div>Carregando...</div>;
+
+    if (loading) {
+        return (
+            <Flex align="center" justify="center" style={{ minHeight: '400px' }}>
+                <Spinner size="3" />
+            </Flex>
+        );
+    }
+
+
     if (error) return <div className="text-red-500">{error}</div>;
 
 
@@ -526,7 +547,7 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
                         <Flex justify="between" align="center">
                             <div>
                                 <Heading as="h3" size="4">{inst.nome}</Heading>
-                                <Text as="p" size="2" color="gray">{inst.cidade}</Text>
+                                <Text as="p" size="2" color="gray">{inst.cidade_id_mapa}</Text>
                             </div>
                             <Flex gap="4">
                                 <Button variant="soft" onClick={() => onSelectInstituicao(inst.id)}>
@@ -609,7 +630,15 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
     }, [fetchInstituicaoDetails]);
 
 
-    if (loading) return <div>Carregando detalhes...</div>;
+    if (loading) {
+        return (
+            <Flex align="center" justify="center" style={{ minHeight: '400px' }}>
+                <Spinner size="3" />
+            </Flex>
+        );
+    }
+
+
     if (error) return <div className="text-red-500">{error}</div>;
     if (!instituicao) return <div>Instituição não encontrada.</div>;
 
