@@ -5,6 +5,7 @@ import BG from "../../assets/bg_main2.png";
 import {
     Box,
     Card,
+    Flex,
     Heading,
     Text,
     Tooltip
@@ -16,7 +17,7 @@ import regionData from "../../assets/BahiaRegiao2.json";
 import cityData from "../../assets/BahiaCidades4.json";
 import { mapStore } from "../../store/mapsStore";
 import { axiosPlain } from "../../utils/axios";
-
+import { AnimatedLogoMarker } from './AnimatedLogoMarker';
 
 // . . . . . . .
 
@@ -29,6 +30,7 @@ interface Instituicao {
     cidade_id_mapa: string;
     offset_x: number; // <-- Adicionado
     offset_y: number; // <-- Adicionado
+    marcador_logo: string | null
 }
 
 
@@ -93,8 +95,8 @@ const Incite = () => { // ★ Incite ⋙─────────────�
     // ✳ { region, city, setRegion, setCity } 
     const { region, setRegion } = mapStore();
 
-    // ✳ [markers, setMarkers]
-    const [markers, setMarkers] = useState<Marker[]>([]);
+
+    // const [markers, setMarkers] = useState<Marker[]>([]);
 
     // ✳  [selectedInstituicao, setSelectedInstituicao]
     const [selectedInstituicao, setSelectedInstituicao] = useState<Instituicao | null>(null);
@@ -104,16 +106,9 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
     // ── ⋙── ── ── ── ── ── ──➤
 
-    useEffect(() => { //HERE uE
-        if (svgRef.current && !originalBBoxRef.current) {
-            // Assign the value from getBBox to the ref
-            originalBBoxRef.current = svgRef.current.getBBox();
-            console.log("Original BBox:", originalBBoxRef.current);
-        }
-    }, []); // . . . . . . .
 
     useEffect(() => { //HERE uE
-        // Cache da BBox (sua lógica está perfeita)
+        // Cache da BBox 
         if (svgRef.current && !originalBBoxRef.current) {
             originalBBoxRef.current = svgRef.current.getBBox();
         }
@@ -130,7 +125,53 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         };
 
         fetchInstituicoes();
-    }, []);  // ── ⋙── ── ── ── ── ── ── ──➤
+    }, []);
+
+
+    // ── ◯─◡◠◡◠◡◠  LOGO MARKER   ◡◠◡◠◡◠◡◠─➤
+    // ✳  [localImageUrl, setLocalImageUrl]
+    const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
+
+    // Função que cria a URL temporária para a imagem selecionada
+    const handleLocalImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            // Se já houver uma URL antiga, a revogamos para liberar memória
+            if (localImageUrl) {
+                URL.revokeObjectURL(localImageUrl);
+            }
+            // Criamos a nova URL local e a guardamos no estado
+            setLocalImageUrl(URL.createObjectURL(file));
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (localImageUrl) {
+                URL.revokeObjectURL(localImageUrl);
+            }
+        };
+    }, [localImageUrl]);
+
+
+    const handleTestMarkerClick = () => {
+        // Simulamos que o marcador de teste pertence à região 'recôncavo'
+        const testRegionId = 'reconcavo';
+        const regionObject = mapRegion.find(r => r.id === testRegionId);
+        const regionElement = svgRef.current?.querySelector(`#${testRegionId}`) as SVGPathElement;
+
+        if (regionObject && regionElement) {
+            setSelectedInstituicao({ nome: 'Meu Logo de Teste' }); // Mostra info no painel
+            setCurrentLevel(1);
+            setRegion(regionObject.id, regionObject.name);
+            runToFit(regionElement.getBBox(), regionElement.getBoundingClientRect());
+        } else {
+            alert(`Região de teste "${testRegionId}" não encontrada!`);
+        }
+    };
+    // ── ◯─◡◠◡◠◡◠◡◠◡◠◡◠◡◠─➤
+
+
 
     // (●) cityToRegionMap
     const cityToRegionMap = useMemo(() => {
@@ -142,6 +183,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         }
         return map;
     }, []);
+
 
 
     // (✪) handleMarkerClick
@@ -196,7 +238,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         config: { duration: 300 } // Ajuste a duração conforme necessário
     });
 
-    // ✪ transition
+    // [✪] transition mapCity
     const transition = useTransition(mapCity[region.active] || [], {
         trail: 600 / mapCity[region.active].length || 1,
         from: { opacity: 0, transform: "scale(0)" },
@@ -342,6 +384,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                     </Box>
                 </Box>
 
+
                 <Box //── PANEL2
                     id="PANEL2"
                     className={classNames(
@@ -350,6 +393,21 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                 >
 
                     <div className="flex flex-col">
+
+
+                        <Card // HERE Teste de Logo PNG 🧪
+                            className="mb-4">
+                            <Flex direction="column" gap="2">
+                                <Text weight="bold">Teste de Logo PNG</Text>
+                                <Text size="2" color="gray">Selecione uma imagem do seu computador para ver como ela ficaria como um marcador no mapa.</Text>
+                                <input
+                                    type="file"
+                                    accept="image/png, image/jpeg"
+                                    onChange={handleLocalImageSelect}
+                                    className="text-sm"
+                                />
+                            </Flex>
+                        </Card>
 
 
                         <div // ⋙── ── canvas-wrapper ── ──➤
@@ -363,7 +421,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                             }}>
 
 
-                            <animated.svg //HERE  SVGCanvas
+                            <animated.svg //HERE  SVGCanvas // . . . props
                                 id="SVGCanvas"
                                 ref={svgRef}
                                 viewBox="0 0 602 640"
@@ -373,7 +431,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                     height: "100%",
                                     ...springStyles, // ○ springStyles
                                 }}
-                                onClick={handleClick} // (○) handleClick
+                                onClick={handleClick} // (○) handleClick // . . . children
                             >
 
                                 <g>
@@ -389,7 +447,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                                 ".cls-2{fill:none;stroke:#000;stroke-width:2px}"
                                             }
                                         </style>
-                                    </defs>
+                                    </defs> 
 
 
                                     { // [○] mapRegion
@@ -413,7 +471,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                                 </g>
                                             )
                                         })
-                                    }
+                                    } // . . . 
 
 
                                     {currentLevel === 1 && ( // ⊙ currentLevel
@@ -432,9 +490,9 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                     )}
 
 
-                                    {transition((style, cityItem) => { // ○ transition
+                                    {transition((style, cityItem) => { // [○] transition mapCity
 
-                                        return (
+                                        return ( 
                                             <animated.g {...style}>
                                                 <title>{cityItem.name}</title>
                                                 <animated.path
@@ -450,39 +508,45 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                                 />
                                             </animated.g>
                                         );
-                                    })}
+                                    })} //. . .
 
-                                    {instituicoes.map(instituicao => {
+                                    {instituicoes.map(instituicao => { // ⊙  instituicoes
                                         const coords = mapaDeCoordenadas.get(instituicao.cidade_id_mapa);
-                                        if (coords) {
-                                            return (
-                                                <Tooltip
-                                                    key={instituicao.id}
-                                                    content={<Text size="2" weight="bold">{instituicao.nome}</Text>}
-                                                >
-                                                    <g
-                                                        transform={`translate(${coords.x + instituicao.offset_x}, ${coords.y + instituicao.offset_y})`}
-                                                        style={{ cursor: 'pointer' }}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleMarkerClick(instituicao);
-                                                        }}
-                                                    >
-                                                        <circle
-                                                            r={currentLevel === 0 ? 5 : 12 / currentScale} // Raio ajustável
-                                                            fill="#006400"
-                                                            stroke="white"
-                                                            strokeWidth={currentLevel === 0 ? 0.5 : 0.5 / currentScale} // Borda ajustável
-                                                            className="transition-all duration-300 ease-in-out hover:fill-yellow-400"
-                                                        />
-                                                    </g>
 
-                                                </Tooltip>
+                                        if (coords) {
+
+                                            return (
+                                                <AnimatedLogoMarker
+                                                    key={`inst-${instituicao.id}`}
+                                                    // Aplicamos o offset salvo no banco de dados
+                                                    x={coords.x + (instituicao.offset_x || 0)}
+                                                    y={coords.y + (instituicao.offset_y || 0)}
+                                                    imageUrl={instituicao.marcador_logo ?? undefined} // Supondo que a API retorne a URL do logo
+                                                    tooltipContent={<Text size="2" weight="bold">{instituicao.nome}</Text>}
+                                                    level={currentLevel} // ⊙ currentScale 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleMarkerClick(instituicao);
+                                                    }}
+                                                />
                                             );
                                         }
                                         return null;
-                                    })}
+                                    })} // . . .
 
+                                    {localImageUrl && ( 
+                                        <AnimatedLogoMarker
+                                            x={525.327} // Posição de teste (Salvador)
+                                            y={283.603}
+                                            imageUrl={localImageUrl}
+                                            tooltipContent={<Text>Meu Logo de Teste</Text>}
+                                            level={currentLevel}  // ⊙ currentScale
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleTestMarkerClick();
+                                            }}
+                                        />
+                                    )}
                                 </g>
 
                             </animated.svg>
