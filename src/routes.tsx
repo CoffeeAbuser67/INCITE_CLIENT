@@ -3,6 +3,7 @@
 import { lazy } from "@loadable/component";
 import Default from "./layouts/Default";
 import AuthLayout from "./layouts/Auth";
+import { RouteProtector } from "./components/guard/RouteProtector";
 
 const Home = lazy(() => import("./pages/home/Index"));
 
@@ -47,7 +48,9 @@ const routes = [
       {
         path: "settings", // [ROUTE] /settings
         element: (
-          <Settings />
+          <RouteProtector>
+            <Settings />
+          </RouteProtector>
         ),
       },
 
@@ -58,8 +61,6 @@ const routes = [
           <AuxMap />
         ),
       },
-
-
 
     ],
   },

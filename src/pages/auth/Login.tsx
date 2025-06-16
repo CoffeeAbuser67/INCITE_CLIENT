@@ -1,5 +1,12 @@
-// HERE
+// src/pages/LoginPage.tsx
 
+import React from 'react';
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useAuthService } from "../../hooks/useAuthService"; // Seu hook customizado
+import handleAxiosError from "../../utils/handleAxiosError"; // Sua função de erro
 
 import {
   Box,
@@ -11,118 +18,100 @@ import {
   TextField,
 } from "@radix-ui/themes";
 
-import { useFormik } from "formik";
-import * as Yup from "yup";
-
-import { useNavigate } from "react-router-dom";
-
-import useAuthService from "../../utils/authService";
-import handleAxiosError from "../../utils/handleAxiosError";
-import { toast } from "react-toastify";
-
-// WARN Must be empty in prodcution 
-const defaultValues = {
-  email: "kenneth86@example.com", // default email value
-  password: ")f%X6tfi^5", // default password value
-};
-
-
-// ★ Login ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
-const Login = () => {
+const LoginPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuthService();
-
+  const { login } = useAuthService(); // Usa o hook que encapsula toda a lógica
 
   const validationSchema = Yup.object({
-    email: Yup.string().email("Invalid email address"),
-    password: Yup.string().required("Password is required"),
+    email: Yup.string()
+      .email("Endereço de email inválido")
+      .required("Email é obrigatório"),
+    password: Yup.string().required("Senha é obrigatória"),
   });
 
-  // ✪ formik
   const formik = useFormik({
-    initialValues: defaultValues,
+    initialValues: {
+      email: "", // Começa vazio em vez de usar valores padrão
+      password: "",
+    },
     validationSchema,
-
-    onSubmit: async (values) => {
+    onSubmit: async (values, { setSubmitting }) => {
       try {
         const active_user = await login(values);
-        const message = `Welcome, ${active_user?.first_name}! `;
-        toast.success(message);
-        navigate("/");
+        toast.success(`Bem-vindo, ${active_user.first_name}!`);
+        // Após o login bem-sucedido e o estado ser atualizado, navega para a página principal do painel
+        navigate("/settings"); 
       } catch (err: unknown) {
         handleAxiosError(err);
-      } 
+      } finally {
+        setSubmitting(false);
+      }
     },
   });
 
   return (
-    //──✦─DOM────➤
-    <div className="flex flex-col gap-10 w-full h-full justify-center items-center">
-      <Card size="4" className=" flex flex-col w-full max-w-lg  ">
-        <Heading as="h2" size="8" trim="start" mb="7" color="orange">
-          Crescer
+    <div className="flex w-full h-screen justify-center items-center bg-gray-50">
+      <Card size="4" className="w-full max-w-md">
+        <Heading as="h2" size="8" trim="start" mb="5">
+          Painel INCITE-AF
         </Heading>
-
-        <Heading as="h3" size="5" trim="start" mb="5">
-          Sign in
-        </Heading>
+        <Text as="p" size="3" color="gray" mb="6">
+          Faça login para continuar.
+        </Text>
 
         <form onSubmit={formik.handleSubmit}>
           <Box mb="5">
             <Text as="div" size="2" mb="1" weight="bold">
               Email
             </Text>
-
             <TextField.Root
+              size="3"
               type="email"
               name="email"
+              autoComplete="email"
               value={formik.values.email}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
+              placeholder="seu.email@exemplo.com"
+              disabled={formik.isSubmitting}
             />
-            {formik.touched.email && formik.errors.email && (
-              <Text size="2" color="red">
+            {formik.touched.email && formik.errors.email ? (
+              <Text as="div" size="1" color="red" mt="1">
                 {formik.errors.email}
               </Text>
-            )}
+            ) : null}
           </Box>
 
-          <Box mb="5" position="relative">
-            <Flex align="baseline" justify="between" mb="1">
-              <Text
-                as="label"
-                size="2"
-                weight="bold"
-                htmlFor="example-password-field"
-              >
-                Password
-              </Text>
-            </Flex>
-
+          <Box mb="5">
+            <Text as="div" size="2" mb="1" weight="bold">
+              Senha
+            </Text>
             <TextField.Root
+              size="3"
               type="password"
               name="password"
+              autoComplete="current-password"
               value={formik.values.password}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
+              disabled={formik.isSubmitting}
             />
-
-            {formik.touched.password && formik.errors.password && (
-              <Text size="2" color="red">
+            {formik.touched.password && formik.errors.password ? (
+              <Text as="div" size="1" color="red" mt="1">
                 {formik.errors.password}
               </Text>
-            )}
+            ) : null}
           </Box>
 
           <Flex mt="6" justify="end" gap="3">
-            <Button variant="outline" type="submit">
-              Sign in
+            <Button size="3" type="submit" disabled={formik.isSubmitting}>
+              {formik.isSubmitting ? 'Entrando...' : 'Entrar'}
             </Button>
           </Flex>
         </form>
       </Card>
     </div>
   );
-}; // ★ ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
+};
 
-export default Login;
+export default LoginPage

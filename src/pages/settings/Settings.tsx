@@ -1,9 +1,20 @@
 // src/Settings.tsx
-import  { useState } from 'react';
-import { Box } from '@radix-ui/themes';
+import { useState } from 'react';
+import { Box, Button, Flex, Text } from '@radix-ui/themes';
 import { InstituicaoListPage, InstituicaoDetailPage, InstituicaoForm } from './Instituicao';
+import { useUserStore } from '../../store/userStore';
+import { useAuthService } from '../../hooks/useAuthService';
+import { LogOut } from 'lucide-react';
 
 const Settings = () => {
+
+  const { user } = useUserStore(); // Pegamos os dados do usuário para a saudação
+  const { logout } = useAuthService(); // 3. Pegamos a função de logout do nosso hook
+
+
+
+
+
 
   const [activeView, setActiveView] = useState<{ view: 'list' | 'detail' | 'create', id: number | null }>({
     view: 'list',
@@ -44,6 +55,19 @@ const Settings = () => {
 
   return (
     <div id="canvas" className="flex flex-col gap-10 justify-center items-center p-6">
+
+
+
+      <Flex justify="between" align="center" className=" mb-6">
+
+        <Text>Olá, <Text weight="bold">{user?.first_name}</Text>!</Text>
+        <Button variant="soft" color="red" onClick={logout}>
+          <LogOut size={16} className="mr-2" />
+          Sair
+        </Button>
+      </Flex>
+
+
       <Box className="w-full max-w-5xl mt-20">
         {renderContent()}
       </Box>

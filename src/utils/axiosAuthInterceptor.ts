@@ -1,35 +1,26 @@
-// src/interceptors/axiosAuthInterceptor.ts
 import { axiosForInterceptor } from "./axios";
+import { authService } from "../services/authService";
 
-export const setupAxiosInterceptor = (
-  tryRefreshToken: () => Promise<boolean>,
-  logout: () => Promise<void>
-) => {
+
+export const setupAxiosInterceptor = (logoutUser: () => void) => {
   axiosForInterceptor.interceptors.response.use(
     (response) => response,
     async (error) => {
-      const originalRequest = error?.config;
-      const status = error?.response?.status;
+      const originalRequest = error.config;
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
 
-      if (status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true; // Marca a requisição original para evitar looping
-        try {
-          const isTokenRefreshed = await tryRefreshToken();
+        const isRefreshed = await authService.tryRefreshToken();
 
-          if (isTokenRefreshed) {
-            console.log('Authentication Refreshed ↺'); // [LOG] Authentication Refreshed ↺ 
-            return axiosForInterceptor(originalRequest);
-          }
-        } catch (err) {
-          await logout();
-          return Promise.reject(err);
+        if (isRefreshed) {
+          console.log("Token renovado, refazendo a requisição...");
+          return axiosForInterceptor(originalRequest);
+        } else {
+          // Se o refresh falhar, desloga o usuário
+          logoutUser();
         }
       }
-
       return Promise.reject(error);
     }
   );
 };
-
-
-

@@ -30,7 +30,7 @@ import {
   Strong,
   DropdownMenu,
 } from "@radix-ui/themes";
-import { axiosDefault } from "../../services/axios";
+import { axiosPlain } from "../../utils/axios";
 import handleAxiosError from "../../utils/handleAxiosError";
 import { useWindowResize } from "../../hooks/useWindowResize";
 
@@ -126,7 +126,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
 
   const getSeriesValues = async () => { // {✪} getSeriesValues
-    const axios = axiosDefault;
+    const axios = axiosPlain;
     try {
       const area = city.active === '' ? region.active : city.active
       const TYPE = city.active === '' ? "regiao" : "municipio"
@@ -149,7 +149,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   } // ── ⋙── ── ── ── ── ── ── ──➤
 
   const getTopValues = async () => { // (✪) getTopValues
-    const axios = axiosDefault;
+    const axios = axiosPlain;
     try {
 
       const area = city.active === '' ? region.active : city.active

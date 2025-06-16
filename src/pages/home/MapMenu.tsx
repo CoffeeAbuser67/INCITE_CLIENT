@@ -24,7 +24,14 @@ import {
 
 import classNames from "classnames";
 
-import { axiosDefault } from "../../services/axios";
+import { axiosPlain } from "../../utils/axios";
+
+
+
+
+
+
+
 import handleAxiosError from "../../utils/handleAxiosError";
 
 import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
@@ -283,7 +290,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   }, []); // . . . . . . .
 
   const getRegionValues = useCallback(async () => { // (✪) getRegionValues 
-    const axios = axiosDefault;
+    const axios = axiosPlain;
     try {
 
       const url = "/getRegionValues/";
@@ -314,7 +321,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   }, [getRegionValues]); // ── ⋙── ── ── ── ── ── ── ──➤
 
   const getBahiaValues = useCallback(async () => { // (✪) getBahiaValues 
-    const axios = axiosDefault;
+    const axios = axiosPlain;
     try {
       const url = "/getRegionValues/";
       // ⊙ year ⊙ variable
