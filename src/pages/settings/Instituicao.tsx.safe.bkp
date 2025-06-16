@@ -1,7 +1,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog, Spinner, Tooltip } from '@radix-ui/themes';
-import { PlusCircle, Pencil, Trash2, ArrowLeft, Info } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, ArrowLeft, Info, Upload } from 'lucide-react';
 import PostEditorDashboard from './PostEditor';
 import { GerenciadorDeAba } from './GerenciadorDeAba'
 import { axiosPlain } from '../../utils/axios';
@@ -9,7 +9,6 @@ import { toast } from 'react-toastify';
 import { CitySelect } from './CitySelect';
 
 
-// ● 🧿⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
 
 // HERE Interfaces & types
 // --- Tipos para cada modelo ---
@@ -35,6 +34,7 @@ export interface Instituicao {
     produtos: ProdutoInovacao[];
     offset_x: number; // <-- Adicionado
     offset_y: number; // <-- Adicionado
+    marcador_logo: string | null; 
 }
 
 interface SubFormProps<T> {
@@ -377,41 +377,70 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
     const [telefone, setTelefone] = useState(initialData?.telefone || '');
     const [infoAdicionais, setInfoAdicionais] = useState(initialData?.informacoes_adicionais || '');
 
+
     const [offsetX, setOffsetX] = useState(initialData?.offset_x || 0);
     const [offsetY, setOffsetY] = useState(initialData?.offset_y || 0);
+
+
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [logoPreview, setLogoPreview] = useState<string | null>(initialData?.marcador_logo || null);
+    const [isUploading, setIsUploading] = useState(false);
+
+
+
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setLogoFile(file); // Guarda o objeto do arquivo para o upload
+            setLogoPreview(URL.createObjectURL(file)); // Cria uma URL local para o preview
+        }
+    };
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const payload = {
-            nome,
-            cidade_id_mapa: cidadeId,
-            coordenador_responsavel: coordenador,
-            email,
-            telefone,
-            informacoes_adicionais: infoAdicionais,
-            offset_x: Number(offsetX),
-            offset_y: Number(offsetY),
-        };
+        //  USAMOS FormData QUANDO HÁ ARQUIVOS 
+        const formData = new FormData();
 
+        // Adicionamos cada campo ao FormData
+        formData.append('nome', nome);
+        formData.append('cidade_id_mapa', cidadeId);
+        formData.append('coordenador_responsavel', coordenador);
+        formData.append('email', email);
+        formData.append('telefone', telefone);
+        formData.append('informacoes_adicionais', infoAdicionais);
+        formData.append('offset_x', offsetX.toString());
+        formData.append('offset_y', offsetY.toString());
+
+        // Se o usuário selecionou um novo arquivo de logo, adicione-o
+        if (logoFile) {
+            formData.append('marcador_logo', logoFile);
+        }
+
+        setIsUploading(true);
         try {
             if (initialData) {
-                // MODO EDIÇÃO: Requisição PUT para a URL do item específico
-                await axiosPlain.put(`/instituicoes/${initialData.id}/`, payload);
-                toast.success(`Instituição "${nome}" atualizada com sucesso!`);
+                // Para PUT com arquivos, o Axios também usa FormData
+                await axiosPlain.put(`/instituicoes/${initialData.id}/`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+                toast.success(`Instituição "${nome}" atualizada!`);
             } else {
-                // MODO CRIAÇÃO: Requisição POST para a URL da lista
-                await axiosPlain.post('/instituicoes/', payload);
-                toast.success(`Instituição "${nome}" criada com sucesso!`);
+                await axiosPlain.post('/instituicoes/', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+                toast.success(`Instituição "${nome}" criada!`);
             }
-            onSaveSuccess(); // Notifica o componente pai para voltar para a lista
-
+            onSaveSuccess();
         } catch (err) {
-            console.error('Erro ao salvar instituição:', err.response?.data || err.message);
-            toast.error('Ocorreu um erro ao salvar. Verifique o console.');
+            console.error("Erro ao salvar postagem:", err.response?.data || err);
+            toast.error("Erro ao salvar postagem.");
+        } finally {
+            setIsUploading(false);
         }
     };
-
 
 
     return (
@@ -420,6 +449,7 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
             <Flex direction="column" gap="4">
 
                 {/* --- CAMPOS OBRIGATÓRIOS --- */}
+
                 <Heading size="3" color="gray" highContrast>Informações de Contato</Heading>
                 <label>
                     <Text as="div" size="2" mb="1" weight="bold">Nome da Instituição</Text>
@@ -428,13 +458,12 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
 
                 <label>
                     <Text as="div" size="2" mb="1" weight="bold">Cidade</Text>
-
-                    <CitySelect // (○) CitySelect
+                    <CitySelect // (○) CitySelect 🌆
                         value={cidadeId}
                         onChange={setCidadeId}
                     />
-
                 </label>
+
 
                 <label>
                     <Text as="div" size="2" mb="1" weight="bold">Coordenador Responsável</Text>
@@ -449,58 +478,99 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
                     <TextField.Root size="3" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(XX) XXXXX-XXXX" required />
                 </label>
 
-                <Separator my="3" size="4" />
 
-                {/* --- CAMPOS OPCIONAIS --- */}
+                <Separator // HERE  INPUT INFO ADICIONAL ❔
+                    my="4" size="4"
+                />
                 <Heading size="3" color="gray" highContrast>Informações Adicionais</Heading>
-
                 <label>
                     <TextArea size="3" value={infoAdicionais} onChange={(e) => setInfoAdicionais(e.target.value)} placeholder="Qualquer informação adicional relevante sobre a instituição..." />
                 </label>
 
-                <Separator my="3" size="4" />
 
-                {/* ▼▼▼ NOVA SEÇÃO PARA CONFIGURAÇÕES DO MAPA ▼▼▼ */}
+                <Separator // . . .  Logo fields 🏴‍☠️
+                    my="4"
+                    size="4"
+                />
+
                 <Heading size="3" color="gray" highContrast>Ajustes do Marcador no Mapa</Heading>
                 <Text as="p" size="2" color="gray" mb="3">
                     Use as setas do teclado ou o scroll do mouse nos campos X e Y para ajustar a posição do pino no mapa, caso o centro da cidade não seja ideal ou para evitar sobreposição.
                 </Text>
 
-                <Flex gap="3">
-                    <label className="flex-1">
-                        <Text as="div" size="2" mb="1" weight="bold">Deslocamento Horizontal (X)</Text>
-                        <TextField.Root
-                            type="number"
-                            step="0.1" // Permite ajustes finos com decimais
-                            value={offsetX}
-                            onChange={(e) => setOffsetX(parseFloat(e.target.value) || 0)}
-                        />
-                    </label>
 
+                <Flex
+                    gap="5" align="start"
+                >
 
-                    <label className="flex-1">
-                        <Flex align="center" gap="2" mb="1">
-                            <Text as="div" size="2" weight="bold">Deslocamento Vertical (Y)</Text>
-                            <Tooltip content="No mapa, o eixo Y é invertido: valores positivos movem para baixo, valores negativos movem para cima.">
-                                {/* O ícone que, ao passar o mouse, mostrará o tooltip */}
-                                <Info size={16} style={{ color: 'var(--gray-a9)', cursor: 'help' }} />
-                            </Tooltip>
+                    <Flex // HERE  INPUT DE AJUSET DO MARCADOR 📍
+                        direction="column" gap="3" className="flex-1">
+                        <Text as="p" size="2" color="gray">
+                            Ajuste fino da posição do pino para evitar sobreposição ou centralização incorreta.
+                        </Text>
+                        <Flex gap="3">
+                            <label className="flex-1">
+                                <Text as="div" size="2" mb="1" weight="bold">Deslocamento X</Text>
+                                <TextField.Root type="number" step="0.1" value={offsetX} onChange={(e) => setOffsetX(parseFloat(e.target.value) || 0)} />
+                            </label>
+                            <label className="flex-1">
+                                <Flex align="center" gap="2" mb="1">
+                                    <Text as="div" size="2" weight="bold">Deslocamento Y</Text>
+                                    <Tooltip content="No mapa, o eixo Y é invertido: valores positivos movem para baixo, valores negativos movem para cima.">
+                                        <Info size={16} style={{ color: 'var(--gray-a9)', cursor: 'help' }} />
+                                    </Tooltip>
+                                </Flex>
+                                <TextField.Root type="number" step="0.1" value={offsetY} onChange={(e) => setOffsetY(parseFloat(e.target.value) || 0)} />
+                            </label>
                         </Flex>
-                        <TextField.Root
-                            type="number"
-                            step="0.1"
-                            value={offsetY}
-                            onChange={(e) => setOffsetY(parseFloat(e.target.value) || 0)}
+                    </Flex>
+
+
+                    {/* --- SEPARADOR VERTICAL --- */}
+                    <div className="w-px bg-gray-300 self-stretch" />
+
+                    <Flex //  HERE  INPUT DO LOGO 🗃️
+                        direction="column" gap="3" className="flex-1">
+                        <Text as="div" size="2" weight="bold">Logo do Marcador (Opcional)</Text>
+
+                        {/* Input de arquivo escondido */}
+                        <input
+                            type="file"
+                            accept="image/png, image/jpeg, image/svg+xml"
+                            onChange={handleFileSelect}
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
                         />
-                    </label>
 
+                        {/* Botão estilizado do Radix que aciona o input escondido */}
+                        <Button type="button" variant="soft" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                            <Upload size={16} />
+                            {logoFile ? 'Trocar Imagem' : 'Escolher Imagem'}
+                        </Button>
 
+                        {isUploading && <Flex align="center" gap="2"><Spinner /> Processando...</Flex>}
+
+                        {/* Pré-visualização da imagem */}
+                        {logoPreview && (
+                            <Flex align="center" gap="3">
+                                <img src={logoPreview} alt="Preview do logo" className="w-14 h-14 object-cover rounded-full border" />
+                                <Button type="button" size="1" variant="ghost" color="red" onClick={() => {
+                                    setLogoFile(null);
+                                    setLogoPreview(null);
+                                }}>
+                                    Remover
+                                </Button>
+                            </Flex>
+                        )}
+                    </Flex>
                 </Flex>
 
 
-                <Flex gap="3" mt="4" justify="end">
+                <Flex gap="3" mt="6" justify="end">
                     <Button type="button" variant="soft" color="gray" size="3" onClick={onCancel}>Cancelar</Button>
-                    <Button type="submit" size="3">Salvar</Button>
+                    <Button type="submit" size="3" disabled={isUploading}>
+                        {isUploading ? 'Salvando...' : 'Salvar'}
+                    </Button>
                 </Flex>
             </Flex>
         </form>
@@ -558,7 +628,6 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
     };
 
 
-
     if (loading) {
         return (
             <Flex align="center" justify="center" style={{ minHeight: '400px' }}>
@@ -595,10 +664,7 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
                                     <Pencil className="mr-2 h-4 w-4" /> Gerenciar
                                 </Button>
 
-
-
                                 <Button variant="soft" color="red" onClick={() => setAlvoExclusao(inst)}>
-
                                     <Trash2 className="mr-2 h-4 w-4" /> Excluir
                                 </Button>
 

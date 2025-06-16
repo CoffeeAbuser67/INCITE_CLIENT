@@ -113,12 +113,11 @@ const Incite = () => { // ★ Incite ⋙─────────────�
             originalBBoxRef.current = svgRef.current.getBBox();
         }
 
-        // Função para buscar as instituições na API
         const fetchInstituicoes = async () => {
             try {
-                const response = await axiosPlain.get('/instituicoes/');
+                const response = await axiosPlain.get('/map-markers/');
                 setInstituicoes(response.data);
-                console.log("Instituições carregadas da API:", response.data);
+                console.log("Instituições carregadas na API:", response.data);
             } catch (error) {
                 console.error("Falha ao buscar instituições:", error);
             }
