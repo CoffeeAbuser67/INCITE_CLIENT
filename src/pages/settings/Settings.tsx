@@ -5,13 +5,13 @@ import { InstituicaoListPage, InstituicaoDetailPage, InstituicaoForm } from './I
 import { useUserStore } from '../../store/userStore';
 import { useAuthService } from '../../hooks/useAuthService';
 import { LogOut } from 'lucide-react';
+import { UserPanel } from './UserPanel';
+
 
 const Settings = () => {
 
   const { user } = useUserStore(); // Pegamos os dados do usuário para a saudação
   const { logout } = useAuthService(); // 3. Pegamos a função de logout do nosso hook
-
-
 
 
 
@@ -57,7 +57,6 @@ const Settings = () => {
     <div id="canvas" className="flex flex-col gap-10 justify-center items-center p-6">
 
 
-
       <Flex justify="between" align="center" className=" mb-6">
 
         <Text>Olá, <Text weight="bold">{user?.first_name}</Text>!</Text>
@@ -66,6 +65,11 @@ const Settings = () => {
           Sair
         </Button>
       </Flex>
+
+
+      <Box className="w-full max-w-5xl mt-20">
+        <UserPanel />
+      </Box>
 
 
       <Box className="w-full max-w-5xl mt-20">

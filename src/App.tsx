@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useRoutes } from "react-router-dom";
 
 import { HelmetProvider, Helmet } from "react-helmet-async";
@@ -17,9 +17,9 @@ import { useAuthService } from "./hooks/useAuthService";
 function App() {
 
   const content = useRoutes(routes); 
+
   const { logout } = useAuthService();
   setupAxiosInterceptor(logout);
-
   return (
     <HelmetProvider>
       <Helmet

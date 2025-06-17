@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import classNames from "classnames";
-import { Box, Text } from "@radix-ui/themes"; // Certifique-se de que está usando ou substitua por 'div'
-import { Link } from "react-router-dom";
+import { Avatar, Box, Button, Dialog, DropdownMenu, Flex, Separator, Text, Tooltip } from "@radix-ui/themes"; // Certifique-se de que está usando ou substitua por 'div'
+import { Link, useNavigate } from "react-router-dom";
+import { useUserStore } from "../../store/userStore";
+import { useAuthService } from "../../hooks/useAuthService";
+import { LayoutDashboard, LogIn, LogOut, User } from "lucide-react";
 
 
+// 🧿
 
 
 // [MEDIA] ILOGO_SVG
@@ -38,8 +42,33 @@ const ILOGO_SVG = (props: { x: number, y: number }) => (
 
 
 
+const getOptimisticUserInfo = () => { // (✪) getOptimisticUserInfo
+    const storedInfo = localStorage.getItem('user_info');
+    if (storedInfo) {
+        return JSON.parse(storedInfo) as { name: string };
+    }
+    return null;
+}
+
+
 const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙────────────────➤
     const [scrolled, setScrolled] = useState(false);
+
+    const navigate = useNavigate();
+    const userFromStore = useUserStore((state) => state.user);
+    const { logout } = useAuthService();
+
+    const [displayUser, setDisplayUser] = useState(getOptimisticUserInfo()); // (○) getOptimisticUserInfo
+
+    useEffect(() => {
+        if (userFromStore) {
+            setDisplayUser({ name: userFromStore.first_name });
+        } else {
+            setDisplayUser(null);
+        }
+    }, [userFromStore]);
+
+
 
     useEffect(() => {
         const handleScroll = () => {
@@ -53,7 +82,7 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
 
     return (// ── ◯⫘⫘⫘⫘⫘⫘⫘ DOM ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
 
-        <Box // Se não estiver usando Radix, substitua <Box> por <div className="...">
+        <Box
             id="SimplifiedNavBar"
             className={classNames(
                 "fixed top-0 left-0 w-full flex items-center justify-center z-50",
@@ -68,10 +97,8 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                 id="contentWrapper"
                 className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 flex justify-between items-center h-full" // Aumentei max-w-6xl
             >
-                {/* Logo */}
 
                 <div
-
                     id="logoContainer"
                     className={classNames(
                         "flex justify-center items-center gap-2",
@@ -90,16 +117,15 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                         Incite
                     </Text>
 
-                    <Link to="/">
-                        <ILOGO_SVG x={scrolled ? 22 : 32} y={scrolled ? 22 : 32} />
-                    </Link>
-
                     <Text className="text-green-900 " size="6" highContrast weight={"bold"} style={{ textShadow: "0 2px 6px rgba(0,0,0,0.2)" }}>
                         AF
                     </Text>
 
-                </div>
+                    <Link to="/">
+                        <ILOGO_SVG x={scrolled ? 22 : 32} y={scrolled ? 22 : 32} />
+                    </Link>
 
+                </div>
 
                 {/* Links de Navegação Simples */}
                 <nav className="flex space-x-6"> {/* Aumentei o space-x-6 */}
@@ -121,6 +147,67 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                         </a>
                     ))}
                 </nav>
+
+
+                {displayUser ? ( // (○) getOptimisticUserInfo
+                    <Dialog.Root>
+                        <DropdownMenu.Root>
+                            <DropdownMenu.Trigger>
+
+                                <button className="flex items-center gap-3 text-sm font-medium rounded-full p-1 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-jade-500">
+                                    <Text>Olá,
+                                        <Text weight="bold">{displayUser.name}</Text>
+                                    </Text>
+                                    <Avatar
+                                        src={`https://ui-avatars.com/api/?name=${displayUser.name}&background=random`}
+                                        fallback={"🦀"}
+                                        radius="full"
+                                    />
+                                </button>
+
+                            </DropdownMenu.Trigger>
+                            <DropdownMenu.Content>
+                                <DropdownMenu.Label>Minha Conta</DropdownMenu.Label>
+
+                                {/* O Dialog.Trigger abre a modal de edição de perfil */}
+                                <Dialog.Trigger>
+                                    <DropdownMenu.Item><User className="mr-2 h-4 w-4" /> Meu Perfil</DropdownMenu.Item>
+                                </Dialog.Trigger>
+
+                                {/* TODO: Criar um formulário para editar o perfil do usuário */}
+
+                                <DropdownMenu.Separator />
+
+                                <DropdownMenu.Item onClick={logout} color="red">
+                                    <LogOut className="mr-2 h-4 w-4" /> Sair
+                                </DropdownMenu.Item>
+                            </DropdownMenu.Content>
+                        </DropdownMenu.Root>
+
+                        {/* O conteúdo da modal que abre ao clicar em "Meu Perfil" */}
+                        <Dialog.Content style={{ maxWidth: 450 }}>
+                            <Dialog.Title>Editar Perfil</Dialog.Title>
+                            <Separator my="3" size="4" />
+
+                            {/* Aqui entrará o formulário de edição de perfil.
+                    Por enquanto, vamos usar o de mudança de senha como exemplo. */}
+                            🦀
+
+                        </Dialog.Content>
+                    </Dialog.Root>
+                ) : (
+
+                    <Tooltip content="Log-In ">
+                        <Button variant="ghost" onClick={() => navigate('/auth/login')}>
+                            <LogIn size={16} className="mr-2" />
+                        </Button>
+                    </Tooltip>
+
+                )}
+
+
+
+
             </div>
         </Box>
     );
