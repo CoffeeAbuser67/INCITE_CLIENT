@@ -1,10 +1,9 @@
 // src/Settings.tsx
 import { useState } from 'react';
-import { Box, Button, Flex, Heading, Tabs, Text } from '@radix-ui/themes';
+import { Box, Button, Flex, Heading, Text } from '@radix-ui/themes';
 import { InstituicaoListPage, InstituicaoDetailPage, InstituicaoForm } from './Instituicao';
 import { useUserStore } from '../../store/userStore';
 import { UserPanel } from './UserPanel';
-import { ChangePasswordForm } from './ChangePasswordForm';
 
 
 const Settings = () => {
@@ -32,7 +31,7 @@ const Settings = () => {
     setActiveView({ view: 'list', id: null });
   };
 
-  const renderInstituicaoContent = () => {
+  const renderContent = () => {
     switch (activeView.view) {
       case 'detail':
         // Asseguramos que o id não é nulo para o TypeScript
@@ -53,42 +52,20 @@ const Settings = () => {
   };
 
   return (
-    <div id="canvas" className="mt-20 p-4 sm:p-8 w-full max-w-7xl mx-auto">
-
-      <Heading  size="8" mb="6">Painel de Controle</Heading>
-
-      <Tabs.Root defaultValue="instituicoes">
-        <Tabs.List  color = "gray" className='text-base'>
-          <Tabs.Trigger  value="instituicoes">Instituições</Tabs.Trigger>
-
-          {isAdmin && (
-            <Tabs.Trigger value="usuarios">Usuários</Tabs.Trigger>
-          )}
-
-          <Tabs.Trigger  value="perfil">Perfil</Tabs.Trigger>
-
-        </Tabs.List>
-
-        <Box pt="6">
-
-          <Tabs.Content value="instituicoes">
-            {renderInstituicaoContent()}
-          </Tabs.Content>
+    <div id="canvas" className="flex flex-col gap-10 justify-center items-center p-6">
 
 
-          <Tabs.Content value="usuarios">
-            {isAdmin && <UserPanel />}
-          </Tabs.Content>
+      <Box className="w-full max-w-5xl mt-20">
+        <Heading as="h1" size="8" mb="6">
+          {isAdmin && 'Gerenciamento de Usuários'}
+        </Heading>
+        {isAdmin && <UserPanel />}
+      </Box>
 
 
-          <Tabs.Content value="perfil">
-            <ChangePasswordForm />
-          </Tabs.Content>
-
-        </Box>
-      </Tabs.Root>
-
-
+      <Box className="w-full max-w-5xl mt-20">
+        {renderContent()}
+      </Box>
     </div>
   );
 };

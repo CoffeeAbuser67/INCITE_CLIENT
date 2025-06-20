@@ -6,25 +6,31 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  instituicoes_count: number;
   user_group: number; // number para o choice do Django
 }
 
 interface UserStore {
   user: User | null;
   sessionChecked: boolean;
+  userList: User[]; 
+
   setActiveUser: (userData: User | null) => void;
+  setUserList: (users: User[]) => void; // <-- NOVO: Ação para popular a lista
   removeUser: () => void;
 }
 
+
 export const useUserStore = create<UserStore>((set) => ({
   user: null,
+  userList: [],
   sessionChecked: false, 
   setActiveUser: (userData) => {
     set({ user: userData, sessionChecked: true });
   },
+  
+  setUserList: (users) => set({ userList: users }),
   removeUser: () => {
-    // Ao remover, setamos o user para null mas mantemos sessionChecked como true
-    // para dizer ao RouteProtector: "a sessão foi checada e o resultado é: sem usuário".
     set({ user: null, sessionChecked: true }); 
   },
 }));

@@ -4,7 +4,7 @@ import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separa
 import { PlusCircle, Pencil, Trash2, ArrowLeft, Info, Upload } from 'lucide-react';
 import PostEditorDashboard from './PostEditor';
 import { GerenciadorDeAba } from './GerenciadorDeAba'
-import { axiosPlain } from '../../utils/axios';
+import { axiosForInterceptor } from '../../utils/axios';
 import { toast } from 'react-toastify';
 import { CitySelect } from './CitySelect';
 
@@ -266,10 +266,10 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
 
         try {
             if (postAlvo && 'id' in postAlvo) {
-                await axiosPlain.put(`/postagens/${postAlvo.id}/`, payload);
+                await axiosForInterceptor.put(`/postagens/${postAlvo.id}/`, payload);
                 toast.success('Postagem atualizada com sucesso!');
             } else {
-                await axiosPlain.post('/postagens/', payload);
+                await axiosForInterceptor.post('/postagens/', payload);
                 toast.success('Postagem criada com sucesso!');
             }
             setMode('list');
@@ -285,7 +285,7 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
         if (!postParaExcluir) return;
 
         try {
-            await axiosPlain.delete(`/postagens/${postParaExcluir.id}/`);
+            await axiosForInterceptor.delete(`/postagens/${postParaExcluir.id}/`);
             toast.success(`Postagem "${postParaExcluir.title}" excluída com sucesso!`);
 
             // Chama a função do pai para recarregar todos os dados da instituição
@@ -424,12 +424,12 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
         try {
             if (initialData) {
                 // Para PUT com arquivos, o Axios também usa FormData
-                await axiosPlain.put(`/instituicoes/${initialData.id}/`, formData, {
+                await axiosForInterceptor.put(`/instituicoes/${initialData.id}/`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 toast.success(`Instituição "${nome}" atualizada!`);
             } else {
-                await axiosPlain.post('/instituicoes/', formData, {
+                await axiosForInterceptor.post('/instituicoes/', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 toast.success(`Instituição "${nome}" criada!`);
@@ -592,7 +592,7 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
         const fetchInstituicoes = async () => {
             try {
                 setLoading(true);
-                const response = await axiosPlain.get('/instituicoes/');
+                const response = await axiosForInterceptor.get('/instituicoes/');
                 setInstituicoes(response.data);
                 setError(null);
             } catch (err) {
@@ -611,7 +611,7 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
 
         try {
             // Faz a chamada DELETE para a API
-            await axiosPlain.delete(`/instituicoes/${alvoExclusao.id}/`);
+            await axiosForInterceptor.delete(`/instituicoes/${alvoExclusao.id}/`);
 
             // Atualiza a lista no frontend para remover o item deletado
             setInstituicoes(prevInstituicoes =>
@@ -644,7 +644,7 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
     return (
         <div>
             <Flex justify="between" align="center" mb="6">
-                <Heading size="8">Painel de Instituições</Heading>
+                <Heading>Gerenciamento de Instituições</Heading>
                 <Button size="3" onClick={onShowCreateForm}>
                     <PlusCircle className="mr-2 h-5 w-5" />
                     Adicionar Instituição
@@ -721,7 +721,7 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
     const fetchInstituicaoDetails = useCallback(async () => {
         try {
             // Não precisa setar loading aqui para o refresh ser mais suave
-            const response = await axiosPlain.get(`/instituicoes/${instituicaoId}/`);
+            const response = await axiosForInterceptor.get(`/instituicoes/${instituicaoId}/`);
             setInstituicao(response.data);
             setError(null);
         } catch (err) {
@@ -753,7 +753,7 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
 
     return (
         <div>
-            <Button variant="soft" onClick={onBackToList} mb="4">
+            <Button variant="soft" onClick={onBackToList} className='my-6'>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Voltar para a Lista
             </Button>
 

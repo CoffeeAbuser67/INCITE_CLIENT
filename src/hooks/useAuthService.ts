@@ -32,6 +32,7 @@ export const useAuthService = () => {
         error
       );
     } finally {
+      console.log('%c ⚠️ LOGOUT FOI CHAMADO! ', 'color: red; font-size: 16px; font-weight: bold;');
       removeUser();
       localStorage.removeItem("user_info");
       navigate("/"); // Redireciona para a homeF

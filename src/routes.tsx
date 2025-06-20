@@ -16,13 +16,6 @@ const AuxMap = lazy(() => import("./pages/aux_MapPositioning"));
 // . . . . . . . . . ➤
 
 
-// [●] ROLES
-const ROLES = {
-  User: 4,
-  Staff: 3,
-  Admin: 2,
-  Super: 1
-};
 
 // . . . . . . . . . ➤
 
@@ -34,13 +27,13 @@ const routes = [
     ),
     children: [
       {
-        path: "", // [ROUTE]  /
+        path: "dashboard", // [ROUTE]  /
         element: <Home />,
       },
 
 
       {
-        path: "incite", // [ROUTE]  /
+        path: "", // [ROUTE]  /
         element: <Incite />,
       },
 
@@ -62,6 +55,8 @@ const routes = [
         ),
       },
 
+
+      
     ],
   },
 
