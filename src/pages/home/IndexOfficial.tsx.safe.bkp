@@ -5,8 +5,11 @@ import BG from "../../assets/bg_main2.png";
 import {
     Box,
     Card,
+    Flex,
     Heading,
     Text,
+    Tooltip
+
 } from "@radix-ui/themes";
 import { animated, useSpring, useTransition } from "react-spring";
 import { useRef, useState, useEffect, useMemo } from "react"; // <--- adicione useEffect
@@ -17,7 +20,6 @@ import { axiosPlain } from "../../utils/axios";
 import { AnimatedLogoMarker } from './AnimatedLogoMarker';
 
 // . . . . . . .
-// 🧿
 
 const SCALE_ADJUSTMENT = 0.35
 
@@ -61,12 +63,12 @@ interface CityData {
 }
 
 
-// interface Marker {
-//     id: string;
-//     name: string;
-//     x: number;
-//     y: number;
-// }
+interface Marker {
+    id: string;
+    name: string;
+    x: number;
+    y: number;
+}
 
 
 // [●] mapCity
@@ -123,6 +125,51 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
         fetchInstituicoes();
     }, []);
+
+
+    // ── ◯─◡◠◡◠◡◠  LOGO MARKER   ◡◠◡◠◡◠◡◠─➤
+    // ✳  [localImageUrl, setLocalImageUrl]
+    const [localImageUrl, setLocalImageUrl] = useState<string | null>(null);
+
+    // Função que cria a URL temporária para a imagem selecionada
+    const handleLocalImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            // Se já houver uma URL antiga, a revogamos para liberar memória
+            if (localImageUrl) {
+                URL.revokeObjectURL(localImageUrl);
+            }
+            // Criamos a nova URL local e a guardamos no estado
+            setLocalImageUrl(URL.createObjectURL(file));
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (localImageUrl) {
+                URL.revokeObjectURL(localImageUrl);
+            }
+        };
+    }, [localImageUrl]);
+
+
+    const handleTestMarkerClick = () => {
+        // Simulamos que o marcador de teste pertence à região 'recôncavo'
+        const testRegionId = 'reconcavo';
+        const regionObject = mapRegion.find(r => r.id === testRegionId);
+        const regionElement = svgRef.current?.querySelector(`#${testRegionId}`) as SVGPathElement;
+
+        if (regionObject && regionElement) {
+            setSelectedInstituicao({ nome: 'Meu Logo de Teste' }); // Mostra info no painel
+            setCurrentLevel(1);
+            setRegion(regionObject.id, regionObject.name);
+            runToFit(regionElement.getBBox(), regionElement.getBoundingClientRect());
+        } else {
+            alert(`Região de teste "${testRegionId}" não encontrada!`);
+        }
+    };
+    // ── ◯─◡◠◡◠◡◠◡◠◡◠◡◠◡◠─➤
+
 
 
     // (●) cityToRegionMap
@@ -288,7 +335,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
     return (// ── ⋙⇌⇌⇌⇌⇌⇌⇌ DOM ⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸
         <>
-
             <Box // CANVAS ── ── ── ──➤
                 id="CANVAS"
                 className={classNames(
@@ -300,7 +346,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
                 <Box // ──  PANEL1
                     id="PANEL1"
-                    className="flex w-full mb-6">
+                    className="flex w-full">
 
                     <Box // HERE TEXT_HEADER
                         id="TEXT_HEADER"
@@ -341,13 +387,27 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                 <Box //── PANEL2
                     id="PANEL2"
                     className={classNames(
-                        "flex items-center w-full gap-6 justify-around mb-24",
+                        "flex w-full gap-6 justify-around",
                     )}
                 >
 
-                    <Box // map-panel
-                        id="map-panel"
-                        className="flex flex-col">
+                    <div className="flex flex-col">
+
+
+                        <Card // HERE Teste de Logo PNG 🧪
+                            className="mb-4">
+                            <Flex direction="column" gap="2">
+                                <Text weight="bold">Teste de Logo PNG</Text>
+                                <Text size="2" color="gray">Selecione uma imagem do seu computador para ver como ela ficaria como um marcador no mapa.</Text>
+                                <input
+                                    type="file"
+                                    accept="image/png, image/jpeg"
+                                    onChange={handleLocalImageSelect}
+                                    className="text-sm"
+                                />
+                            </Flex>
+                        </Card>
+
 
                         <div // ⋙── ── canvas-wrapper ── ──➤
                             id="canvas-wrapper"
@@ -386,7 +446,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                                 ".cls-2{fill:none;stroke:#000;stroke-width:2px}"
                                             }
                                         </style>
-                                    </defs>
+                                    </defs> 
 
 
                                     { // [○] mapRegion
@@ -410,7 +470,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                                 </g>
                                             )
                                         })
-                                    } // . . .
+                                    } // . . . 
 
 
                                     {currentLevel === 1 && ( // ⊙ currentLevel
@@ -431,7 +491,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
                                     {transition((style, cityItem) => { // [○] transition mapCity
 
-                                        return (
+                                        return ( 
                                             <animated.g {...style}>
                                                 <title>{cityItem.name}</title>
                                                 <animated.path
@@ -473,64 +533,41 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                         return null;
                                     })} // . . .
 
-
+                                    {localImageUrl && ( 
+                                        <AnimatedLogoMarker
+                                            x={525.327} // Posição de teste (Salvador)
+                                            y={283.603}
+                                            imageUrl={localImageUrl}
+                                            tooltipContent={<Text>Meu Logo de Teste</Text>}
+                                            level={currentLevel}  // ⊙ currentScale
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleTestMarkerClick();
+                                            }}
+                                        />
+                                    )}
                                 </g>
 
                             </animated.svg>
 
                         </div>
-                    </Box>
 
 
 
-                    <div
-                        className="
-                            w-[3px]
-                            bg-gradient-to-b from-green-700 via-green-600 to-green-700
-                            h-[700px]
-                            mx-4
-                            rounded-full
-                            shadow-inner"
-                    />
+                    </div>
 
 
-
-                    <Card
-                        id="info-panel"
-                        variant="ghost"
-                        className="w-[500px] h-full p-4 overflow-y-auto"
-                        style={{
-                            minHeight: "400px",
-                            maxHeight: "600px",
-                        }}
-                    >
+                    <Card id="info-panel" /* ... */>
+                        {/* O painel de informações agora usa `selectedInstituicao` */}
                         {selectedInstituicao ? (
                             <>
-                                <Heading size="5" mb="2">{selectedInstituicao.nome}</Heading>
-                                <Text size="2" color="gray">
-                                    {/* Aqui você pode colocar outros dados do marcador/instituição */}
-                                    Cidade ID: {selectedInstituicao.cidade_id_mapa}
-                                </Text>
-                                {selectedInstituicao.marcador_logo && (
-                                    <img
-                                        src={selectedInstituicao.marcador_logo}
-                                        alt={`${selectedInstituicao.nome} logo`}
-                                        className="mt-4 w-full h-auto rounded"
-                                    />
-                                )}
-                                {/* Aqui podem entrar outras infos da instituição */}
+                                <Heading size="5">{selectedInstituicao.nome}</Heading>
+                                {/* ... */}
                             </>
                         ) : (
-                            <>
-                                <Heading size="5" mb="2">Bem-vindo ao Incite</Heading>
-                                <Text size="2">
-                                    Explore as regiões e descubra as instituições que promovem a Agricultura Familiar Sustentável na Bahia.
-                                    Clique em um marcador ou região para saber mais.
-                                </Text>
-                            </>
+                            <Text color="gray">Clique em uma região ou marcador para explorar.</Text>
                         )}
                     </Card>
-
 
 
                 </Box>
