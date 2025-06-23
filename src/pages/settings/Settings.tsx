@@ -5,15 +5,13 @@ import { InstituicaoListPage, InstituicaoDetailPage, InstituicaoForm } from './I
 import { useUserStore } from '../../store/userStore';
 import { UserPanel } from './UserPanel';
 import { ChangePasswordForm } from './ChangePasswordForm';
+import { GerenciamentoPostsGerais } from './PostsGerais';
 
 
 const Settings = () => {
 
-
   const user = useUserStore((state) => state.user);
   const isAdmin = user?.user_group === 67;
-
-
 
   const [activeView, setActiveView] = useState<{ view: 'list' | 'detail' | 'create', id: number | null }>({
     view: 'list',
@@ -53,20 +51,22 @@ const Settings = () => {
   };
 
   return (
-    <div id="canvas" className="mt-20 p-4 sm:p-8 w-full max-w-7xl mx-auto">
-
-      <Heading  size="8" mb="6">Painel de Controle</Heading>
-
+    <div id="canvas" className="mt-40 p-4 sm:p-8 w-full max-w-7xl mx-auto">
+      <Heading size="8" mb="6">Painel de Controle</Heading>
       <Tabs.Root defaultValue="instituicoes">
-        <Tabs.List  color = "gray" className='text-base'>
-          <Tabs.Trigger  value="instituicoes">Instituições</Tabs.Trigger>
+
+        <Tabs.List color="gray" className='text-base'>
+          <Tabs.Trigger value="instituicoes">Instituições</Tabs.Trigger>
+
 
           {isAdmin && (
-            <Tabs.Trigger value="usuarios">Usuários</Tabs.Trigger>
+            <>
+              <Tabs.Trigger value="postsGerais">Posts Gerais</Tabs.Trigger>
+              <Tabs.Trigger value="usuarios">Usuários</Tabs.Trigger>
+
+            </>
           )}
-
-          <Tabs.Trigger  value="perfil">Perfil</Tabs.Trigger>
-
+          <Tabs.Trigger value="perfil">Perfil</Tabs.Trigger>
         </Tabs.List>
 
         <Box pt="6">
@@ -75,11 +75,17 @@ const Settings = () => {
             {renderInstituicaoContent()}
           </Tabs.Content>
 
+          {isAdmin && (
+            <>
+              <Tabs.Content value="postsGerais">
+                <GerenciamentoPostsGerais />
+              </Tabs.Content>
 
-          <Tabs.Content value="usuarios">
-            {isAdmin && <UserPanel />}
-          </Tabs.Content>
-
+              <Tabs.Content value="usuarios">
+                <UserPanel />
+              </Tabs.Content>
+            </>
+          )}
 
           <Tabs.Content value="perfil">
             <ChangePasswordForm />

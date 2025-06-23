@@ -4,6 +4,7 @@ import BG from "../../assets/bg_main2.png";
 
 import {
     Box,
+    Button,
     Card,
     Heading,
     Text,
@@ -15,6 +16,9 @@ import cityData from "../../assets/BahiaCidades4.json";
 import { mapStore } from "../../store/mapsStore";
 import { axiosPlain } from "../../utils/axios";
 import { AnimatedLogoMarker } from './AnimatedLogoMarker';
+
+import { Link } from 'react-router-dom';
+
 
 // . . . . . . .
 // 🧿
@@ -495,7 +499,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
 
 
-                    <Card
+                    <Card // HERE info-panel
                         id="info-panel"
                         variant="ghost"
                         className="w-[500px] h-full p-4 overflow-y-auto"
@@ -506,6 +510,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                     >
                         {selectedInstituicao ? (
                             <>
+
                                 <Heading size="5" mb="2">{selectedInstituicao.nome}</Heading>
                                 <Text size="2" color="gray">
                                     {/* Aqui você pode colocar outros dados do marcador/instituição */}
@@ -515,10 +520,22 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                     <img
                                         src={selectedInstituicao.marcador_logo}
                                         alt={`${selectedInstituicao.nome} logo`}
-                                        className="mt-4 w-full h-auto rounded"
+                                        className="mt-4 w-[220px] h-auto rounded"
                                     />
                                 )}
-                                {/* Aqui podem entrar outras infos da instituição */}
+
+
+                                <Text as="p" className="my-4">
+                                    Aqui vai uma breve descrição da instituição, ou os dados do campo `informacoes_adicionais` se você os buscar na API.
+                                </Text>
+
+                                {/* ▼▼▼ AQUI ESTÁ O BOTÃO QUE VOCÊ PEDIU ▼▼▼ */}
+                                <Button asChild mt="4">
+                                    <Link to={`/instituicao/${selectedInstituicao.id}`}>
+                                        Ver Perfil Completo
+                                    </Link>
+                                </Button>
+
                             </>
                         ) : (
                             <>

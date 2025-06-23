@@ -5,19 +5,17 @@ import Default from "./layouts/Default";
 import AuthLayout from "./layouts/Auth";
 import { RouteProtector } from "./components/guard/RouteProtector";
 
-const Home = lazy(() => import("./pages/home/Index"));
 
+const Home = lazy(() => import("./pages/home/Index"));
 const Incite = lazy(() => import("./pages/home/IndexOfficial"));
 const Settings = lazy(() => import("./pages/settings/Settings"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const AuxMap = lazy(() => import("./pages/aux_MapPositioning"));
+const BlogPage = lazy(() => import("./pages/blog/BlogPage"));
+const PostDetailPage = lazy(() => import("./pages/blog/PostDetailPage"));
+const InstituicaoProfilePage = lazy(() => import("./pages/instituicao/Profile"));
 
 
-// . . . . . . . . . ➤
-
-
-
-// . . . . . . . . . ➤
 
 const routes = [
   {
@@ -26,17 +24,31 @@ const routes = [
       <Default />
     ),
     children: [
-      {
-        path: "dashboard", // [ROUTE]  /
-        element: <Home />,
-      },
-
 
       {
         path: "", // [ROUTE]  /
         element: <Incite />,
       },
 
+      {
+        path: "dashboard", // [ROUTE]  /dashboard
+        element: <Home />,
+      },
+
+      {
+        path: 'blog', // [ROUTE] /blog
+        element: <BlogPage />,
+      },
+
+      {
+        path: 'blog/:id', // [ROUTE]  /blog/:id
+        element: <PostDetailPage />,
+      },
+
+      {
+        path: 'instituicao/:id', // [ROUTE] /instituicao/:id
+        element: <InstituicaoProfilePage />,
+      },
 
       {
         path: "settings", // [ROUTE] /settings
@@ -47,8 +59,7 @@ const routes = [
         ),
       },
 
-
-      {
+      { // WARN - To remove in Production
         path: "auxMapPos", // [ROUTE] /auxMapPos
         element: (
           <AuxMap />
@@ -56,10 +67,8 @@ const routes = [
       },
 
 
-      
     ],
   },
-
   {
     path: "/auth/",
     element: <AuthLayout />,
