@@ -1,6 +1,6 @@
 // src/Settings.tsx
 import { useState } from 'react';
-import { Box, Button, Flex, Heading, Tabs, Text } from '@radix-ui/themes';
+import { Box, Heading, Tabs,  } from '@radix-ui/themes';
 import { InstituicaoListPage, InstituicaoDetailPage, InstituicaoForm } from './Instituicao';
 import { useUserStore } from '../../store/userStore';
 import { UserPanel } from './UserPanel';
@@ -51,7 +51,7 @@ const Settings = () => {
   };
 
   return (
-    <div id="canvas" className="mt-40 p-4 sm:p-8 w-full max-w-7xl mx-auto">
+    <div id="canvas" className="p-4 sm:p-8 w-full max-w-7xl mx-auto">
       <Heading size="8" mb="6">Painel de Controle</Heading>
       <Tabs.Root defaultValue="instituicoes">
 

@@ -4,10 +4,7 @@ import Main from "../components/Main";
 import Wrapper from "../components/Wrapper";
 import Content from "../components/Content";
 import Loader from "../components/Loader";
-
-import Navbar from "../components/navbar/Navbar";
-import Navbar2 from "../components/navbar/Navbar2";
-
+import NavbarD from "../components/navbar/NavbarDefault";
 
 interface DashboardProps {
   children?: ReactNode;
@@ -18,7 +15,7 @@ const Default: React.FC<DashboardProps> = ({ children }) => (
   <React.Fragment>
     <Wrapper>
       <Main>
-        <Navbar2/>
+        <NavbarD/>
         <Content>
           <Suspense fallback={<Loader />}>
             {children}

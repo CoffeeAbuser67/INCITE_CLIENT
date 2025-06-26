@@ -14,4 +14,8 @@ export interface PublicPost {
 export interface InstituicaoParaFiltro {
   id: number;
   nome: string;
+  marcador_logo: string | null;
 }
+
+
+

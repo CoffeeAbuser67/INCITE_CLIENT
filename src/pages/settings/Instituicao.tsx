@@ -7,7 +7,7 @@ import { GerenciadorDeAba } from './GerenciadorDeAba'
 import { axiosForInterceptor } from '../../utils/axios';
 import { toast } from 'react-toastify';
 import { CitySelect } from './CitySelect';
-
+import mapCity from '../../assets/BahiaCidades4.json';
 
 // ● 🧿⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
 
@@ -24,6 +24,7 @@ export interface Instituicao {
     id: number;
     nome: string;
     cidade_id_mapa: string;
+    cidade_nome: string;
     coordenador_responsavel: string;
     email: string;
     telefone: string;
@@ -35,7 +36,7 @@ export interface Instituicao {
     produtos: ProdutoInovacao[];
     offset_x: number; // <-- Adicionado
     offset_y: number; // <-- Adicionado
-    marcador_logo: string | null; 
+    marcador_logo: string | null;
 }
 
 interface SubFormProps<T> {
@@ -79,6 +80,16 @@ const formatarData = (timestamp: string): string => { // (●) formatarData
         year: 'numeric',
     }).format(data);
 };
+
+
+const todasAsCidades = Object.values(mapCity).flat(); // (●) todasAsCidades
+const mapaDeNomesDeCidade = new Map(todasAsCidades.map(city => [city.id, city.name])); // (●) mapaDeNomesDeCidade
+
+
+
+
+
+
 
 // ── ⋙── ── ── FORMS ── ── ── ──➤
 
@@ -402,12 +413,14 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        //  USAMOS FormData QUANDO HÁ ARQUIVOS 
+        //  USAMOS FormData pois HÁ ARQUIVOS 
         const formData = new FormData();
+        const nomeDaCidade = mapaDeNomesDeCidade.get(cidadeId) || '';  // (○) mapaDeNomesDeCidade
 
         // Adicionamos cada campo ao FormData
         formData.append('nome', nome);
         formData.append('cidade_id_mapa', cidadeId);
+        formData.append('cidade_nome', nomeDaCidade);
         formData.append('coordenador_responsavel', coordenador);
         formData.append('email', email);
         formData.append('telefone', telefone);
@@ -658,7 +671,7 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
                         <Flex justify="between" align="center">
                             <div>
                                 <Heading as="h3" size="4">{inst.nome}</Heading>
-                                <Text as="p" size="2" color="gray">{inst.cidade_id_mapa}</Text>
+                                <Text as="p" size="2" color="gray">{inst.cidade_nome}</Text>
                             </div>
                             <Flex gap="4">
                                 <Button variant="soft" onClick={() => onSelectInstituicao(inst.id)}>
@@ -717,7 +730,6 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-
     const fetchInstituicaoDetails = useCallback(async () => {
         try {
             // Não precisa setar loading aqui para o refresh ser mais suave
@@ -737,7 +749,6 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
         fetchInstituicaoDetails();
     }, [fetchInstituicaoDetails]);
 
-
     if (loading) {
         return (
             <Flex align="center" justify="center" style={{ minHeight: '400px' }}>
@@ -745,7 +756,6 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
             </Flex>
         );
     }
-
 
     if (error) return <div className="text-red-500">{error}</div>;
     if (!instituicao) return <div>Instituição não encontrada.</div>;

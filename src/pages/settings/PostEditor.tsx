@@ -1,13 +1,11 @@
-
 import React, { useEffect, useState } from 'react';
-
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import { Mark, mergeAttributes } from '@tiptap/core';
 import { UploadCloud, X, FileImage, LoaderCircle } from 'lucide-react';
-import { Dialog, Button, TextField, Text } from '@radix-ui/themes'; // Usando componentes Radix
+import { Dialog, Button, TextField, Text, Flex, TextArea } from '@radix-ui/themes'; // Usando componentes Radix
 
 
 // Interface para as propriedades do nosso componente
@@ -17,7 +15,7 @@ interface ImageUploadModalProps {
     onImageUploaded: (url: string) => void;
 }
 
-// ● ImageUploadModal
+// <●> ImageUploadModal
 const ImageUploadModal = ({ isOpen, onClose, onImageUploaded }: ImageUploadModalProps) => {
     // --- Estados do Componente ---
     const [file, setFile] = useState<File | null>(null);
@@ -140,7 +138,7 @@ const ImageUploadModal = ({ isOpen, onClose, onImageUploaded }: ImageUploadModal
     );
 };
 
-// ● TextClass
+// <●> TextClass
 const TextClass = Mark.create({
     name: 'textClass',
     addAttributes() {
@@ -181,7 +179,7 @@ const TextClass = Mark.create({
 
 });
 
-// ● Toolbar
+// <●> Toolbar
 const Toolbar = ({ editor }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -220,7 +218,6 @@ const Toolbar = ({ editor }) => {
     const activeButtonClass = "bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700";
 
     return (
-
         <>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 p-2 bg-gray-100 border-b border-gray-300">
                 <button
@@ -296,23 +293,29 @@ const Toolbar = ({ editor }) => {
     );
 };
 
+
 interface PostEditorDashboardProps {
     initialTitle?: string;
     initialContent?: string;
-    onSave: (data: { title: string; content: string }) => void;
+    initialResumo?: string;
+    initialImagem?: string | null;
+    onSave: (data: { title: string; content: string; resumo: string; imagem_destaque: File | null }) => void;
     onCancel: () => void;
 }
 
 
-const PostEditorDashboard = ({
-    initialTitle = '',
-    initialContent = '',
-    onSave,
-    onCancel,
+const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
+    initialTitle = '', initialContent = '', onSave, onCancel, initialResumo = '', initialImagem = null
 }: PostEditorDashboardProps) => {
+
 
     const [postTitle, setPostTitle] = useState(initialTitle);
     const [postContent, setPostContent] = useState(initialContent);
+    const [resumo, setResumo] = useState(initialResumo);
+
+    const [imagemFile, setImagemFile] = useState<File | null>(null);
+    const [imagemPreview, setImagemPreview] = useState<string | null>(initialImagem);
+
 
     const editor = useEditor({
         extensions: [
@@ -333,6 +336,17 @@ const PostEditorDashboard = ({
     });
 
 
+
+    const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setImagemFile(file);
+            setImagemPreview(URL.createObjectURL(file));
+        }
+    };
+
+
+
     useEffect(() => {
         if (editor && initialContent !== editor.getHTML()) {
             editor.commands.setContent(initialContent, false);
@@ -340,34 +354,68 @@ const PostEditorDashboard = ({
         }
     }, [initialContent, initialTitle, editor]);
 
+
+
     const handleSaveClick = () => {
-        onSave({ title: postTitle, content: postContent });
+        onSave({ title: postTitle, content: postContent, resumo: resumo, imagem_destaque: imagemFile });
     };
 
-    return (
+
+
+    return ( // ── ◯─◡◠◡◠◡◠ DOM ◡◠◡◠◡◠◡◠─➤
+
         <div className="border border-gray-300 rounded-lg shadow-sm">
             <div className="p-4 bg-gray-50">
-                <label>
-                    <Text as="div" size="2" mb="1" weight="bold">Título da Postagem</Text>
-                    <TextField.Root
-                        size="3"
-                        value={postTitle}
-                        onChange={(e) => setPostTitle(e.target.value)}
-                        placeholder="Título do Post"
-                    />
-                </label>
+
+                <Flex direction="column" gap="3">
+
+                    <label>
+                        <Text as="div" size="2" mb="1" weight="bold">Título da Postagem</Text>
+                        <TextField.Root
+                            size="3"
+                            value={postTitle}
+                            onChange={(e) => setPostTitle(e.target.value)}
+                            placeholder="Título do Post"
+                        />
+                    </label>
+
+
+                    <label>
+                        <Text as="div" size="2" mb="1" weight="bold">Resumo (Chamada)</Text>
+                        <TextArea value={resumo} onChange={(e) => setResumo(e.target.value)} placeholder="Uma ou duas frases que aparecerão nos cards do blog." />
+                    </label>
+
+
+                    <label>
+                        <Text as="div" size="2" mb="1" weight="bold">Imagem de Destaque</Text>
+                        <input type="file" accept="image/png, image/jpeg" onChange={handleFileSelect} />
+                        {imagemPreview && <img src={imagemPreview} alt="Preview" className="mt-2 w-48 h-auto rounded" />}
+                    </label>
+
+
+                </Flex>
+
+
+
             </div>
+
+
             <div className='border-y border-gray-200'>
-                <Toolbar editor={editor} />
-                <EditorContent editor={editor} />
+
+                <Toolbar // <○> Toolbar
+                    editor={editor} />
+
+                <EditorContent // <○> EditorContent
+                    editor={editor} />
             </div>
+
             <div className="flex justify-end gap-3 p-4 bg-gray-50">
                 <Button variant="soft" color="gray" onClick={onCancel}>Cancelar</Button>
                 <Button onClick={handleSaveClick}>Salvar Postagem</Button>
             </div>
         </div>
     );
-};
+}; // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
 
 
 

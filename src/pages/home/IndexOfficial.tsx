@@ -8,6 +8,10 @@ import {
     Card,
     Heading,
     Text,
+    Select,
+    Flex,
+    Avatar,
+    Separator
 } from "@radix-ui/themes";
 import { animated, useSpring, useTransition } from "react-spring";
 import { useRef, useState, useEffect, useMemo } from "react"; // <--- adicione useEffect
@@ -15,9 +19,9 @@ import regionData from "../../assets/BahiaRegiao2.json";
 import cityData from "../../assets/BahiaCidades4.json";
 import { mapStore } from "../../store/mapsStore";
 import { axiosPlain } from "../../utils/axios";
-import { AnimatedLogoMarker } from './AnimatedLogoMarker';
-
 import { Link } from 'react-router-dom';
+import { PinMarker } from './PinMarker';
+import { ArrowRightIcon, Mail, MapPin, Newspaper, Phone, UserIcon } from "lucide-react";
 
 
 // . . . . . . .
@@ -25,16 +29,19 @@ import { Link } from 'react-router-dom';
 
 const SCALE_ADJUSTMENT = 0.35
 
-
-interface Instituicao {
+interface InstituicaoMarker {
     id: number;
     nome: string;
     cidade_id_mapa: string;
+    cidade_nome: string;
+    coordenador_responsavel: string;
+    email: string;
+    telefone: string;
+    informacoes_adicionais?: string;
     offset_x: number; // <-- Adicionado
     offset_y: number; // <-- Adicionado
     marcador_logo: string | null
 }
-
 
 interface BoundingBox {
     x: number;
@@ -59,19 +66,9 @@ interface City {
     y: number;
 }
 
-// Estrutura de dados que mapeia regiões para um array de cidades
 interface CityData {
     [regionId: string]: City[];
 }
-
-
-// interface Marker {
-//     id: string;
-//     name: string;
-//     x: number;
-//     y: number;
-// }
-
 
 // [●] mapCity
 const mapCity: CityData = cityData;
@@ -81,31 +78,21 @@ const mapRegion: Region[] = regionData;
 
 
 const Incite = () => { // ★ Incite ⋙─────────────────────────────────────────➤ 
-
     const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
     const originalBBoxRef = useRef<BoundingBox | null>(null); // HERE originalBBoxRef
-
     // ── ⋙── ── ── ── ── ── ──➤
     type levels = 0 | 1;
     // ✳ [currentLevel, setCurrentLevel]
     const [currentLevel, setCurrentLevel] = useState<levels>(0);
-
-    // WARN  EU estou usando esse estado pra nada ??? wut 
+    // WARN  To pegando a escala mas n to usando 
     // ✳ [currentScale, setCurrentScale]
     const [currentScale, setCurrentScale] = useState<number>(1);
-
     // ✳ { region, city, setRegion, setCity } 
     const { region, setRegion } = mapStore();
-
-
-    // const [markers, setMarkers] = useState<Marker[]>([]);
-
     // ✳  [selectedInstituicao, setSelectedInstituicao]
-    const [selectedInstituicao, setSelectedInstituicao] = useState<Instituicao | null>(null);
-
+    const [selectedInstituicao, setSelectedInstituicao] = useState<InstituicaoMarker | null>(null);
     // ✳  [instituicoes, setInstituicoes]
-    const [instituicoes, setInstituicoes] = useState<Instituicao[]>([]);
-
+    const [instituicoes, setInstituicoes] = useState<InstituicaoMarker[]>([]);
     // ── ⋙── ── ── ── ── ── ──➤
 
 
@@ -143,7 +130,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
 
     // (✪) handleMarkerClick
-    const handleMarkerClick = (instituicao: Instituicao) => {
+    const handleMarkerClick = (instituicao: InstituicaoMarker) => {
         console.log("Marcador clicado:", instituicao.nome);
 
         // 1. Mostra as informações da instituição no painel lateral
@@ -269,8 +256,8 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         // ⊙ currentLevel 1
         if (currentLevel === 1) {
             if (target_type === "city") {
-                console.log("Cidade clicada:", target_id, "↯");
-                // Aqui você pode adicionar lógica futura para o clique na cidade,
+                console.log("Cidade clicada:", target_id,); // [LOG] 
+                // Aqui posso adicionar lógica futura para o clique na cidade,
                 // como exibir dados específicos dela.
             } else {
                 // Se clicar em qualquer outra coisa que não seja uma cidade no nível 1
@@ -288,45 +275,95 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         api.start({
             transform: "scale(1) translate(0px, 0px)",
         });
+    }; // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+    const marcadoresOrdenados = useMemo(() => { // {✪} marcadoresOrdenados
+        // Se nenhuma instituição estiver selecionada, retorna a lista original
+        if (!selectedInstituicao) {
+            return instituicoes; // ⊙  instituicoes
+        }
+        const outrosMarcadores = instituicoes.filter(inst => inst.id !== selectedInstituicao.id);
+        //  Retorna um novo array com os outros marcadores primeiro, e o selecionado por último.
+        return [...outrosMarcadores, selectedInstituicao];
+    }, [instituicoes, selectedInstituicao]); // ── ⋙── ── ── ── ── ── ── ──➤
+    // Recalcula apenas quando a lista ou a seleção mudar
+
+
+
+    const handleSelectChange = (instituicaoId: string) => { // (✪) handleSelectChange
+        if (!instituicaoId) {
+            resetMap(); // Se o usuário limpar o select, reseta o mapa
+            return;
+        }
+        // Encontra o objeto completo da instituição baseado no ID recebido do select
+        const instituicaoSelecionada = instituicoes.find(inst => inst.id === Number(instituicaoId));
+        if (instituicaoSelecionada) {
+            // REUTILIZAMOS NOSSA FUNÇÃO EXISTENTE!
+            // Ela já sabe como selecionar a instituição e dar zoom na região.
+            handleMarkerClick(instituicaoSelecionada);
+        }
     };
 
     return (// ── ⋙⇌⇌⇌⇌⇌⇌⇌ DOM ⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸
         <>
-
             <Box // CANVAS ── ── ── ──➤
                 id="CANVAS"
                 className={classNames(
                     "flex h-[600px] flex-col gap-6 ",
                     "mt-40 mx-14 p-4",
-
                 )}
             >
-
                 <Box // ──  PANEL1
                     id="PANEL1"
                     className="flex w-full mb-6">
 
-                    <Box // HERE TEXT_HEADER
+                    <Box
                         id="TEXT_HEADER"
-                        className="flex flex-col gap-8 pt-10 h-[600px] w-full text-left text ">
+                        className="flex flex-col gap-8 justify-around pt-10 h-[600px] w-full text-left text"
+                    >
 
                         <Heading color="gray" size="6">
                             Instituto de Ciência, Inovação e Tecnologia do Estado da Bahia
                         </Heading>
 
                         <Heading size="9">
-                            Incite - <span className="text-green-900">Agricultura Familiar</span> Diversificada e Sustentável
+                            Incite - <span className="text-green-700">Agricultura Familiar</span> Diversificada e Sustentável
                         </Heading>
 
                         <Text className="pt-10">
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
                         </Text>
 
+                        <Card
+                            variant="ghost"
+                            id="Intituicao-Text-Selector">
+                            <Heading as="h3" size="4" mb="2">Navegar por Instituição</Heading>
+                            <Select.Root
+                                // ⊙  selectedInstituicao
+                                value={selectedInstituicao ? selectedInstituicao.id.toString() : ""}
+                                // (○) handleSelectChange
+                                onValueChange={handleSelectChange}
+                            >
+                                <Select.Trigger placeholder="Escolha uma instituição na lista..." className="w-full" />
+                                <Select.Content position="popper">
+                                    <Select.Group>
+                                        <Select.Label>Instituições</Select.Label>
+                                        {instituicoes.map(inst => (
+                                            <Select.Item key={inst.id} value={inst.id.toString()}>
+                                                {inst.nome}
+                                            </Select.Item>
+                                        ))}
+                                    </Select.Group>
+                                </Select.Content>
+                            </Select.Root>
+                        </Card>
+
                     </Box>
 
-                    <Box // HERE LOGO_HEADER
+                    <Box
                         id="LOGO_HEADER"
-                        className="flex h-[600px] w-full justify-center  "
+                        className="flex h-[600px] w-full justify-center "
                         style={{
                             backgroundImage: `url(${BG})`,
                             backgroundSize: "contain",
@@ -339,8 +376,8 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                         </svg>
 
                     </Box>
-                </Box>
 
+                </Box>
 
                 <Box //── PANEL2
                     id="PANEL2"
@@ -453,20 +490,21 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                         );
                                     })} //. . .
 
-                                    {instituicoes.map(instituicao => { // ⊙  instituicoes
+
+
+                                    {marcadoresOrdenados.map(instituicao => {
                                         const coords = mapaDeCoordenadas.get(instituicao.cidade_id_mapa);
-
                                         if (coords) {
-
                                             return (
-                                                <AnimatedLogoMarker
+                                                <PinMarker
                                                     key={`inst-${instituicao.id}`}
-                                                    // Aplicamos o offset salvo no banco de dados
                                                     x={coords.x + (instituicao.offset_x || 0)}
                                                     y={coords.y + (instituicao.offset_y || 0)}
-                                                    imageUrl={instituicao.marcador_logo ?? undefined} // Supondo que a API retorne a URL do logo
+                                                    imageUrl={instituicao.marcador_logo}
                                                     tooltipContent={<Text size="2" weight="bold">{instituicao.nome}</Text>}
-                                                    level={currentLevel} // ⊙ currentScale 
+                                                    level={currentLevel}
+                                                    // O marcador é 'ativo' se seu ID for o mesmo da instituição selecionada
+                                                    isActive={selectedInstituicao?.id === instituicao.id}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleMarkerClick(instituicao);
@@ -475,16 +513,14 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                             );
                                         }
                                         return null;
-                                    })} // . . .
+                                    })} //. . .
 
 
+                                    <circle cx="525.327" cy="283.603" r="3" />
                                 </g>
-
                             </animated.svg>
-
                         </div>
                     </Box>
-
 
 
                     <div
@@ -510,29 +546,45 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                     >
                         {selectedInstituicao ? (
                             <>
+                                <Flex gap="5" align="center">
+                                    {selectedInstituicao.marcador_logo && (
+                                        <img
+                                            src={selectedInstituicao.marcador_logo}
+                                            alt={`${selectedInstituicao.nome} logo`}
+                                            className=" w-[100px] h-auto rounded"
 
-                                <Heading size="5" mb="2">{selectedInstituicao.nome}</Heading>
-                                <Text size="2" color="gray">
-                                    {/* Aqui você pode colocar outros dados do marcador/instituição */}
-                                    Cidade ID: {selectedInstituicao.cidade_id_mapa}
-                                </Text>
-                                {selectedInstituicao.marcador_logo && (
-                                    <img
-                                        src={selectedInstituicao.marcador_logo}
-                                        alt={`${selectedInstituicao.nome} logo`}
-                                        className="mt-4 w-[220px] h-auto rounded"
-                                    />
-                                )}
+                                        />
+                                    )}
 
+                                    <Box>
+                                        <Heading as="h2" size="6" mb="4">{selectedInstituicao.nome}</Heading>
 
-                                <Text as="p" className="my-4">
-                                    Aqui vai uma breve descrição da instituição, ou os dados do campo `informacoes_adicionais` se você os buscar na API.
-                                </Text>
+                                        <Flex align="center" gap="2"><MapPin size={16} className="mb-2" /><Text size="2">{selectedInstituicao.cidade_nome.toLocaleUpperCase()}</Text></Flex>
+                                        <Flex align="center" gap="2"><UserIcon size={16} className="mb-2" /><Text size="2">{selectedInstituicao.coordenador_responsavel}</Text></Flex>
+                                        <Flex align="center" gap="2"><Mail size={16} className="mb-2" /><Text size="2">{selectedInstituicao.email}</Text></Flex>
+                                        <Flex align="center" gap="2"><Phone size={16} className="mb-2" /><Text size="2">{selectedInstituicao.telefone}</Text></Flex>
+                                    </Box>
 
-                                {/* ▼▼▼ AQUI ESTÁ O BOTÃO QUE VOCÊ PEDIU ▼▼▼ */}
-                                <Button asChild mt="4">
+                                </Flex>
+
+                                <Separator my="2" size="4" />
+
+                                {/* Informações Adicionais */}
+                                <Box className="flex-grow">
+
+                                    <Heading as="h3" size="3" mb="2" color="gray">Sobre</Heading>
+                                    <Text as="p" size="2" mb="2">
+                                        {selectedInstituicao.informacoes_adicionais ?? ''}
+                                    </Text>
+
+                                    {/* TODO: Adicionar os contatos (coordenador, email, telefone) aqui se desejar */}
+                                </Box>
+
+                                {/* Botão de Ação */}
+
+                                <Button variant = "soft" asChild size="1" mt="auto">
                                     <Link to={`/instituicao/${selectedInstituicao.id}`}>
-                                        Ver Perfil Completo
+                                        <ArrowRightIcon size = "18" className="mr-1" /> Perfil
                                     </Link>
                                 </Button>
 
@@ -541,8 +593,8 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                             <>
                                 <Heading size="5" mb="2">Bem-vindo ao Incite</Heading>
                                 <Text size="2">
-                                    Explore as regiões e descubra as instituições que promovem a Agricultura Familiar Sustentável na Bahia.
-                                    Clique em um marcador ou região para saber mais.
+                                    Explore as instituições que promovem a Agricultura Familiar Sustentável na Bahia.
+                                    Clique em um marcador para saber mais.
                                 </Text>
                             </>
                         )}

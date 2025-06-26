@@ -1,13 +1,13 @@
 // src/pages/InstituicaoProfilePage.tsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Heading, Box, Text, Flex, Spinner, Card, Avatar, Badge, Tabs } from '@radix-ui/themes';
-
-
+import { Heading, Box, Text, Flex, Spinner, Card, Avatar, Badge, Tabs, Button } from '@radix-ui/themes';
 import { axiosPlain } from '../../utils/axios';
-import { MapPin, Mail, Phone, Users, FlaskConical, Newspaper } from 'lucide-react';
+import { MapPin, Mail, Phone, Newspaper, User as UserIcon } from 'lucide-react';
+import { Instituicao } from '../settings/Instituicao';
 
-// Componentes internos para cada aba, para manter o código limpo
+
+
 
 
 const SobreTab = ({ instituicao }) => (
@@ -16,6 +16,7 @@ const SobreTab = ({ instituicao }) => (
         <Text as="p" color="gray">{instituicao.informacoes_adicionais || 'Nenhuma informação adicional fornecida.'}</Text>
     </Card>
 );
+
 
 
 const PesquisadoresList = ({ pesquisadores }) => (
@@ -36,11 +37,12 @@ const PesquisadoresList = ({ pesquisadores }) => (
 );
 
 
-// TODO: Crie componentes similares para Pesquisas, AcoesExtensionistas, e Produtos
+
+
 
 const InstituicaoProfilePage = () => {
     const { id } = useParams<{ id: string }>();
-    const [instituicao, setInstituicao] = useState(null);
+    const [instituicao, setInstituicao] = useState<Instituicao|null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -68,12 +70,12 @@ const InstituicaoProfilePage = () => {
     }
 
     return (
-        <div className="mt-32 max-w-5xl mx-auto p-4 sm:p-8">
-     
+
+        <div className="max-w-5xl mx-auto p-4 sm:p-8">
 
             <Flex gap="5" align="center" mb="6">
                 <Avatar
-                    src={instituicao.marcador_logo}
+                    src={instituicao.marcador_logo ?? undefined}
                     fallback={instituicao.nome.charAt(0)}
                     size="8"
                     radius="full"
@@ -82,24 +84,25 @@ const InstituicaoProfilePage = () => {
                 <Box>
                     <Heading size={{ initial: '7', md: '8' }}>{instituicao.nome}</Heading>
                     <Flex align="center" gap="4" mt="2" wrap="wrap">
-                        <Flex align="center" gap="2"><MapPin size={16} /><Text size="2">{instituicao.cidade_id_mapa.replace('_', ' ').toLocaleUpperCase()}</Text></Flex>
-                        <Flex align="center" gap="2"><Users size={16} /><Text size="2">{instituicao.coordenador_responsavel}</Text></Flex>
+                        <Flex align="center" gap="2"><MapPin size={16} /><Text size="2">{instituicao.cidade_nome.toLocaleUpperCase()}</Text></Flex>
+                        <Flex align="center" gap="2"><UserIcon size={16} /><Text size="2">{instituicao.coordenador_responsavel}</Text></Flex>
                         <Flex align="center" gap="2"><Mail size={16} /><Text size="2">{instituicao.email}</Text></Flex>
+                        <Flex align="center" gap="2"><Phone size={16} /><Text size="2">{instituicao.telefone}</Text></Flex>
                     </Flex>
                 </Box>
-
             </Flex>
 
+            <Button variant="soft" asChild size="2" className='my-4 text-black'>
+                <Link to={`/blog/${instituicao.id}`}>
+                    <Newspaper size="18" className="mr-1" /> Notícias
+                </Link>
+            </Button>
 
-            {/* Conteúdo em Abas */}
             <Tabs.Root defaultValue="sobre">
-
                 <Tabs.List>
                     <Tabs.Trigger value="sobre">Sobre</Tabs.Trigger>
                     <Tabs.Trigger value="pesquisadores">Pesquisadores ({instituicao.pesquisadores.length})</Tabs.Trigger>
                     <Tabs.Trigger value="pesquisas">Pesquisas ({instituicao.pesquisas.length})</Tabs.Trigger>
-                    <Tabs.Trigger value="postagens">Notícias ({instituicao.postagens.length})</Tabs.Trigger>
-                    {/* ... outras abas */}
                 </Tabs.List>
 
 
@@ -107,10 +110,11 @@ const InstituicaoProfilePage = () => {
                     <Tabs.Content value="sobre"><SobreTab instituicao={instituicao} /></Tabs.Content>
                     <Tabs.Content value="pesquisadores"><PesquisadoresList pesquisadores={instituicao.pesquisadores || []} /></Tabs.Content>
                     <Tabs.Content value="pesquisas"><Text>Conteúdo da aba de pesquisas...</Text></Tabs.Content>
-                    <Tabs.Content value="postagens"><Text>Conteúdo da aba de notícias...</Text></Tabs.Content>
                 </Box>
 
             </Tabs.Root>
+
+
         </div>
     );
 };

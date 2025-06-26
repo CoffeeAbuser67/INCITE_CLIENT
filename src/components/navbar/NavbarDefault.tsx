@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import classNames from "classnames";
-import { Avatar, Box, Button, Dialog, DropdownMenu, Flex, IconButton, Separator, Text, Tooltip } from "@radix-ui/themes"; // Certifique-se de que está usando ou substitua por 'div'
+import { Avatar, Box, Dialog, DropdownMenu, Text, Tooltip } from "@radix-ui/themes";
 import { Link, useNavigate } from "react-router-dom";
-import { useUserStore } from "../../store/userStore";
 import { useAuthService } from "../../hooks/useAuthService";
-import { LayoutDashboard, LogIn, LogOut, BookOpen, House, ChartColumnBig, Bold } from "lucide-react";
+import { LayoutDashboard, LogIn, LogOut, BookOpen, ChartColumnBig, } from "lucide-react";
+
+
+import { useUserStore } from "../../store/userStore";
+
 
 // 🧿
+
 
 const navItems = [ // [✪] navItems
 
@@ -24,10 +28,10 @@ const getOptimisticUserInfo = () => { // (✪) getOptimisticUserInfo
 }
 
 
-
 const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙────────────────➤
-    const [scrolled, setScrolled] = useState(false);
 
+
+    const user = useUserStore((state) => state.user);
     const navigate = useNavigate();
     const { logout } = useAuthService();
 
@@ -41,31 +45,18 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
         setDisplayUser(getOptimisticUserInfo()); // ↺ setDisplayUser
     }
 
-
-    useEffect(() => {//HERE uE
-        const handleScroll = () => {
-            // Verifica se o scroll passou de 50 pixels para um efeito mais notável
-            setScrolled(window.scrollY > 50);
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-
+    useEffect(() => {
+        if (user) { setDisplayUser(getOptimisticUserInfo()); } // ↺ setDisplayUser
+    }, [user])
 
 
 
     return (// ── ◯⫘⫘⫘⫘⫘⫘⫘ DOM ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
-
         <Box
             id="SimplifiedNavBar"
             className={classNames(
-                "fixed top-0 left-0 w-full flex items-center justify-center z-50",
-                "transition-all duration-300 ease-in-out",
-                scrolled
-                    ? "h-16 bg-white/60 backdrop-blur-md shadow-xl shadow-black/5" // Estilo scrollado
-                    : "h-28 bg-black/0 shadow-xl shadow-white/20" // Estilo inicial 
+                "w-full flex items-center justify-center z-50",
+                "h-28 bg-black/0 shadow-xl shadow-white/20" // Estilo inicial 
             )}
         >
             <div
@@ -84,7 +75,7 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                 >
                     <Text
                         className="text-black"
-                        size={scrolled ? "7" : "8"}
+                        size={"8"}
                         highContrast
                         weight="bold"
                         style={{ textShadow: "0 2px 6px rgba(0,0,0,0.2)" }}
@@ -94,9 +85,9 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
 
                     <Text
                         className={classNames(
-                            "text-green-900 transition duration-300",
+                            "text-green-700 transition duration-300",
                             "group-hover:drop-shadow-lg group-hover:-translate-y-0.5",
-                            scrolled ? "text-[1.75rem]" : "text-[2rem]"
+                            "text-[2rem]"
                         )}
                         highContrast
                         weight="bold"
@@ -121,12 +112,12 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                                     aria-label={item.label}
                                     className={classNames(
                                         "group inline-flex items-center gap-2 transition-colors duration-150",
-                                        "text-black hover:text-green-900",
-                                        scrolled ? "text-base" : "text-lg" // ← Texto um pouco maior
+                                        "text-black hover:text-green-700",
+                                        "text-lg"
                                     )}
                                 >
                                     <Icon
-                                        size={scrolled ? 20 : 24}
+                                        size={24}
                                         className="transition-transform duration-150 group-hover:-translate-y-0.5"
                                     />
                                     <span className="font-semibold">{item.label}</span>
@@ -136,7 +127,7 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                                     <span
                                         className={classNames(
                                             "ml-5 h-5 w-px bg-black/30",
-                                            scrolled ? "h-4" : "h-5"
+                                            "h-5"
                                         )}
                                     ></span>
                                 )}
@@ -144,7 +135,6 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                         );
                     })}
                 </nav>
-
 
 
 
@@ -157,16 +147,15 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                                 <button className={classNames(
                                     "flex items-center gap-3 ",
                                     "text-sm font-medium rounded-full p-1",
-
-                                    "hover:bg-[#f6edea] transition-colors focus:outline-none"
+                                    "hover:bg-green-50 transition-colors focus:outline-none"
 
                                 )}>
-                                    <Text className={scrolled ? "text-sm" : "text-base"}>Olá,
-                                        <Text className={scrolled ? "text-sm" : "text-base"} weight="bold">{displayUser.name}</Text>
+                                    <Text className={"text-base"}>Olá,
+                                        <Text className={"text-base"} weight="bold">{displayUser.name}</Text>
                                     </Text>
 
                                     <Avatar
-                                        size={scrolled ? "2" : "3"}
+                                        size={"3"}
                                         src={`https://ui-avatars.com/api/?name=${displayUser.name}&background=random`}
                                         fallback={"🦀"}
                                         radius="full"
@@ -214,9 +203,22 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                 ) : (
 
                     <Tooltip content="Log-In">
-                        <Button variant="ghost" onClick={() => navigate('/auth/login')}>
-                            <LogIn size={scrolled ? 22 : 28} stroke="#000" className="mr-2" />
-                        </Button>
+                        <Box
+                            onClick={() => navigate('/auth/login')}
+                            className={classNames(
+                                "group inline-flex items-center gap-2 transition-colors duration-150",
+                                "cursor-pointer"
+                            )}
+                        >
+                            <LogIn
+                                size={24}
+                                stroke="#000"
+                                className={classNames(
+                                    "transition-transform duration-150 group-hover:-translate-y-0.5 mr-2",
+                                    "stroke-black hover:stroke-green-700"
+                                )}
+                            />
+                        </Box>
                     </Tooltip>
 
                 )}

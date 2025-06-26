@@ -10,6 +10,7 @@ import { axiosForInterceptor } from '../../utils/axios';
 import { toast } from 'react-toastify';
 import handleAxiosError from '../../utils/handleAxiosError';
 
+
 export const GerenciamentoPostsGerais = () => {
     const [posts, setPosts] = useState<Postagem[]>([]);
     const [isLoading, setIsLoading] = useState(true);

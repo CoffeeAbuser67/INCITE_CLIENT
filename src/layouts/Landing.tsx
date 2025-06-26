@@ -1,20 +1,21 @@
 import React, { Suspense, ReactNode } from "react";
 import { Outlet } from "react-router-dom";
-
 import Main from "../components/Main";
 import Wrapper from "../components/Wrapper";
 import Content from "../components/Content";
 import Loader from "../components/Loader";
+import NavbarL from "../components/navbar/NavbarLanding";
 
-interface AuthProps {
+interface DashboardProps {
   children?: ReactNode;
 }
 
 // HERE
-const Auth: React.FC<AuthProps> = ({ children }) => (
+const Default: React.FC<DashboardProps> = ({ children }) => (
   <React.Fragment>
     <Wrapper>
       <Main>
+        <NavbarL/>
         <Content>
           <Suspense fallback={<Loader />}>
             {children}
@@ -26,4 +27,5 @@ const Auth: React.FC<AuthProps> = ({ children }) => (
   </React.Fragment>
 );
 
-export default Auth;
+export default Default;
+

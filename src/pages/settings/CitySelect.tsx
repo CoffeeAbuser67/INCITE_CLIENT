@@ -64,7 +64,7 @@ const customSelectStyles: StylesConfig<CityOption, false, GroupedCityOption> = {
             borderColor: state.isFocused ? '#8D6E63' : '#a1a1aa',
         },
     }),
-    // Você pode customizar outras partes também, se quiser
+    // Posso customizar outras partes também, se quiser
     // option: (styles, { isFocused, isSelected }) => ({ ... }),
     // groupHeading: (styles) => ({ ... }),
 };
@@ -78,13 +78,14 @@ const formatGroupLabel = (data: GroupedCityOption) => (
     </div>
 );
 
-// --- Interface de Props para nosso novo componente ---
+
+
 interface CitySelectProps {
     value: string; // Recebe o ID da cidade selecionada
     onChange: (selectedId: string) => void; // Devolve o novo ID selecionado
 }
 
-// --- O Componente Reutilizável ---
+
 export const CitySelect: React.FC<CitySelectProps> = ({ value, onChange }) => {
     // Lógica para encontrar o objeto da cidade selecionada a partir do ID (value)
     const todasAsOpcoes = opcoesDeCidadeAgrupadas.flatMap(group => group.options);

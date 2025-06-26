@@ -1,8 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 
 import { lazy } from "@loadable/component";
-import Default from "./layouts/Default";
-import AuthLayout from "./layouts/Auth";
+import DefaultLayout from "./layouts/Default";
+import LandingLayout from "./layouts/Landing";
 import { RouteProtector } from "./components/guard/RouteProtector";
 
 
@@ -18,18 +18,26 @@ const InstituicaoProfilePage = lazy(() => import("./pages/instituicao/Profile"))
 
 
 const routes = [
+
   {
     path: "/",
-    element: (
-      <Default />
-    ),
+    element: <LandingLayout />,
     children: [
-
       {
         path: "", // [ROUTE]  /
         element: <Incite />,
       },
+    ],
+  },
 
+
+
+  {
+    path: "/",
+    element: (
+      <DefaultLayout />
+    ),
+    children: [
       {
         path: "dashboard", // [ROUTE]  /dashboard
         element: <Home />,
@@ -69,9 +77,11 @@ const routes = [
 
     ],
   },
+
+
   {
     path: "/auth/",
-    element: <AuthLayout />,
+    element: <DefaultLayout />,
     children: [
       {
         path: "login",
@@ -79,6 +89,10 @@ const routes = [
       },
     ],
   },
+
+
+
+
 ];
 
 export default routes;
