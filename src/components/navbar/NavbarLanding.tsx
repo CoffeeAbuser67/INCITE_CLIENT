@@ -5,7 +5,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuthService } from "../../hooks/useAuthService";
 import { LayoutDashboard, LogIn, LogOut, BookOpen, ChartColumnBig } from "lucide-react";
 
-// 🧿
 const navItems = [ // [✪] navItems
 
     { icon: BookOpen, href: "/blog", label: "Blog" },

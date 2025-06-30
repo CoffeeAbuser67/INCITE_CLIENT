@@ -115,7 +115,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         fetchInstituicoes();
     }, []);
 
-
     // (●) cityToRegionMap
     const cityToRegionMap = useMemo(() => {
         const map: { [cityId: string]: string } = {};
@@ -126,8 +125,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         }
         return map;
     }, []);
-
-
 
     // (✪) handleMarkerClick
     const handleMarkerClick = (instituicao: InstituicaoMarker) => {
@@ -173,7 +170,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         }
         return mapa;
     }, []); // ── ⋙── ── ── ── ── ── ── ──➤
-
 
     // ✪ bahiaStrokeStyle
     const bahiaStrokeStyle = useSpring({
@@ -277,7 +273,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         });
     }; // ── ⋙── ── ── ── ── ── ── ──➤
 
-
     const marcadoresOrdenados = useMemo(() => { // {✪} marcadoresOrdenados
         // Se nenhuma instituição estiver selecionada, retorna a lista original
         if (!selectedInstituicao) {
@@ -288,8 +283,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         return [...outrosMarcadores, selectedInstituicao];
     }, [instituicoes, selectedInstituicao]); // ── ⋙── ── ── ── ── ── ── ──➤
     // Recalcula apenas quando a lista ou a seleção mudar
-
-
 
     const handleSelectChange = (instituicaoId: string) => { // (✪) handleSelectChange
         if (!instituicaoId) {
@@ -311,7 +304,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                 id="CANVAS"
                 className={classNames(
                     "flex h-[600px] flex-col gap-6 ",
-                    "mt-40 mx-14 p-4",
+                    "mt-32 mx-14 p-4",
                 )}
             >
                 <Box // ──  PANEL1

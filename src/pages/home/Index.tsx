@@ -56,18 +56,15 @@ import {
 } from 'recharts';
 
 import { TooltipProps } from "recharts";
-import MapMenu from "./MapMenu";
+import MapMenu from "./MapMenu2";
 import Icons from "../../assets/Icons";
 import ICON_SIZES from "../../assets/IconsSizes";
 
-import { VARIABLES, COLORS, SCOLORS } from "../../assets/auxData";
+import { VARIABLES, COLORSHEX, SCOLORS } from "../../assets/auxData";
 import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
 // . . . . . . .
 
 //  WARN Xique-xique | santa teresinha | Muquém de São Francisco
-
-
-
 // 
 const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤ 
 
@@ -217,6 +214,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return <SvgComponent x={centerX} y={centerY} />;
   }; // . . .
 
+
   const QMRMTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // {●} QMRMTooltip
     if (active && payload && payload.length) {
       const { name, qp, rm } = payload[0].payload;
@@ -232,301 +230,170 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
-  const CustomizedDot = (props) => { // ● CustomizedDot
-    const { cx, cy, datakey } = props;
 
-    if (cx == null || cy == null) return null;
-    const SvgComponent = Icons[datakey as keyof typeof Icons];
-
-    if (!SvgComponent) return null;
-
-    return (
-      <g transform={`translate(${cx - 15}, ${cy - 15})`}>
-        <circle cx="15" cy="15" r="18" fill="gray" stroke="black" strokeWidth="2" />
-        <defs>
-          <clipPath id={`clip-${datakey}`}>
-            <circle cx="15" cy="15" r="15" />
-          </clipPath>
-        </defs>
-        <g clipPath={`url(#clip-${datakey})`}>
-          <SvgComponent />
-        </g>
-      </g>
-    );
-
-  };
-
-  const SeriesTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // ● SeriesTooltip
-    if (active && payload && payload.length) {
-
-      // ⁂
-      const Items = payload
-        .sort((a, b) => b.value - a.value)
-        .map(({ name, value }) => ({ [seriesVData?.keys[name]]: value }));
-
-      console.log('payload:', payload)
-
-      return (
-        <Card>
-          <Text as="div"> <Strong>Ano: </Strong> {payload[0].payload['year']} </Text>
-          <Separator my="1" color="gray" size="4" />
-          {
-            Items.map((item) => {
-              const key = Object.keys(item)[0];
-              const value = item[key];
-              return (
-                <Text as="div"> <Strong>{`${key} :`}</Strong> {value.toLocaleString('de-DE')} </Text>
-              )
-            })
-          }
-        </Card >
-      );
-
-    }
-
-    return null;
-  };
-
-  return (// ── ⋙── ── ── ── DOM ── ── ── ── ── ──⫸
+  return (// ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘ DOM ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘➤ 
     <>
       <p // HERE windowSize ↯
-        className="fixed right-10 top-30 text-xl text-slate-950"
+        className="fixed right-10 top-30 text-xl text-slate-950 z-50"
       >
         🦀{` wdith: ${windowSize.width}`} <br />
         🦀{` height: ${windowSize.height}`}
       </p>
 
-      <div //_PIN_⋙── ── ── BANNER ── ── ── ──➤
-        // [MEDIA] output_half
-        //  WARN fallback NONE
-        id="BANNER"
-        className="relative">
-        <video autoPlay loop muted playsInline className="w-full h-auto">
-          <source src="/output_half.mp4" type="video/mp4" />
-        </video>
-
-        <Box className={classNames(
-          'absolute flex flex-col items-center text-black',
-          "left-1/2 -translate-x-1/2",
-          'bottom-0 ',
-          "bg-gradient-to-b from-white/0 to-white/100 bg-clip-padding backdrop-filter backdrop-blur-3xl bg-opacity-100",
-          'p-14 rounded-t-lg '
-        )}>
-
-          <Heading weight="bold" size="9" highContrast>
-            INCITE
-          </Heading>
-
-          <div className="mt-4" >
-            <Heading size="8" highContrast>
-              AGRICULTURA FAMILIAR
-            </Heading>
-          </div>
-
-          <div className="mt-4">
-            <Heading size="8" highContrast>
-              DIVERSIFICADA E SUSTENTÁVEL
-            </Heading>
-          </div>
-
-        </Box>
-      </div>
-
-      <Box // _PIN_ ⋙── ── ── MapMenu ── ── ──➤
-        id="MapMenu" // <○> MapMenu 
+      <Box
         className={classNames(
-          "w-full  px-10 pt-24",
-          "bg-white",
+          "flex flex-col", // Organiza os painéis filhos em uma coluna
+          "p-10 gap-4",
+          "h-full w-full bg-neutral-100", // h-full para ocupar a altura disponível, considere 'min-h-screen' se precisar sempre preencher a tela
+          "overflow-y-auto" // Permite rolagem se o conteúdo exceder a altura da tela
         )}
       >
-        <MapMenu />
-      </Box>
 
-      <Box //_PIN_⋙── ── ──MC⊛×⁕ ── ── ──➤
-        id='MC'
-        className={classNames(
-          'flex flex-col justify-start items-center',
-          // 'bg-gradient-to-b from-white via-emerald-900 to-green-900',
-          'gap-10 px-10 pt-24')}>
 
-        <Box //── ⋙── ── TopValuesBox ── ──➤
-          id='TopValuesBox'
-          className='flex gap-8 rounded-xl h-[440px] w-full '
-        >
+        <Box className={classNames(
+          "flex items-start",
+          "gap-4",
+        )}>
 
-          <Box
-            // . . . . . . . . . . . .pie
-            id='pie'
-            className={classNames(
-              'flex z10 rounded-xl',
-              'bg-neutral-400 overflow-visible w-2/5 h-[460px]')}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart width={420} height={420}>
-                <Pie
-                  data={topVData?.percent_data} // ⊙ topVData
-                  cy={210}
-                  label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
-                  outerRadius={120}
-                  fill="#000"
-                  dataKey="v"
+
+          <MapMenu />
+
+          <Box className="flex flex-col flex-1 gap-4 h-[640px]">
+
+            <Box className="flex gap-4 h-2/5">
+
+              <Card id="p1" className="flex-1 bg-purple-300 rounded-xl p-4">
+                <Heading as="h3" size="4">Card P1</Heading>
+                <Text as="p">Substitua este conteúdo.</Text>
+              </Card>
+
+              <Box  // ── ⋙── ── pie ── ──➤
+                id='pie'
+                className={classNames(
+                  'flex-1 rounded-xl',
+                  'bg-neutral-400',
+                  'overflow-hidden'
+                )}
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      // ⊙ topVData
+                      data={topVData?.percent_data}
+                      cx="50%"
+                      cy="50%"
+                      label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+                      outerRadius="80%"
+                      fill="#000"
+                      dataKey="v"
+                    >
+                      {topVData?.percent_data.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORSHEX[variable]?.[index % COLORSHEX[variable].length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip // <○> PieTooltip
+                      content={<PieTooltip />}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Box>
+
+            </Box>
+
+            <Box // ── ⋙── ── bar ── ──➤
+              id='bar'
+              className={classNames(
+                'flex flex-col items-center w-full z-0',
+                'rounded-xl bg-emerald-700',
+                'flex-1',
+                'overflow-hidden p-3'
+              )}
+            >
+              <Text as='div' size="4" highContrast>
+                <Strong>{VARIABLES[variable]} </Strong>
+              </Text>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={topVData?.data} // ⊙ topVData
+                  margin={{ top: 20, right: 20, left: 10, bottom: 5, }}
                 >
-                  {topVData?.percent_data.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[variable][index % COLORS[variable].length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  // <○> PieTooltip
-                  content={<PieTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" stroke="#000" />
+                  <YAxis stroke="#000" />
+                  <Tooltip content={<BarTooltip />} />
+                  <Bar name='🦀' dataKey="v" fill="#8884d8" minPointSize={5}>
+                    {topVData?.data.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORSHEX[variable]?.[index % COLORSHEX[variable].length]} />
+                    ))}
+                    <LabelList // (○) BarTopLabels
+                    dataKey="name" 
+                    content={BarTopLabels} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
           </Box>
 
-          <Box
-            // . . . . . . . . . . . .bar
-            id='bar'
+        </Box>
+        <Box
+          className={classNames(
+            "flex items-start", // Organiza px e QPRM_bars lado a lado
+            "gap-4",
+          )}
+        >
+
+          <Card id="px" className="bg-orange-300 rounded-xl p-4 w-2/ h-[440px]">
+            <Heading as="h3" size="4">Card PX</Heading>
+            <Text as="p">Este é um card de exemplo para ocupar o espaço à esquerda.</Text>
+          </Card>
+
+
+          <Box // ── ⋙──  ── QPRM_bars ── ──➤
+            id='QPRM_bars'
             className={classNames(
-              'flex flex-col items-center w-full h-[460px] z-0',
-              'rounded-xl bg-emerald-700 p-5')}
+              'flex-1 rounded-xl h-[440px]', // flex-1 para ocupar o espaço restante
+              'bg-gradient-to-r from-emerald-50 to-green-50',
+              'p-4'
+            )}
           >
-
-            <Text as='div' size="4" highContrast> <Strong>{VARIABLES[variable]} </Strong></Text>
-
-            <ResponsiveContainer
-              width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                width={700}
-                height={440}
-                data={topVData?.data} // ⊙ topVData
+                data={topVData?.QP_RM} // ⊙ topVData
                 margin={{
-                  top: 40,
-                  right: 30,
+                  top: 46,
+                  right: 20,
                   left: 20,
                   bottom: 5,
                 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" stroke="#000" />
-                <YAxis stroke="#000" />
-                <Tooltip
-                  // (○) BarTooltip
-                  content={<BarTooltip />} />
+                <XAxis dataKey="name" />
+                <YAxis yAxisId="left" orientation="left" stroke="#AC4D39" />
+                <YAxis yAxisId="right" orientation="right" stroke="#FFC53D" />
+                <Tooltip // {○} QMRMTootip
+                  content={<QMRMTooltip />} />
 
-                <Bar name='🦀' dataKey="v" fill="#8884d8" minPointSize={5}>
-                  {topVData?.data.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[variable][index % COLORS[variable].length]} />
-                  ))}
-
+                <Legend />
+                <Bar name='Quantidade Produzida' yAxisId="left" dataKey="qp" fill="#AC4D39" activeBar={<Rectangle stroke="#000" />}  >
                   <LabelList
                     dataKey="name"
                     content={BarTopLabels}  // (○) BarTopLabels
+
                   />
                 </Bar>
+                <Bar name="Rendimento Médio" yAxisId="right" dataKey="rm" fill="#FFC53D" activeBar={<Rectangle stroke="#000" />} />
               </BarChart>
             </ResponsiveContainer>
-
           </Box>
         </Box>
 
-        <Box // ── ⋙──  ── QPRM_bars ── ──➤
-          id='QPRM_bars'
-          className={classNames(
-            'rounded-xl h-[440px] w-full',
-            'bg-gradient-to-r from-emerald-50 to-green-50',
-          )}
-
-        >
 
 
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              width={500}
-              height={300}
-              data={topVData?.QP_RM} // ⊙ topVData
-              margin={{
-                top: 46,
-                right: 20,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis yAxisId="left" orientation="left" stroke="#AC4D39" />
-              <YAxis yAxisId="right" orientation="right" stroke="#FFC53D" />
-              <Tooltip
-                // {○} QMRMTooltip
-                content={<QMRMTooltip />} />
-              <Legend />
-              <Bar name='Quantidade Produzida' yAxisId="left" dataKey="qp" fill="#AC4D39" activeBar={<Rectangle stroke="#000" />}  >
-                <LabelList
-                  dataKey="name"
-                  content={BarTopLabels}  // (○) BarTopLabels
-                />
-              </Bar>
 
-
-              <Bar name="Rendimento Médio" yAxisId="right" dataKey="rm" fill="#FFC53D" activeBar={<Rectangle stroke="#000" />} />
-
-            </BarChart>
-          </ResponsiveContainer>
-
-        </Box>
-
-
-        <Box // ── ⋙── ── TopSeriesBox ── ──➤
-          id='TopSeriesBox'
-          className={classNames(
-            'rounded-xl w-full h-[700px] p-10',
-            'bg-gradient-to-r from-violet-100 to-fuchsia-100',
-          )}
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              width={700}
-              height={500}
-              data={seriesVData?.data} // ⊙ seriesVData
-              margin={{
-                top: 20,
-                right: 20,
-                left: 20,
-                bottom: 20,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="year" stroke="#000" />
-              <YAxis stroke="#000" scale="log"
-                domain={['auto', 'auto']}
-              />
-
-              <Tooltip content={SeriesTooltip} />
-
-              {seriesKeys.map((key) => (
-                <Line
-                  key={key}
-                  type="monotone"
-                  dataKey={key}
-                  stroke="#000"
-                  // ○ CustomizedDot
-                  dot={<CustomizedDot datakey={key} />} />
-              ))}
-
-              <Brush
-                dataKey="year"
-                height={30}
-                stroke="#8884d8"
-                travellerWidth={10}
-              />
-
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
-
-      </Box >
-
+      </Box>
     </>
   );
+
 };  // ★ ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
 export default Home;
 

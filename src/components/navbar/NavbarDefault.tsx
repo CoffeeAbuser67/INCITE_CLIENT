@@ -9,8 +9,6 @@ import { LayoutDashboard, LogIn, LogOut, BookOpen, ChartColumnBig, } from "lucid
 import { useUserStore } from "../../store/userStore";
 
 
-// 🧿
-
 
 const navItems = [ // [✪] navItems
 

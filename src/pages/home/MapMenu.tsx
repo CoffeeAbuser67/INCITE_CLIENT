@@ -28,10 +28,6 @@ import { axiosPlain } from "../../utils/axios";
 
 
 
-
-
-
-
 import handleAxiosError from "../../utils/handleAxiosError";
 
 import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
@@ -40,7 +36,6 @@ import regionCityData from "../../assets/BahiaRegiaoMuni.json";
 import regionData from "../../assets/BahiaRegiao.json";
 
 import { COLORSTW, VARIABLES, YEARS } from "../../assets/auxData";
-
 
 const SVG_TEST = () => ( // [MEDIA] SVG_TEST
   <svg
@@ -77,7 +72,6 @@ const SVG_TEST2 = () => ( // [MEDIA] SVG_TEST
     </g>
   </svg>
 )// . . . . . . .
-
 
 const SCALE_ADJUSTMENT = 0.35
 
@@ -177,8 +171,14 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
       const response = await axios.get(url, { params }); // _PIN_ getRegionValues  ✉ 
       const data = response?.data
+
+
+      console.log("── ⋙⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸");
+      console.log("params:", params); // [LOG] 
+      console.log("/getRegionValues:", data); // [LOG] 
+      console.log("── ⋙⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸");
+
       setRegionValues(data) // ↺ setRegionValues
-      console.log(data); // [LOG] 
 
     } catch (err: unknown) {
       if (err) {
@@ -188,11 +188,13 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
   }, [region.active, year, variable]
 
+
   ) // . . . 
 
   useEffect(() => { // (●) uE
     getRegionValues(); // (○) getRegionValues
   }, [getRegionValues]); // ── ⋙── ── ── ── ── ── ── ──➤
+
 
   const getBahiaValues = useCallback(async () => { // (✪) getBahiaValues 
     const axios = axiosPlain;
@@ -208,7 +210,10 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       const response = await axios.get(url, { params }); // _PIN_ getRegionValues  ✉ 
       const data = response?.data
       setBahiaValues(data) // ↺ setBahiaValues
-      console.log(data); // [LOG] 
+
+      console.log("── ⋙⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸");
+      console.log("/getBahiaValues:", data); // [LOG] 
+      console.log("── ⋙⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸");
 
     } catch (err: unknown) {
       if (err) {
@@ -216,8 +221,10 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       }
     }
 
+
   }, [year, variable])
   //  . . .
+
   useEffect(() => { // (●) uE
     getBahiaValues(); // (○) getBahiaValues
   }, [getBahiaValues]); // ── ⋙── ── ── ── ── ── ──➤
@@ -347,10 +354,13 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
   // [✪] memoizedRegions 
   const memoizedRegions = useMemo(() => {
+
     const currentColors = COLORSTW[variable] || []; // Garante que currentColors seja um array
 
     // Se não houver dados ou cores, renderiza as regiões com estilo padrão
+
     if (!bahiaValues || bahiaValues.length === 0 || currentColors.length === 0) {
+
       return mapRegion.map((el, i) => (
         <g key={i} className="cls-region">
           <title>{el.name}</title>
@@ -389,6 +399,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     const bahiaValuesMap = new Map(bahiaValues.map(item => [item.name_id, item.total]));
 
     return mapRegion.map((el, i) => {
+
       const itemTotal = bahiaValuesMap.get(el.id);
       let colorClass = ""; // Cor padrão ou nenhuma cor específica
 
@@ -418,6 +429,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     });
   }, [bahiaValues, variable, handleMouseEnter, handleMouseLeave]);
 
+
   // [✪] cityColoringParams
   const cityColoringParams = useMemo(() => {
     const currentColors = COLORSTW[variable] || [];
@@ -439,15 +451,11 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       logMax = Math.log10(max + 1);
     }
 
-    // Os itens da transição (`item` em `transition((style, item) => ...)`)
-    // já contêm `item.id` e `item.total` (se `mapRegionCity` tiver `total`).
-    // Se `mapRegionCity` não tiver `total`, precisamos de um mapa como no passo anterior.
-    // `RegionCity` tem `City[]`, e `City` não tem `total`.
-    // `regionValues` (que é `regionValuesI[] = { total: number; name_id: string }[]`)
-    // é quem tem os totais para os municípios.
-    // Então, precisamos de um mapa para os totais dos municípios.
-
     const cityTotalsMap = new Map(regionValues.map(rv => [rv.name_id, rv.total]));
+
+    console.log('◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸')
+    console.log('cityTotalsMap :', cityTotalsMap)
+
 
     return {
       logMin,
@@ -457,6 +465,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       cityTotalsMap // Mapa para buscar o total do município pelo ID
     };
   }, [regionValues, variable]); // Depende de regionValues e da variável selecionada
+
 
   return ( // ── ◯─◡◠◡◠◡◠◡◠ DOM ◡◠◡◠◡◠─⫸ 🌑
     <>
@@ -627,6 +636,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
                         onMouseLeave={handleMouseLeave}
                       />
                     </animated.g>
+
                   );
                 })}
 
@@ -649,8 +659,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
           </div>
 
         </div>
-
-
         <Card
           //── ⋙── ── REGION_info ── ──➤
           id='REGION_info'// HERE REGION_info

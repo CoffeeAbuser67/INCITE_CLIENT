@@ -60,8 +60,15 @@ export const COLORSTW = {
   ],
 };
 
-//  [●] COLORS
-export const COLORS = {
+//  [●] COLORSTW_HEX
+export const COLORSTW_HEX = {
+  valor_da_producao: { from: "#fcfcfc", to: "#171717" },
+  area_colhida: { from: "#7c2d12", to: "#fff7ed" },
+  area_plantada_ou_destinada_a_colheita: { from: "#312e81", to: "#f5f7ff" },
+};
+
+//  [●] COLORSHEX
+export const COLORSHEX = {
   area_plantada_ou_destinada_a_colheita: [
     "#312e81",
     "#3730a3",
