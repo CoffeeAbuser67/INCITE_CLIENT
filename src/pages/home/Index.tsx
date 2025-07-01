@@ -83,7 +83,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   //  ✳ {variable}
   const { variable } = variableStore();
 
-
   type A_Item = { id: string; name: string; v: number };
   type A_Item2 = { id: string; name: string; qp: number, rm: number };
   type AgriculturalData = {
@@ -120,7 +119,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     getTopValues()
   }, [region, city, year, variable])
   // ── ⋙── ── ── ── ── ── ── ──➤
-
 
   const getSeriesValues = async () => { // {✪} getSeriesValues
     const axios = axiosPlain;
@@ -171,7 +169,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     }
   } // ── ⋙── ── ── ── ── ── ── ──➤
 
-
   const PieTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {   // <●> PieTooltip
     if (active && payload && payload.length) {
       const { id, name, v } = payload[0].payload; // Extract id from payload
@@ -214,7 +211,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return <SvgComponent x={centerX} y={centerY} />;
   }; // . . .
 
-
   const QMRMTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // {●} QMRMTooltip
     if (active && payload && payload.length) {
       const { name, qp, rm } = payload[0].payload;
@@ -230,6 +226,59 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
+  const CustomizedDot = (props) => { // ● CustomizedDot
+    const { cx, cy, datakey } = props;
+
+    if (cx == null || cy == null) return null;
+    const SvgComponent = Icons[datakey as keyof typeof Icons];
+
+    if (!SvgComponent) return null;
+
+    return (
+      <g transform={`translate(${cx - 15}, ${cy - 15})`}>
+        <circle cx="15" cy="15" r="18" fill="gray" stroke="black" strokeWidth="2" />
+        <defs>
+          <clipPath id={`clip-${datakey}`}>
+            <circle cx="15" cy="15" r="15" />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#clip-${datakey})`}>
+          <SvgComponent />
+        </g>
+      </g>
+    );
+
+  };
+
+  const SeriesTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // ● SeriesTooltip
+    if (active && payload && payload.length) {
+
+      const Items = payload
+        .sort((a, b) => b.value - a.value)
+        .map(({ name, value }) => ({ [seriesVData?.keys[name]]: value }));
+
+      console.log('payload:', payload)
+
+      return (
+        <Card>
+          <Text as="div"> <Strong>Ano: </Strong> {payload[0].payload['year']} </Text>
+          <Separator my="1" color="gray" size="4" />
+          {
+            Items.map((item) => {
+              const key = Object.keys(item)[0];
+              const value = item[key];
+              return (
+                <Text as="div"> <Strong>{`${key} :`}</Strong> {value.toLocaleString('de-DE')} </Text>
+              )
+            })
+          }
+        </Card >
+      );
+
+    }
+
+    return null;
+  };
 
   return (// ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘ DOM ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘➤ 
     <>
@@ -326,8 +375,8 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                       <Cell key={`cell-${index}`} fill={COLORSHEX[variable]?.[index % COLORSHEX[variable].length]} />
                     ))}
                     <LabelList // (○) BarTopLabels
-                    dataKey="name" 
-                    content={BarTopLabels} />
+                      dataKey="name"
+                      content={BarTopLabels} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -335,6 +384,8 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           </Box>
 
         </Box>
+
+
         <Box
           className={classNames(
             "flex items-start", // Organiza px e QPRM_bars lado a lado
@@ -342,7 +393,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           )}
         >
 
-          <Card id="px" className="bg-orange-300 rounded-xl p-4 w-2/ h-[440px]">
+          <Card id="px" className="bg-orange-300 rounded-xl p-4 w-1/3 h-[440px]">
             <Heading as="h3" size="4">Card PX</Heading>
             <Text as="p">Este é um card de exemplo para ocupar o espaço à esquerda.</Text>
           </Card>
@@ -388,9 +439,57 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         </Box>
 
 
+        <Box // ── ⋙── ── TopSeriesBox ── ──➤
+          className={classNames(
+            "flex",
+            'rounded-xl w-full h-[660px] p-10',
+            'bg-gradient-to-r from-violet-100 to-fuchsia-100',
+          )}
+        >
+
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={seriesVData?.data} // ⊙ seriesVData
+              margin={{
+                top: 20,
+                right: 20,
+                left: 20,
+                bottom: 20,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="year" stroke="#000" />
+              <YAxis stroke="#000" scale="log"
+                domain={['auto', 'auto']}
+              />
+
+              <Tooltip // ○ SeriesTooltip
+                content={SeriesTooltip} />
+
+              {seriesKeys.map((key) => (
+                <Line
+                  key={key}
+                  type="monotone"
+                  dataKey={key}
+                  stroke="#000"
+                  // ○ CustomizedDot
+                  dot={<CustomizedDot datakey={key} />} />
+              ))}
+
+              <Brush
+                dataKey="year"
+                height={30}
+                stroke="#8884d8"
+                travellerWidth={10}
+              />
+
+            </LineChart>
+          </ResponsiveContainer>
+
+        </Box>
 
 
-      </Box>
+      </Box >
     </>
   );
 

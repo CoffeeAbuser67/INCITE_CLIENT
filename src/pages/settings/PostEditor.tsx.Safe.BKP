@@ -3,27 +3,9 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
-import UnderlineExtension from '@tiptap/extension-underline'; // <--- NOVO: Extensão para sublinhado
-
 import { Mark, mergeAttributes } from '@tiptap/core';
-import { UploadCloud, X, FileImage, LoaderCircle, Underline } from 'lucide-react';
-import { Dialog, Button, TextField, Text, Flex, TextArea, Tooltip } from '@radix-ui/themes'; // Usando componentes Radix
-
-
-
-import {
-    Bold,
-    Italic,
-    AlignLeft,
-    AlignCenter,
-    AlignRight,
-    AlignJustify,
-    Image as ImageIcon
-} from 'lucide-react';
-// CORREÇÃO FINAL: Apenas importações que existem em @radix-ui/themes
-import { IconButton, Select, Separator } from '@radix-ui/themes';
-
-
+import { UploadCloud, X, FileImage, LoaderCircle } from 'lucide-react';
+import { Dialog, Button, TextField, Text, Flex, TextArea } from '@radix-ui/themes'; // Usando componentes Radix
 
 
 // Interface para as propriedades do nosso componente
@@ -197,171 +179,119 @@ const TextClass = Mark.create({
 
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // <●> Toolbar
 const Toolbar = ({ editor }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+
     if (!editor) return null;
-    const handleImageInsert = (url) => { if (url) { editor.chain().focus().setImage({ src: url }).run(); } };
+    // Função para inserir a imagem recebida da modal
+    const handleImageInsert = (url: string) => {
+        if (url) {
+            editor.chain().focus().setImage({ src: url }).run();
+        }
+    };
+
+    // Opções para o seletor de tamanho
     const FONT_OPTIONS = [
         { label: 'Pequeno', value: 'text-small' },
         { label: 'Grande', value: 'text-large' },
         { label: 'Subtítulo', value: 'text-subtitle' },
     ];
-    const activeFontSize = FONT_OPTIONS.find(option => editor.isActive('textClass', { class: option.value }))?.value || 'normal';
-    const handleFontSizeChange = (className) => {
-        if (className === 'normal') { editor.chain().focus().unsetMark('textClass').run(); }
-        else { editor.chain().focus().setTextClass(className).run(); }
+
+    // Lógica para o seletor de tamanho
+    const activeFontSize = FONT_OPTIONS.find(option => editor.isActive('textClass', { class: option.value }))?.value || '';
+
+    const handleFontSizeChange = (e) => {
+        const className = e.target.value;
+        editor.chain().focus().setTextClass(className).run();
     };
+
+    const addImage = () => {
+        const url = window.prompt('URL da Imagem:'); // Placeholder
+        if (url) {
+            editor.chain().focus().setImage({ src: url }).run();
+        }
+    };
+
+
+    const baseButtonClass = "px-3 py-1.5 text-sm font-medium border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500";
+    const activeButtonClass = "bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700";
 
     return (
         <>
-            <Flex as="div" gap="3" align="center" className="p-2 bg-gray-50 border-b border-gray-200">
-                <Tooltip content="Negrito">
-                    <IconButton variant={editor.isActive('bold') ? 'soft' : 'ghost'} aria-label="Negrito" onClick={() => editor.chain().focus().toggleBold().run()}>
-                        <Bold size={18} />
-                    </IconButton>
-                </Tooltip>
-                <Tooltip content="Itálico">
-                    <IconButton variant={editor.isActive('italic') ? 'soft' : 'ghost'} aria-label="Itálico" onClick={() => editor.chain().focus().toggleItalic().run()}>
-                        <Italic size={18} />
-                    </IconButton>
-                </Tooltip>
-                {/* --- NOVO: Botão de Sublinhado --- */}
-                <Tooltip content="Sublinhado">
-                    <IconButton variant={editor.isActive('underline') ? 'soft' : 'ghost'} aria-label="Sublinhado" onClick={() => editor.chain().focus().toggleUnderline().run()}>
-                        <Underline size={18} />
-                    </IconButton>
-                </Tooltip>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 p-2 bg-gray-100 border-b border-gray-300">
+                <button
+                    onClick={() => editor.chain().focus().toggleBold().run()} // A CORREÇÃO ESTÁ AQUI
+                    className={`${baseButtonClass} ${editor.isActive('bold') ? activeButtonClass : ''}`}
+                >
+                    Negrito
+                </button>
 
-                <Separator orientation="vertical" />
+                <button
+                    onClick={() => editor.chain().focus().toggleItalic().run()}
+                    className={`${baseButtonClass} ${editor.isActive('italic') ? activeButtonClass : ''}`}
+                >
+                    Itálico
+                </button>
 
-                <Select.Root value={activeFontSize} onValueChange={handleFontSizeChange}>
-                    <Tooltip content="Tamanho do Texto">
-                        <Select.Trigger variant="soft" placeholder="Tamanho do Texto" />
-                    </Tooltip>
-                    <Select.Content>
-                        <Select.Group>
-                            <Select.Label>Tamanho</Select.Label>
-                            <Select.Item value="normal">Normal</Select.Item>
-                            {FONT_OPTIONS.map(option => (<Select.Item key={option.value} value={option.value}>{option.label}</Select.Item>))}
-                        </Select.Group>
-                    </Select.Content>
-                </Select.Root>
+                {/* --- SELETOR DE TAMANHO --- */}
+                <select
+                    value={activeFontSize}
+                    onChange={handleFontSizeChange}
+                    className={baseButtonClass}
+                >
+                    <option value="">Normal</option>
+                    {FONT_OPTIONS.map(option => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
 
-                <Separator orientation="vertical" />
+                {/* --- BOTÕES DE ALINHAMENTO --- */}
+                <div className="flex items-center">
+                    <button
+                        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+                        className={`${baseButtonClass} rounded-r-none ${editor.isActive({ textAlign: 'left' }) ? activeButtonClass : ''}`}
+                    >
+                        Esq.
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+                        className={`${baseButtonClass} rounded-none border-x-0 ${editor.isActive({ textAlign: 'center' }) ? activeButtonClass : ''}`}
+                    >
+                        Centro
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+                        className={`${baseButtonClass} rounded-l-none border-x-0 ${editor.isActive({ textAlign: 'right' }) ? activeButtonClass : ''}`}
+                    >
+                        Dir.
+                    </button>
+                    <button
+                        onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+                        className={`${baseButtonClass} rounded-l-none ${editor.isActive({ textAlign: 'justify' }) ? activeButtonClass : ''}`}
+                    >
+                        Just.
+                    </button>
+                </div>
 
-                <Tooltip content="Alinhar à Esquerda"><IconButton variant={editor.isActive({ textAlign: 'left' }) ? 'soft' : 'ghost'} aria-label="Alinhar à Esquerda" onClick={() => editor.chain().focus().setTextAlign('left').run()}><AlignLeft size={18} /></IconButton></Tooltip>
-                <Tooltip content="Centralizar"><IconButton variant={editor.isActive({ textAlign: 'center' }) ? 'soft' : 'ghost'} aria-label="Centralizar" onClick={() => editor.chain().focus().setTextAlign('center').run()}><AlignCenter size={18} /></IconButton></Tooltip>
-                <Tooltip content="Alinhar à Direita"><IconButton variant={editor.isActive({ textAlign: 'right' }) ? 'soft' : 'ghost'} aria-label="Alinhar à Direita" onClick={() => editor.chain().focus().setTextAlign('right').run()}><AlignRight size={18} /></IconButton></Tooltip>
-                <Tooltip content="Justificar"><IconButton variant={editor.isActive({ textAlign: 'justify' }) ? 'soft' : 'ghost'} aria-label="Justificar" onClick={() => editor.chain().focus().setTextAlign('justify').run()}><AlignJustify size={18} /></IconButton></Tooltip>
+                <button onClick={() => setIsModalOpen(true)} className={baseButtonClass}>
+                    Imagem
+                </button>
 
-                <Separator orientation="vertical" />
+            </div>
 
-                <Tooltip content="Adicionar Imagem ao Conteúdo">
-                    <IconButton variant="ghost" color="gray" aria-label="Adicionar Imagem" onClick={() => setIsModalOpen(true)}>
-                        <ImageIcon size={18} />
-                    </IconButton>
-                </Tooltip>
-            </Flex>
-            <ImageUploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onImageUploaded={handleImageInsert} />
+
+            <ImageUploadModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onImageUploaded={handleImageInsert}
+            />
         </>
+
     );
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 interface PostEditorDashboardProps {
@@ -375,7 +305,7 @@ interface PostEditorDashboardProps {
 
 
 const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
-    initialTitle = '', initialResumo = '', initialContent = '', initialImagem = null, onSave, onCancel
+    initialTitle = '', initialResumo = '', initialContent = '', initialImagem = null,  onSave, onCancel 
 }: PostEditorDashboardProps) => {
 
     const [postTitle, setPostTitle] = useState(initialTitle);
@@ -392,8 +322,6 @@ const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘
             Image,
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
             TextClass,
-            UnderlineExtension, // <--- NOVO: Ativando a extensão de sublinhado
-
         ],
         content: initialContent, // Inicia com o conteúdo passado via prop
         editorProps: {
@@ -455,23 +383,11 @@ const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘
                         <TextArea value={resumo} onChange={(e) => setResumo(e.target.value)} placeholder="Uma ou duas frases que aparecerão nos cards do blog." />
                     </label>
 
-
-
-
-
-                    <div> {/* <--- MUDANÇA: Envelopado em div para melhor layout */}
+                    <label>
                         <Text as="div" size="2" mb="1" weight="bold">Imagem de Destaque</Text>
-                        {/* --- NOVO: Botão de Upload Estilizado --- */}
-                        <label htmlFor="featured-image-upload" className="cursor-pointer">
-                            <Button variant="soft" color="gray">
-                                <UploadCloud size={16} style={{ marginRight: '8px' }} />
-                                {imagemFile ? 'Trocar Imagem' : 'Selecionar Imagem'}
-                            </Button>
-                        </label>
-                        <input id="featured-image-upload" type="file" className="hidden" accept="image/png, image/jpeg" onChange={handleFileSelect} />
+                        <input type="file" accept="image/png, image/jpeg" onChange={handleFileSelect} />
                         {imagemPreview && <img src={imagemPreview} alt="Preview" className="mt-2 w-48 h-auto rounded" />}
-                    </div>
-
+                    </label>
 
                 </Flex>
 

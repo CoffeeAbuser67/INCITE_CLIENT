@@ -1,6 +1,6 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog, Spinner, Tooltip } from '@radix-ui/themes';
+import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog, Spinner, Tooltip, AspectRatio } from '@radix-ui/themes';
 import { PlusCircle, Pencil, Trash2, ArrowLeft, Info, Upload } from 'lucide-react';
 import PostEditorDashboard from './PostEditor';
 import { GerenciadorDeAba } from './GerenciadorDeAba'
@@ -13,7 +13,7 @@ import mapCity from '../../assets/BahiaCidades4.json';
 
 // HERE Interfaces & types
 // --- Tipos para cada modelo ---
-export type Postagem = { id: number; title: string; content: string; created_at: string };
+export type Postagem = { id: number; title: string; content: string; resumo: string; imagem_destaque: string | null; created_at: string };
 export type Pesquisador = { id: number; nome: string; area_atuacao: string; desligado: boolean; bolsista: boolean };
 export type Pesquisa = { id: number; nome: string; info: string; ano_inicio: number; ano_fim?: number };
 export type AcaoExtensionista = { id: number; nome: string; info: string; ano_inicio: number; ano_fim?: number; tipo_comunidade: string };
@@ -84,8 +84,6 @@ const formatarData = (timestamp: string): string => { // (●) formatarData
 
 const todasAsCidades = Object.values(mapCity).flat(); // (●) todasAsCidades
 const mapaDeNomesDeCidade = new Map(todasAsCidades.map(city => [city.id, city.name])); // (●) mapaDeNomesDeCidade
-
-
 
 
 
@@ -250,16 +248,39 @@ export const ProdutoInovacaoForm: React.FC<SubFormProps<ProdutoInovacao>> = ({ d
     );
 }; // ── ⋙── ── ── ── ── ── ── ──➤
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: PostagensTabProps) => { // {✪} PostagensTab
+
     const [mode, setMode] = useState<'list' | 'editor'>('list');
     const [postAlvo, setPostAlvo] = useState<Partial<Postagem> | null>(null);
 
-
     const [postParaExcluir, setPostParaExcluir] = useState<Postagem | null>(null);
 
-
     const mostrarFormCriacao = () => {
-        setPostAlvo({ title: '', content: '' });
+        setPostAlvo({ title: '', resumo: '', content: '', imagem_destaque: null });
         setMode('editor');
     };
 
@@ -268,20 +289,44 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
         setMode('editor');
     };
 
-    const handleSalvar = async (dados: { title: string, content: string }) => {
-        const payload = { ...dados, instituicao: instituicaoId };
+    const handleSalvar = async (dados: { title: string, resumo: string, imagem_destaque: File | null, content: string }) => {
+
+
+        const formData = new FormData();
+        formData.append('title', dados.title);
+        formData.append('content', dados.content);
+        formData.append('resumo', dados.resumo || '');
+
+        // Adiciona o ID da instituição (se não for um post geral)
+
+        if (instituicaoId) {
+            formData.append('instituicao', instituicaoId.toString());
+        }
+
+        // Se houver um novo arquivo de imagem, adiciona
+        if (dados.imagem_destaque) {
+            formData.append('imagem_destaque', dados.imagem_destaque);
+        }
 
         console.log("⋙── ── ── ── ── ── ── ──➤  ")
-        console.log("payload : ", payload) // [LOG] 
+        console.log("Estou no crud de postagemTAb, e o id: ", instituicaoId) // [LOG] 
+        console.log("formData : ", formData) // [LOG] 
         console.log("⋙── ── ── ── ── ── ── ──➤  ")
+
 
         try {
             if (postAlvo && 'id' in postAlvo) {
-                await axiosForInterceptor.put(`/postagens/${postAlvo.id}/`, payload);
+                await axiosForInterceptor.put(`/postagens/${postAlvo.id}/`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
                 toast.success('Postagem atualizada com sucesso!');
             } else {
-                await axiosForInterceptor.post('/postagens/', payload);
-                toast.success('Postagem criada com sucesso!');
+
+                await axiosForInterceptor.post('/postagens/', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                toast.success('Postagem criada!');
+
             }
             setMode('list');
             setPostAlvo(null);
@@ -291,6 +336,8 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
             toast.error("Erro ao salvar postagem.");
         }
     };
+
+
 
     const handleConfirmarExclusaoPost = async () => {
         if (!postParaExcluir) return;
@@ -310,53 +357,105 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
         }
     };
 
+
     if (mode === 'editor') {
+
         return (
             <PostEditorDashboard
                 initialTitle={postAlvo?.title}
+                initialResumo={postAlvo?.resumo || ''}
                 initialContent={postAlvo?.content || ''}
+                initialImagem={postAlvo?.imagem_destaque || ''}
                 onSave={handleSalvar}
                 onCancel={() => setMode('list')}
             />
         );
     }
 
+
     return (
         <div>
-
             <Flex justify="between" align="center" mb="4">
                 <Heading size="5">Postagens do Blog</Heading>
                 <Button onClick={mostrarFormCriacao}>
                     <PlusCircle className="mr-2 h-4 w-4" /> Nova Postagem
                 </Button>
             </Flex>
-            <div className="grid gap-4">
 
-                {postagensIniciais.length > 0 ? postagensIniciais.map((post: Postagem) => (
-                    <Card key={post.id}>
-                        <Flex justify="between" align="center">
-                            <div>
-                                <Text as="p" weight="bold">{post.title}</Text>
-                                <Text as="p" size="2" color="gray">Criado em: {formatarData(post.created_at)}</Text>
-                            </div>
-                            <Flex gap="3">
-                                <Button variant="soft" onClick={() => mostrarFormEdicao(post)}>
-                                    <Pencil className="h-4 w-4" />
-                                </Button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {postagensIniciais.length > 0 ? (
+                    postagensIniciais.map((post: Postagem) => (
+                        <Card
+                            key={post.id}
+                            className="h-full flex flex-col"
+                        >
+                            <Box>
+                                <AspectRatio ratio={16 / 9}>
+                                    <img
+                                        src={
+                                            post.imagem_destaque ||
+                                            'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800'
+                                        }
+                                        alt={`Imagem para ${post.title}`}
+                                        className="w-full h-full object-cover rounded-md"
+                                    />
+                                </AspectRatio>
+                            </Box>
 
-                                <Button variant="soft" color="red" onClick={() => setPostParaExcluir(post)}>
+                            <Box p="3" className="flex-grow flex flex-col justify-between">
+                                <Heading as="h3" size="4" mt="2" truncate>
+                                    {post.title}
+                                </Heading>
 
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                                {post.resumo && (
+                                    <Text
+                                        as="p"
+                                        size="2"
+                                        color="gray"
+                                        mt="1"
+                                        className="line-clamp-3 flex-grow"
+                                    >
+                                        {post.resumo}
+                                    </Text>
+                                )}
 
-                            </Flex>
-                        </Flex>
-                    </Card>
-                )) : <Text color="gray">Nenhuma postagem encontrada.</Text>}
+                                <Flex align="center" justify="between" mt="5">
+                                    <Text color="gray" size="2">
+                                        {formatarData(post.created_at)}
+                                    </Text>
 
+                                    <Flex gap="2">
+                                        <Button
+                                            className="cursor-pointer"
+                                            size="1"
+                                            variant="soft"
+                                            onClick={() => mostrarFormEdicao(post)}
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                            className="cursor-pointer"
+                                            size="1"
+                                            color="red"
+                                            variant="soft"
+                                            onClick={() => setPostParaExcluir(post)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </Flex>
+                                </Flex>
+                            </Box>
+                        </Card>
+                    ))
+                ) : (
+                    <Text color="gray">Nenhuma postagem encontrada.</Text>
+                )}
             </div>
 
-            <AlertDialog.Root open={!!postParaExcluir} onOpenChange={() => setPostParaExcluir(null)}>
+            <AlertDialog.Root
+                open={!!postParaExcluir}
+                onOpenChange={() => setPostParaExcluir(null)}
+            >
                 <AlertDialog.Content style={{ maxWidth: 450 }}>
                     <AlertDialog.Title>Confirmar Exclusão</AlertDialog.Title>
                     <AlertDialog.Description size="2">
@@ -365,20 +464,93 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
                     </AlertDialog.Description>
                     <Flex gap="3" mt="4" justify="end">
                         <AlertDialog.Cancel>
-                            <Button variant="soft" color="gray">Cancelar</Button>
+                            <Button variant="soft" color="gray">
+                                Cancelar
+                            </Button>
                         </AlertDialog.Cancel>
                         <AlertDialog.Action>
-                            <Button variant="solid" color="red" onClick={handleConfirmarExclusaoPost}>
+                            <Button
+                                variant="solid"
+                                color="red"
+                                onClick={handleConfirmarExclusaoPost}
+                            >
                                 Sim, Excluir Postagem
                             </Button>
                         </AlertDialog.Action>
                     </Flex>
                 </AlertDialog.Content>
             </AlertDialog.Root>
-
         </div>
     );
+
+
+
+
 }; // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }: FormProps) => { // ★ InstituicaoForm
     // Lógica simples de formulário com useState
@@ -606,6 +778,10 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
             try {
                 setLoading(true);
                 const response = await axiosForInterceptor.get('/instituicoes/');
+
+                console.log('── ⋙── ── ── ── ── ── ── ──➤')
+                console.log('instituições :', response.data) // [LOG]
+
                 setInstituicoes(response.data);
                 setError(null);
             } catch (err) {
@@ -714,7 +890,6 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
                     </Flex>
                 </AlertDialog.Content>
             </AlertDialog.Root>
-
 
 
         </div>

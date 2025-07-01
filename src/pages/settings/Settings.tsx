@@ -56,6 +56,7 @@ const Settings = () => {
       <Tabs.Root defaultValue="instituicoes">
 
         <Tabs.List color="gray" className='text-base'>
+
           <Tabs.Trigger value="instituicoes">Instituições</Tabs.Trigger>
 
 
@@ -63,10 +64,12 @@ const Settings = () => {
             <>
               <Tabs.Trigger value="postsGerais">Posts Gerais</Tabs.Trigger>
               <Tabs.Trigger value="usuarios">Usuários</Tabs.Trigger>
-
+              
             </>
           )}
+
           <Tabs.Trigger value="perfil">Perfil</Tabs.Trigger>
+
         </Tabs.List>
 
         <Box pt="6">

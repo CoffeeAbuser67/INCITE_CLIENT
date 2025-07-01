@@ -34,18 +34,15 @@ const BlogPage = () => {
         fetchData();
     }, []);
 
-
     const instituicaoSelecionada = useMemo(() =>
         filtroInstituicao ? instituicoes.find(inst => inst.nome === filtroInstituicao) : null,
         [instituicoes, filtroInstituicao]);
-
 
     // Lógica de filtro baseada no NOME da instituição
     const postsFiltrados = useMemo(() => {
         if (!filtroInstituicao) return posts; // Se o filtro é null, retorna tudo.
         return posts.filter(p => p.instituicao_nome === filtroInstituicao);
     }, [posts, filtroInstituicao]);
-
 
     const postDestaque = postsFiltrados[0];
     const outrosPosts = postsFiltrados.slice(1);

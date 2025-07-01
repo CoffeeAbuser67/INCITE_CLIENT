@@ -39,7 +39,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
                         </Text>
                     )}
                     <Flex align="center" gap="2" mt="3">
-                        <Text size="2" weight="bold" color="jade">{post.instituicao_nome || 'IN-CITE AF'}</Text>
+                        <Text size="2" weight="bold" color="jade">{post.instituicao_nome || 'INCITE AF'}</Text>
                         <Text color="gray" size="2">· {formatarData(post.created_at)}</Text>
                     </Flex>
                 </Box>
