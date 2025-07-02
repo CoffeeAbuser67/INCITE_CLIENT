@@ -31,7 +31,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
                         />
                     </AspectRatio>
                 </Box>
-                <Box p="3" className="flex-grow flex flex-col">
+                <Box p="3" className="flex-grow flex flex-col justify-between">
                     <Heading as="h3" size="4" mt="2" truncate>{post.title}</Heading>
                     {post.resumo && (
                         <Text as="p" size="2" color="gray" mt="1" className="line-clamp-3 flex-grow">

@@ -1,18 +1,18 @@
 // src/pages/BlogPage.tsx
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Heading, Grid, Box, Flex, Text, Button, Spinner, Card, AspectRatio, Select, Avatar } from '@radix-ui/themes';
+import { Heading, Grid, Box, Flex, Text, Spinner, Card, AspectRatio, Select } from '@radix-ui/themes';
 import { axiosPlain } from '../../utils/axios';
 import { PostCard } from './PostCard';
 import { PublicPost, InstituicaoParaFiltro } from './blogTypes';
 import { Link } from 'react-router-dom';
-import { Mail, MapPin, Phone, User } from 'lucide-react';
 
 const BlogPage = () => {
     const [posts, setPosts] = useState<PublicPost[]>([]);
     const [instituicoes, setInstituicoes] = useState<InstituicaoParaFiltro[]>([]);
-    const [selectedInstId, setSelectedInstId] = useState<string>(''); // Usaremos o ID para o select
 
+
+    const [filtroInstituicao, setFiltroInstituicao] = useState<string | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -20,9 +20,13 @@ const BlogPage = () => {
         const fetchData = async () => {
             try {
                 const [postsResponse, instituicoesResponse] = await Promise.all([
-                    axiosPlain.get('/blog/posts/'), // Seu novo endpoint público
-                    axiosPlain.get('/map-markers/') // Endpoint leve para os nomes das instituições
+                    axiosPlain.get('/blog/posts/'),
+                    axiosPlain.get('/map-markers/')
                 ]);
+
+                console.log(' ⋙⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸') //[LOG]
+                console.log('postsResponse:', postsResponse.data)
+
                 setPosts(postsResponse.data);
                 setInstituicoes(instituicoesResponse.data);
             } catch (error) {
@@ -34,20 +38,18 @@ const BlogPage = () => {
         fetchData();
     }, []);
 
-    
-    const instituicaoSelecionada = useMemo(() => 
-        instituicoes.find(inst => inst.id.toString() === selectedInstId),
-    [instituicoes, selectedInstId]);
+    const instituicaoSelecionada = useMemo(() =>
+        filtroInstituicao ? instituicoes.find(inst => inst.nome === filtroInstituicao) : null,
+        [instituicoes, filtroInstituicao]);
 
     // Lógica de filtro baseada no NOME da instituição
     const postsFiltrados = useMemo(() => {
-        if (!instituicaoSelecionada) return posts;
-        return posts.filter(p => p.instituicao_nome === instituicaoSelecionada.nome);
-    }, [posts, instituicaoSelecionada]);
+        if (!filtroInstituicao) return posts; // Se o filtro é null, retorna tudo.
+        return posts.filter(p => p.instituicao_nome === filtroInstituicao);
+    }, [posts, filtroInstituicao]);
 
     const postDestaque = postsFiltrados[0];
     const outrosPosts = postsFiltrados.slice(1);
-
 
 
     if (isLoading) {
@@ -56,7 +58,7 @@ const BlogPage = () => {
 
     return (
         <div className="p-4 sm:p-8 max-w-7xl mx-auto">
-            <Heading size="9" mt = "4" mb="8" align="center" className="text-gray-800">Notícias</Heading>
+            <Heading size="9" mt="4" mb="8" align="center" className="text-gray-800">Notícias</Heading>
 
             {postDestaque && (
                 <Link to={`/blog/${postDestaque.id}`} className="no-underline text-current">
@@ -85,25 +87,49 @@ const BlogPage = () => {
 
                 <Box width={{ initial: '100%', md: 'w-1/3' }} className="sticky top-24 self-start">
                     <Heading size="4" mb="4">Explorar por Instituição</Heading>
-                    
-                    {/* O Novo Seletor */}
-                    <Select.Root value={selectedInstId} onValueChange={setSelectedInstId}>
-                        <Select.Trigger placeholder="Selecione uma instituição..." />
-                        <Select.Content position="popper">
-                            <Select.Item value="">Ver Todas as Postagens</Select.Item>
-                            {instituicoes.map((inst) => (
-                                <Select.Item key={inst.id} value={inst.id.toString()}>
-                                    {inst.nome}
-                                </Select.Item>
-                            ))}
+
+
+                    <Select.Root
+                        size="3"
+                        value={filtroInstituicao || 'all'}
+                        onValueChange={(value) => {
+                            // Se o usuário selecionar 'all', setamos nosso estado para null
+                            setFiltroInstituicao(value === 'all' ? null : value);
+                        }}
+                    >
+                        <Select.Trigger variant="soft" placeholder="Selecione uma instituição..." />
+                        <Select.Content variant="soft" position="popper">
+                            <Select.Group>
+                                <Select.Label>Instituições</Select.Label>
+                                <Select.Item value="all">Todas as Postagens</Select.Item>
+                                {instituicoes.map((inst) => (
+                                    <Select.Item key={inst.id} value={inst.nome}>
+                                        <Text size="2">
+                                            {inst.nome}
+                                        </Text>
+
+                                    </Select.Item>
+                                ))}
+                            </Select.Group>
                         </Select.Content>
                     </Select.Root>
-                    
-                    {/* O Novo Info Panel (condicional) */}
 
 
+                    {instituicaoSelecionada && (
+                        <Card variant="ghost" mt="5">
+                            {instituicaoSelecionada.marcador_logo && (
+                                <Link to={`/instituicao/${instituicaoSelecionada.id}`}>
+                                    <img
+                                        src={instituicaoSelecionada.marcador_logo}
+                                        alt={`${instituicaoSelecionada.nome} logo`}
+                                        className=" w-[130px] h-auto rounded cursor-pointer transition-transform duration-200 hover:scale-105"
+                                    />
+                                </Link>
+                            )}
+                        </Card>
+                    )}
                 </Box>
-                
+
 
             </Flex>
         </div>

@@ -3,7 +3,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
-import UnderlineExtension from '@tiptap/extension-underline'; // <--- NOVO: Extensão para sublinhado
+import UnderlineExtension from '@tiptap/extension-underline';
 
 import { Mark, mergeAttributes } from '@tiptap/core';
 import { UploadCloud, X, FileImage, LoaderCircle, Underline } from 'lucide-react';
@@ -199,52 +199,6 @@ const TextClass = Mark.create({
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // <●> Toolbar
 const Toolbar = ({ editor }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -319,51 +273,6 @@ const Toolbar = ({ editor }) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 interface PostEditorDashboardProps {
     initialTitle?: string;
     initialContent?: string;
@@ -384,6 +293,9 @@ const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘
 
     const [imagemFile, setImagemFile] = useState<File | null>(null);
     const [imagemPreview, setImagemPreview] = useState<string | null>(initialImagem);
+
+
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
 
     const editor = useEditor({
@@ -414,6 +326,12 @@ const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘
             setImagemFile(file);
             setImagemPreview(URL.createObjectURL(file));
         }
+    };
+
+
+
+    const handleFeaturedImageClick = () => {
+        fileInputRef.current?.click();
     };
 
 
@@ -456,19 +374,26 @@ const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘
                     </label>
 
 
-
-
-
-                    <div> {/* <--- MUDANÇA: Envelopado em div para melhor layout */}
+                    <div>
                         <Text as="div" size="2" mb="1" weight="bold">Imagem de Destaque</Text>
-                        {/* --- NOVO: Botão de Upload Estilizado --- */}
-                        <label htmlFor="featured-image-upload" className="cursor-pointer">
-                            <Button variant="soft" color="gray">
-                                <UploadCloud size={16} style={{ marginRight: '8px' }} />
-                                {imagemFile ? 'Trocar Imagem' : 'Selecionar Imagem'}
-                            </Button>
-                        </label>
-                        <input id="featured-image-upload" type="file" className="hidden" accept="image/png, image/jpeg" onChange={handleFileSelect} />
+
+                        <Button
+                            variant="soft"
+                            color="gray"
+                            onClick={handleFeaturedImageClick} // Chama a função que dispara o clique
+                        >
+                            <UploadCloud size={16} style={{ marginRight: '8px' }} />
+                            {imagemFile ? 'Trocar Imagem' : 'Selecionar Imagem'}
+                        </Button>
+
+                        <input
+                            ref={fileInputRef} // Anexa a referência
+                            type="file"
+                            className="hidden" // Mantém o input original escondido
+                            accept="image/png, image/jpeg"
+                            onChange={handleFileSelect}
+                        />
+
                         {imagemPreview && <img src={imagemPreview} alt="Preview" className="mt-2 w-48 h-auto rounded" />}
                     </div>
 
