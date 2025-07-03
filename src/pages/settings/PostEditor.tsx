@@ -9,7 +9,7 @@ import { Mark, mergeAttributes } from '@tiptap/core';
 import { UploadCloud, X, FileImage, LoaderCircle, Underline } from 'lucide-react';
 import { Dialog, Button, TextField, Text, Flex, TextArea, Tooltip } from '@radix-ui/themes'; // Usando componentes Radix
 
-
+import { axiosForInterceptor } from '../../utils/axios';
 
 import {
     Bold,
@@ -20,13 +20,8 @@ import {
     AlignJustify,
     Image as ImageIcon
 } from 'lucide-react';
-// CORREÇÃO FINAL: Apenas importações que existem em @radix-ui/themes
 import { IconButton, Select, Separator } from '@radix-ui/themes';
 
-
-
-
-// Interface para as propriedades do nosso componente
 interface ImageUploadModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -35,7 +30,6 @@ interface ImageUploadModalProps {
 
 // <●> ImageUploadModal
 const ImageUploadModal = ({ isOpen, onClose, onImageUploaded }: ImageUploadModalProps) => {
-    // --- Estados do Componente ---
     const [file, setFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [dragActive, setDragActive] = useState(false);
@@ -83,21 +77,38 @@ const ImageUploadModal = ({ isOpen, onClose, onImageUploaded }: ImageUploadModal
         handleFileSelected(e.dataTransfer.files);
     };
 
-    // --- Lógica de Upload (Simulada) ---
+    // HERE --- Lógica de Upload de Imagem para o content ---
     const handleUpload = async () => {
+
         if (!file) return;
         setIsUploading(true);
 
-        // SIMULAÇÃO DE UPLOAD: A chamada real para sua API entraria aqui.
-        console.log('Iniciando upload simulado...');
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simula 2s de rede
+        const formData = new FormData();
+        formData.append('imagem', file); // 'imagem' deve ser o mesmo nome do campo no seu modelo Django
 
-        const fakeUrl = `https://picsum.photos/seed/${Math.random()}/800/400`;
-        console.log('Upload simulado concluído. URL:', fakeUrl);
+        try {
+            const response = await axiosForInterceptor.post('/postagens-content/upload-image/', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
 
-        onImageUploaded(fakeUrl); // Envia a URL de volta para o editor
-        closeAndReset(); // Fecha e reseta a modal
-    };
+            const imageUrl = response.data.imagem;
+            console.log('Upload concluído. URL:', imageUrl);
+
+            // Enviar a URL real de volta para o editor
+            onImageUploaded(imageUrl);
+            closeAndReset(); // Fecha e reseta a modal
+
+        } catch (err) {
+            console.error('Falha no upload da imagem:', err);
+            // Idealmente, extraia a mensagem de erro da resposta da API
+            setError('Ocorreu um erro ao enviar a imagem. Tente novamente.');
+        } finally {
+            setIsUploading(false);
+        }
+
+    };  // . . . 
 
     // --- Função para fechar e limpar o estado da modal ---
     const closeAndReset = () => {
@@ -198,7 +209,6 @@ const TextClass = Mark.create({
 });
 
 
-
 // <●> Toolbar
 const Toolbar = ({ editor }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -270,9 +280,6 @@ const Toolbar = ({ editor }) => {
     );
 };
 
-
-
-
 interface PostEditorDashboardProps {
     initialTitle?: string;
     initialContent?: string;
@@ -281,7 +288,6 @@ interface PostEditorDashboardProps {
     onSave: (data: { title: string; content: string; resumo: string; imagem_destaque: File | null }) => void;
     onCancel: () => void;
 }
-
 
 const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
     initialTitle = '', initialResumo = '', initialContent = '', initialImagem = null, onSave, onCancel
@@ -293,7 +299,6 @@ const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘
 
     const [imagemFile, setImagemFile] = useState<File | null>(null);
     const [imagemPreview, setImagemPreview] = useState<string | null>(initialImagem);
-
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -317,7 +322,6 @@ const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘
             setPostContent(editor.getHTML());
         },
     });
-
 
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -417,8 +421,6 @@ const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘
         </div>
     );
 }; // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
-
-
 
 export default PostEditorDashboard;
 

@@ -2,18 +2,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Heading, Button, Flex, Card, Text, Spinner, AlertDialog, AspectRatio, Box } from '@radix-ui/themes';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
-
-
 import PostEditorDashboard from './PostEditor';
 import { axiosForInterceptor } from '../../utils/axios';
-
 import { toast } from 'react-toastify';
 import handleAxiosError from '../../utils/handleAxiosError';
-
 import { Postagem } from './Instituicao';
 
 
-export const GerenciamentoPostsGerais = () => {
+export const GerenciamentoPostsGerais = () => { // ★ GerenciamentoPostsGerais ◠◡◠◡◠◡◠◡◠─➤
 
     const [posts, setPosts] = useState<Postagem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -21,12 +17,10 @@ export const GerenciamentoPostsGerais = () => {
     const [postAlvo, setPostAlvo] = useState<Partial<Postagem> | null>(null);
     const [postParaExcluir, setPostParaExcluir] = useState<Postagem | null>(null);
 
-
     const mostrarFormCriacao = () => {
         setPostAlvo({ title: '', resumo: '', content: '', imagem_destaque: null });
         setMode('editor');
     };
-
 
     // Função para buscar os posts GERAIS da axiosForInterceptor
     const fetchPostsGerais = useCallback(async () => {
@@ -46,10 +40,8 @@ export const GerenciamentoPostsGerais = () => {
         fetchPostsGerais();
     }, [fetchPostsGerais]);
 
-
     const handleSave = async (dados: { title: string, resumo: string, imagem_destaque: File | null, content: string }) => {
         // Para posts gerais, o payload NÃO tem `instituicaoId`
-
         const formData = new FormData();
         formData.append('title', dados.title);
         formData.append('content', dados.content);
@@ -58,8 +50,6 @@ export const GerenciamentoPostsGerais = () => {
         if (dados.imagem_destaque) {
             formData.append('imagem_destaque', dados.imagem_destaque);
         }
-
-
         try {
             if (postAlvo && 'id' in postAlvo) {
                 await axiosForInterceptor.put(`/postagens/${postAlvo.id}/`, formData, {
@@ -113,7 +103,7 @@ export const GerenciamentoPostsGerais = () => {
     }
 
 
-    return (
+    return ( // ── ⋙⇌⇌⇌⇌⇌⇌⇌ DOM ⇌⇌⇌⇌⇌⇌⇌⇌⫸
         <Card>
             <Flex justify="between" align="center" mb="4">
                 <Heading>Postagens Gerais do Site</Heading>
@@ -232,4 +222,4 @@ export const GerenciamentoPostsGerais = () => {
     );
 
 
-};
+}; // ★ GerenciamentoPostsGerais ◠◡◠◡◠◡◠◡◠─➤
