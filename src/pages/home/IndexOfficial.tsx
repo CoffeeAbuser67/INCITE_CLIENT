@@ -14,14 +14,15 @@ import {
     Separator
 } from "@radix-ui/themes";
 import { animated, useSpring, useTransition } from "react-spring";
-import { useRef, useState, useEffect, useMemo } from "react"; // <--- adicione useEffect
+import { useRef, useState, useEffect, useMemo } from "react";
 import regionData from "../../assets/BahiaRegiao2.json";
 import cityData from "../../assets/BahiaCidades4.json";
-import { mapStore } from "../../store/mapsStore";
+
 import { axiosPlain } from "../../utils/axios";
 import { Link } from 'react-router-dom';
 import { PinMarker } from './PinMarker';
-import { ArrowRightIcon, Mail, MapPin, Newspaper, Phone, UserIcon } from "lucide-react";
+import { ArrowRightIcon, Mail, MapPin, Phone, UserIcon } from "lucide-react";
+import { createPortal } from "react-dom";
 
 
 // . . . . . . .
@@ -43,6 +44,7 @@ interface InstituicaoMarker {
     marcador_logo: string | null
 }
 
+
 interface BoundingBox {
     x: number;
     y: number;
@@ -56,6 +58,15 @@ interface Region {
     d: string;
     name: string;
 }
+
+
+interface TooltipState {
+    visible: boolean;
+    content: string;
+    x: number;
+    y: number;
+}
+
 
 // Tipagem para cidades
 interface City {
@@ -81,16 +92,60 @@ const Incite = () => { // ★ Incite ⋙─────────────�
     const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
     const originalBBoxRef = useRef<BoundingBox | null>(null); // HERE originalBBoxRef
     // ── ⋙── ── ── ── ── ── ──➤
+
     type levels = 0 | 1;
     // ✳ [currentLevel, setCurrentLevel]
     const [currentLevel, setCurrentLevel] = useState<levels>(0);
+
     // WARN  To pegando a escala mas n to usando 
     // ✳ [currentScale, setCurrentScale]
     const [currentScale, setCurrentScale] = useState<number>(1);
-    // ✳ { region, city, setRegion, setCity } 
-    const { region, setRegion } = mapStore();
+
+
+    interface RegionState {
+        active: string;
+        name: string;
+    }
+
+    // ✳  [region, setRegion] 🗺️
+    const [region, setRegion] = useState<RegionState>({
+        active: 'bahia',
+        name: 'Bahia',
+    });
+
+    const handleSetRegion = (active: string, name: string) => {
+        setRegion({ active, name });
+    };
+
+
+    //     interface CityState {
+    //     active: string;
+    //     name: string;
+    // }
+
+    // const [city, setCity] = useState<CityState>({
+    //     active: '',
+    //     name: '',
+    // });
+
+
+    // const handleSetCity = (active: string, name: string) => {
+    //     setCity({ active, name });
+    // };
+
+
+    // ✳ [tooltip, setTooltip] 
+    const [tooltip, setTooltip] = useState<TooltipState>({
+        visible: false,
+        content: "",
+        x: 0,
+        y: 0,
+    });
+
+
     // ✳  [selectedInstituicao, setSelectedInstituicao]
     const [selectedInstituicao, setSelectedInstituicao] = useState<InstituicaoMarker | null>(null);
+
     // ✳  [instituicoes, setInstituicoes]
     const [instituicoes, setInstituicoes] = useState<InstituicaoMarker[]>([]);
     // ── ⋙── ── ── ── ── ── ──➤
@@ -101,7 +156,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
         if (svgRef.current && !originalBBoxRef.current) {
             originalBBoxRef.current = svgRef.current.getBBox();
         }
-
         const fetchInstituicoes = async () => {
             try {
                 const response = await axiosPlain.get('/map-markers/');
@@ -156,7 +210,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
         // 5. Executa a mágica!
         setCurrentLevel(1);
-        setRegion(regionId, regionObject.name);
+        handleSetRegion(regionId, regionObject.name);
         runToFit(regionElement.getBBox(), regionElement.getBoundingClientRect());
     }; // ── ⋙── ── ── ── ── ── ── ──➤
 
@@ -235,7 +289,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
             // Verifica se o clique foi em uma região e não no contorno geral
             if (target_type === "region" && target_id !== "bahia_stroke") {
                 setCurrentLevel(1);
-                setRegion(target_id, target_name || "");
+                handleSetRegion(target_id, target_name || "");
                 runToFit(target.getBBox(), target.getBoundingClientRect());
             }
         }
@@ -267,7 +321,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
     const resetMap = () => {
         setCurrentLevel(0); // ↺ setCurrentLevel
         setCurrentScale(1); // ↺ setCurrentScale
-        setRegion("bahia", "Bahia"); // ↺ setRegion
+        handleSetRegion("bahia", "Bahia"); // ↺ setRegion
         api.start({
             transform: "scale(1) translate(0px, 0px)",
         });
@@ -297,6 +351,64 @@ const Incite = () => { // ★ Incite ⋙─────────────�
             handleMarkerClick(instituicaoSelecionada);
         }
     };
+
+
+
+
+
+    // ── ⋙── ── ── ── ToolTip  ── ── ── ──➤
+    // <✪> AnimatedTooltip
+    const AnimatedTooltip = ({ visible, content, x, y }: TooltipState) => {
+        const springProps = useSpring({
+            opacity: visible ? 1 : 0,
+            transform: visible ? `translate3d(0,0,0)` : `translate3d(0,10px,0)`,
+            config: { tension: 300, friction: 20 },
+        });
+
+        return createPortal(
+
+            <animated.div
+                style={{
+                    position: 'absolute',
+                    top: y,
+                    left: x,
+                    pointerEvents: 'none',
+                    zIndex: 1000,
+                    ...springProps,
+                }}
+                className="bg-gray-800 text-white text-sm px-3 py-1 rounded-md shadow-lg"
+            >
+                {content}
+            </animated.div>,
+            document.body // O destino do portal
+        )
+    };
+
+    const handleMouseEnterPath = (event: React.MouseEvent<SVGPathElement>) => {   // <●> handleMouseEnterPath
+        const content = event.currentTarget.getAttribute("data-name");
+        if (content) {
+            setTooltip(prev => ({ ...prev, visible: true, content }));
+        }
+    };
+
+
+    const handleMouseMoveSVG = (event: React.MouseEvent<SVGSVGElement>) => { // <●> handleMouseMoveSVG
+        const x = event.pageX + 12; // Usamos pageX
+        const y = event.pageY + 12; // Usamos pageY
+        setTooltip(prev => ({ ...prev, x, y }));
+    };
+
+    const handleMouseLeaveSVG = () => {   // <●> handleMouseLeaveSVG
+        setTooltip(prev => ({ ...prev, visible: false }));
+    };
+
+
+    // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+
+
+
 
     return (// ── ⋙⇌⇌⇌⇌⇌⇌⇌ DOM ⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸
         <>
@@ -393,6 +505,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                 // border: "1px solid black",
                             }}>
 
+                            <AnimatedTooltip {...tooltip} />
 
                             <animated.svg //HERE  SVGCanvas // . . . props
                                 id="SVGCanvas"
@@ -405,6 +518,8 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                     ...springStyles, // ○ springStyles
                                 }}
                                 onClick={handleClick} // (○) handleClick // . . . children
+                                onMouseMove={handleMouseMoveSVG}
+                                onMouseLeave={handleMouseLeaveSVG}
                             >
 
                                 <g>
@@ -439,7 +554,7 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                                         data-type="region"
                                                         className={class_style}
                                                         style={strokeSpecificStyle} // ○ bahiaStrokeStyle
-
+                                                        onMouseEnter={handleMouseEnterPath}
                                                     />
                                                 </g>
                                             )
@@ -467,7 +582,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
                                         return (
                                             <animated.g {...style}>
-                                                <title>{cityItem.name}</title>
                                                 <animated.path
                                                     id={cityItem.id}
                                                     d={cityItem.d}
@@ -477,12 +591,11 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                                         "path-hover2",
                                                         "cls-1",
                                                     )}
-
+                                                    onMouseEnter={handleMouseEnterPath}
                                                 />
                                             </animated.g>
                                         );
                                     })} //. . .
-
 
 
                                     {marcadoresOrdenados.map(instituicao => {
@@ -508,8 +621,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
                                         return null;
                                     })} //. . .
 
-
-                                    <circle cx="525.327" cy="283.603" r="3" />
                                 </g>
                             </animated.svg>
                         </div>
@@ -575,9 +686,9 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
                                 {/* Botão de Ação */}
 
-                                <Button variant = "soft" asChild size="1" mt="auto">
+                                <Button variant="soft" asChild size="1" mt="auto">
                                     <Link to={`/instituicao/${selectedInstituicao.id}`}>
-                                        <ArrowRightIcon size = "18" className="mr-1" /> Perfil
+                                        <ArrowRightIcon size="18" className="mr-1" /> Perfil
                                     </Link>
                                 </Button>
 

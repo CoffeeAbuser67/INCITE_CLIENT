@@ -51,7 +51,9 @@ const Settings = () => {
   };
 
   return (
-    <div id="canvas" className="p-4 sm:p-8 w-full max-w-7xl mx-auto">
+
+    <div id="canvas" className="p-4 sm:p-8 w-full h-full max-w-7xl mx-auto">
+      
       <Heading size="8" mb="6">Painel de Controle</Heading>
       <Tabs.Root defaultValue="instituicoes">
 

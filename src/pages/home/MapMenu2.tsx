@@ -13,34 +13,21 @@ import {
 } from "@react-spring/web";
 
 import {
-  Tooltip,
-  Blockquote,
-  Box,
-  Button,
-  Card,
-  DropdownMenu,
-  Heading,
-  Separator,
   Text
 } from "@radix-ui/themes";
 
 import classNames from "classnames";
 import { axiosPlain } from "../../utils/axios";
 import handleAxiosError from "../../utils/handleAxiosError";
-import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
 import regionData from "../../assets/BahiaRegiao2.json";
 import cityData from "../../assets/BahiaCidades4.json";
 import { COLORSTW, COLORSTW_HEX, VARIABLES, YEARS } from "../../assets/auxData";
 
 import { createPortal } from "react-dom";
 
+import { mapStore, BoundingBox } from "../../store/mapsStore";
+
 const SCALE_ADJUSTMENT = 0.35
-interface BoundingBox {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
 
 // Tipagem para regiões
 interface Region {
@@ -76,7 +63,6 @@ interface CityData {
   [regionId: string]: City[];
 }
 
-
 // [●] mapCity
 const mapCity: CityData = cityData;
 
@@ -86,18 +72,23 @@ const mapRegion: Region[] = regionData;
 
 const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
   const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
-  const originalBBoxRef = useRef<BoundingBox | null>(null); // HERE originalBBoxRef
 
-  type levels = 0 | 1;
-  // ✳ [currentLevel, setCurrentLevel]
-  const [currentLevel, setCurrentLevel] = useState<levels>(0);
 
-  // WARN  EU estou usando esse estado pra nada ??? wut 
+  // type levels = 0 | 1;
+  // const [currentLevel, setCurrentLevel] = useState<levels>(0);
+
+  // ✳ { region, city, setRegion, setCity, mapTransform, setMapTransform, currentLevel, setCurrentLevel} 
+  const { region, setRegion,
+    city, setCity,
+    mapTransform, setMapTransform,
+    currentLevel, setCurrentLevel,
+    originalBBox, setOriginalBBox
+  } = mapStore();
+
+
+  // WARN To salvando o estado da minha escala mas n to usando.
   // ✳ [currentScale, setCurrentScale]
   const [currentScale, setCurrentScale] = useState<number>(1);
-
-  // ✳ { region, city, setRegion, setCity } 
-  const { region, city, setRegion, setCity } = mapStore();
 
   // ✳ [tooltip, setTooltip] 
   const [tooltip, setTooltip] = useState<TooltipState>({
@@ -109,16 +100,17 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
   // ✳ [regionValues, setRegionValues] 
   const [regionValues, setRegionValues] = useState<{ [key: string]: number }>({});
+  // . . . 
+
   const year = 2023;
   const variable = 'valor_da_producao';
 
 
   useEffect(() => { //HERE uE
-    if (svgRef.current && !originalBBoxRef.current) {
-      // Assign the value from getBBox to the ref
-      originalBBoxRef.current = svgRef.current.getBBox();
+    if (svgRef.current && !originalBBox) {
+      setOriginalBBox(svgRef.current.getBBox()); // ↺ setOriginalBBox
     }
-  }, []);
+  }, [originalBBox, setOriginalBBox]);
 
 
   // ── ⋙── ── ── ── ── ── ──➤
@@ -160,8 +152,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   }, [getRegionValues]);
 
 
-
-  // (✪) colorScale - O hook useMemo ajustado
+  // (✪) colorScale 
   const colorScale = useMemo(() => {
     const values = Object.values(regionValues).filter(v => typeof v === 'number' && isFinite(v));
 
@@ -243,12 +234,17 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     config: { duration: 300 } // Ajuste a duração conforme necessário
   });
 
-
   // ✪ springStyles
   const [springStyles, api] = useSpring(() => ({
     transform: `scale(1) translate(0px, 0px)`,
     config: { tension: 62, friction: 35, mass: 7 },
   }));
+
+
+  useEffect(() => { //HERE uE
+
+    api.start({ transform: mapTransform });
+  }, [mapTransform, api]);
 
 
   // ── ⋙── ── ── ── ── ── ──➤
@@ -257,9 +253,11 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     setCurrentScale(1); // ↺ setCurrentScale
     setRegion("bahia", "Bahia"); // ↺ setRegion
     setCity("", ""); // ↺ setCity
+    const newTransform = "scale(1) translate(0px, 0px)";
     api.start({
-      transform: "scale(1) translate(0px, 0px)",
+      transform: newTransform,
     });
+    setMapTransform(newTransform);
   };
 
 
@@ -268,7 +266,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   const runToFit = (bbox: BoundingBox, rect: BoundingBox) => {
     const svgRect = svgRef.current?.getBoundingClientRect();
     // const svgBox = svgRef.current?.getBBox()
-    const svgBox = originalBBoxRef.current; // get the cached svg bbox value
+    const svgBox = originalBBox;
 
     if (!svgRect || !svgBox) return;
 
@@ -286,12 +284,12 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     const scaleY = svgRect.height / rect.height;
     const maxScale = Math.min(scaleX, scaleY);
 
-    setCurrentScale(maxScale - SCALE_ADJUSTMENT); // ↺ setCurrentScale
+    const finalScale = maxScale - SCALE_ADJUSTMENT;
+    setCurrentScale(finalScale);  // ↺ setCurrentScale
+    const newTransform = `scale(${finalScale}) translate(${translateX}px, ${translateY}px)`;
 
-    api.start({
-      transform: `scale(${maxScale - SCALE_ADJUSTMENT
-        }) translate(${translateX}px, ${translateY}px)`,
-    });
+    api.start({ transform: newTransform });
+    setMapTransform(newTransform); // Salve no store
   };
 
 
@@ -326,7 +324,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       if (target_type === "city") {
         console.log("Cidade clicada:", target_id,); // [LOG] 
         setCity(target_id, target_name || "") // ↺ setCity
-
       } else {
         // Se clicar em qualquer outra coisa que não seja uma cidade no nível 1
         // (como o fundo ou a própria região), o mapa reseta.
@@ -423,7 +420,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   return ( // ── ◯─◡◠◡◠◡◠◡◠ DOM ◡◠◡◠◡◠─⫸ 🌑
 
     <>
-
       <div // ⋙── ── canvas-wrapper ── ──➤
         id="canvas-wrapper"
         className="relative rounded-3xl"
@@ -437,8 +433,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
         {colorScale.legendData && // <○> GradientLegend
           <GradientLegend {...colorScale.legendData} />
         }
-
-
 
 
 
