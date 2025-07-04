@@ -4,6 +4,7 @@ import { Avatar, Box, Button, Dialog, DropdownMenu, Text, Tooltip } from "@radix
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthService } from "../../hooks/useAuthService";
 import { LayoutDashboard, LogIn, LogOut, BookOpen, ChartColumnBig } from "lucide-react";
+import { useUserStore } from "../../store/userStore";
 
 const navItems = [ // [✪] navItems
 
@@ -12,30 +13,14 @@ const navItems = [ // [✪] navItems
 
 ];
 
-const getOptimisticUserInfo = () => { // (✪) getOptimisticUserInfo
-    const storedInfo = localStorage.getItem('user_info');
-    if (storedInfo) {
-        return JSON.parse(storedInfo) as { name: string };
-    }
-    return null;
-}
-
 
 const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙────────────────➤
     const [scrolled, setScrolled] = useState(false);
 
+    const user = useUserStore((state) => state.user);
+
     const navigate = useNavigate();
     const { logout } = useAuthService();
-
-    // ✳ [displayUser, setDisplayUser] // (○) getOptimisticUserInfo
-    const [displayUser, setDisplayUser] = useState(getOptimisticUserInfo());
-
-
-    const goLogout = async () => {
-        await logout();
-        // Refresh no botao login/logout 
-        setDisplayUser(getOptimisticUserInfo()); // ↺ setDisplayUser
-    }
 
 
     useEffect(() => {//HERE uE
@@ -141,8 +126,7 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
 
 
 
-
-                {displayUser ? ( // (○) getOptimisticUserInfo
+                {user ? ( // (○) getOptimisticUserInfo
 
                     <Dialog.Root>
                         <DropdownMenu.Root>
@@ -155,12 +139,12 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
 
                                 )}>
                                     <Text className={scrolled ? "text-sm" : "text-base"}>Olá,
-                                        <Text className={scrolled ? "text-sm" : "text-base"} weight="bold">{displayUser.name}</Text>
+                                        <Text className={scrolled ? "text-sm" : "text-base"} weight="bold">{user.first_name}</Text>
                                     </Text>
 
                                     <Avatar
                                         size={scrolled ? "2" : "3"}
-                                        src={`https://ui-avatars.com/api/?name=${displayUser.name}&background=random`}
+                                        src={`https://ui-avatars.com/api/?name=${user.first_name}&background=random`}
                                         fallback={"🦀"}
                                         radius="full"
                                     />
@@ -190,7 +174,7 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                                 <DropdownMenu.Separator />
 
                                 <DropdownMenu.Item
-                                    onClick={goLogout} color="red"
+                                    onClick={() =>  logout()} color="red"
                                 >
                                     <LogOut className="mr-2 h-4 w-4" /> Sair
                                 </DropdownMenu.Item>

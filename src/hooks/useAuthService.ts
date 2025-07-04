@@ -8,19 +8,10 @@ export const useAuthService = () => {
   const { setActiveUser, removeUser } = useUserStore();
 
   const login = async (credentials: { email: string; password: string }) => {
-    try {
-      const loginResponse = await authService.login(credentials);
-      const user = loginResponse.user;
-      setActiveUser(user);
-      localStorage.setItem(
-        "user_info",
-        JSON.stringify({ name: user.first_name })
-      );
-      return user;
-    } catch (error) {
-      localStorage.removeItem("user_info");
-      throw error;
-    }
+    const loginResponse = await authService.login(credentials);
+    const user = loginResponse.user;
+    setActiveUser(user);
+    return user;
   };
 
   const logout = async () => {
@@ -34,7 +25,6 @@ export const useAuthService = () => {
     } finally {
       console.log('%c ⚠️ LOGOUT FOI CHAMADO! ', 'color: red; font-size: 16px; font-weight: bold;');
       removeUser();
-      localStorage.removeItem("user_info");
       navigate("/"); // Redireciona para a homeF
     }
   };

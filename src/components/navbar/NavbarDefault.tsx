@@ -17,13 +17,6 @@ const navItems = [ // [✪] navItems
 
 ];
 
-const getOptimisticUserInfo = () => { // (✪) getOptimisticUserInfo
-    const storedInfo = localStorage.getItem('user_info');
-    if (storedInfo) {
-        return JSON.parse(storedInfo) as { name: string };
-    }
-    return null;
-}
 
 
 const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙────────────────➤
@@ -33,19 +26,6 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
     const navigate = useNavigate();
     const { logout } = useAuthService();
 
-    // ✳ [displayUser, setDisplayUser] // (○) getOptimisticUserInfo
-    const [displayUser, setDisplayUser] = useState(getOptimisticUserInfo());
-
-
-    const goLogout = async () => {
-        await logout();
-        // Refresh no botao login/logout 
-        setDisplayUser(getOptimisticUserInfo()); // ↺ setDisplayUser
-    }
-
-    useEffect(() => {
-        if (user) { setDisplayUser(getOptimisticUserInfo()); } // ↺ setDisplayUser
-    }, [user])
 
 
 
@@ -136,7 +116,7 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
 
 
 
-                {displayUser ? ( // (○) getOptimisticUserInfo
+                {user ? ( // (○) getOptimisticUserInfo
 
                     <Dialog.Root>
                         <DropdownMenu.Root>
@@ -149,12 +129,12 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
 
                                 )}>
                                     <Text className={"text-base"}>Olá,
-                                        <Text className={"text-base"} weight="bold">{displayUser.name}</Text>
+                                        <Text className={"text-base"} weight="bold">{user.first_name}</Text>
                                     </Text>
 
                                     <Avatar
                                         size={"3"}
-                                        src={`https://ui-avatars.com/api/?name=${displayUser.name}&background=random`}
+                                        src={`https://ui-avatars.com/api/?name=${user.first_name}&background=random`}
                                         fallback={"🦀"}
                                         radius="full"
                                     />
@@ -184,7 +164,7 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                                 <DropdownMenu.Separator />
 
                                 <DropdownMenu.Item
-                                    onClick={goLogout} color="red"
+                                    onClick={() => logout()} color="red"
                                 >
                                     <LogOut className="mr-2 h-4 w-4" /> Sair
                                 </DropdownMenu.Item>
