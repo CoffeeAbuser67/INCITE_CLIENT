@@ -64,8 +64,36 @@ import { VARIABLES, COLORSHEX, SCOLORS } from "../../assets/auxData";
 import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
 // . . . . . . .
 
-//  WARN Xique-xique | santa teresinha | Muquém de São Francisco
-// 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 🧿 
+//  WARN Xique-xique | santa teresinha | Muquém de São Francisco | itaparica | irece 
 const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤ 
 
   // ✳ [windowSize, setWindowSize]
@@ -134,7 +162,13 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
       const response = await axios.get(url, { params }); // _PIN_ getTopSeries  ✉ 
       setSeriesVData(response.data); // ↺ setSeriesVData
-      console.log(response.data); // [LOG] seriesVData
+
+
+      console.log('%c ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸ 🩸', 'color: red; font-size: 16px; font-weight: bold;');
+      console.log('seriesVData:', response.data); // [LOG] seriesVData
+      console.log('%c ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸ 🩸', 'color: red; font-size: 16px; font-weight: bold;');
+
+
 
     } catch (err: unknown) {
       if (err) {
@@ -160,7 +194,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
       const response = await axios.get(url, { params }); // _PIN_ getTopValues  ✉ 
       setTopVData(response.data); // ↺ setTopVData
-      console.log(response.data); // [LOG] topVData
 
     } catch (err: unknown) {
       if (err) {
@@ -226,29 +259,29 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
-  const CustomizedDot = (props) => { // ● CustomizedDot
-    const { cx, cy, datakey } = props;
+  // const CustomizedDot = (props) => { // ● CustomizedDot
+  //   const { cx, cy, datakey } = props;
 
-    if (cx == null || cy == null) return null;
-    const SvgComponent = Icons[datakey as keyof typeof Icons];
+  //   if (cx == null || cy == null) return null;
+  //   const SvgComponent = Icons[datakey as keyof typeof Icons];
 
-    if (!SvgComponent) return null;
+  //   if (!SvgComponent) return null;
 
-    return (
-      <g transform={`translate(${cx - 15}, ${cy - 15})`}>
-        <circle cx="15" cy="15" r="18" fill="gray" stroke="black" strokeWidth="2" />
-        <defs>
-          <clipPath id={`clip-${datakey}`}>
-            <circle cx="15" cy="15" r="15" />
-          </clipPath>
-        </defs>
-        <g clipPath={`url(#clip-${datakey})`}>
-          <SvgComponent />
-        </g>
-      </g>
-    );
+  //   return (
+  //     <g transform={`translate(${cx - 15}, ${cy - 15})`}>
+  //       <circle cx="15" cy="15" r="18" fill="gray" stroke="black" strokeWidth="2" />
+  //       <defs>
+  //         <clipPath id={`clip-${datakey}`}>
+  //           <circle cx="15" cy="15" r="15" />
+  //         </clipPath>
+  //       </defs>
+  //       <g clipPath={`url(#clip-${datakey})`}>
+  //         <SvgComponent />
+  //       </g>
+  //     </g>
+  //   );
+  // };
 
-  };
 
   const SeriesTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // ● SeriesTooltip
     if (active && payload && payload.length) {
@@ -257,31 +290,417 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         .sort((a, b) => b.value - a.value)
         .map(({ name, value }) => ({ [seriesVData?.keys[name]]: value }));
 
-      console.log('payload:', payload)
-
       return (
         <Card>
           <Text as="div"> <Strong>Ano: </Strong> {payload[0].payload['year']} </Text>
           <Separator my="1" color="gray" size="4" />
           {
             Items.map((item) => {
+
               const key = Object.keys(item)[0];
+
+
               const value = item[key];
               return (
-                <Text as="div"> <Strong>{`${key} :`}</Strong> {value.toLocaleString('de-DE')} </Text>
+                <Text as="div" key={key}> <Strong>{`${key} :`}</Strong> {value.toLocaleString('de-DE')} </Text>
               )
             })
           }
         </Card >
       );
-
     }
 
     return null;
   };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const generateMockDataFromIcons = (iconsObject) => {
+    // Pega todas as chaves (nomes dos ícones) do seu objeto
+    const allIconKeys = Object.keys(iconsObject);
+
+
+    // Cria o objeto 'keys' para a legenda do gráfico
+    const legendKeys = {};
+
+
+
+    allIconKeys.forEach(key => {
+      // Transforma 'meu_icone_legal' em 'Meu Icone Legal' para a legenda
+      const legendName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      legendKeys[key] = legendName;
+    });
+
+    
+    
+    const PartialIcons = allIconKeys.slice(60,70);
+
+    
+    console.log('%c ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸ 🩸', 'color: blue; font-size: 16px; font-weight: bold;');
+    console.log('PartialIcons:', PartialIcons); // [LOG] allIconKeys
+    console.log('%c ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸ 🩸', 'color: blue; font-size: 16px; font-weight: bold;');
+
+
+    // Cria os dados para os pontos do gráfico (2 pontos para cada linha)
+
+    const dataPoints = [
+      { year: 2022 },
+      { year: 2023 },
+      { year: 2024 }
+
+    ];
+
+    PartialIcons.forEach((key, index) => {
+      // Atribui valores Y diferentes para cada linha para evitar sobreposição
+      dataPoints[0][key] = (index + 1) * 20;
+      dataPoints[1][key] = (index + 1) * 20;
+      dataPoints[2][key] = (index + 1) * 20;
+
+    });
+
+    return {
+      keys: legendKeys,
+      data: dataPoints
+    };
+  };
+
+
+
+
+
+  // Gerando os dados dinamicamente
+  const seriesKEKData = generateMockDataFromIcons(Icons);
+  const seriesKEKeys = Object.keys(seriesKEKData.keys);
+  // =================================================================================
+
+  // 3. COMPONENTE CUSTOMIZADO PARA RENDERIZAR O PONTO (DOT)
+  //    Ele usará o seu objeto 'Icons' importado
+  const CustomizedDot = (props) => {
+    const { cx, cy, datakey } = props;
+    if (cx == null || cy == null) return null;
+
+    const SvgComponent = Icons[datakey];
+    if (!SvgComponent) return null;
+
+    return (
+      <g transform={`translate(${cx - 15}, ${cy - 15})`}>
+        <SvgComponent />
+      </g>
+    );
+  };
+
+  // 4. O COMPONENTE DO GRÁFICO (AGORA 100% DINÂMICO)
+  const IconPreviewChart = () => {
+    if (seriesKEKeys.length === 0) {
+      return <div>Nenhum ícone encontrado. Verifique seu arquivo de ícones.</div>;
+    }
+
+    return (
+      <div style={{ width: '100%', height: '80vh', padding: '20px', background: '#f9f9f9', borderRadius: '10px' }}>
+        <h2 style={{ textAlign: 'center', fontFamily: 'sans-serif' }}>
+          Preview de Todos os Ícones ({seriesKEKeys.length} ícones encontrados)
+        </h2>
+        <ResponsiveContainer>
+          <LineChart
+            data={seriesKEKData.data}
+            margin={{ top: 20, right: 40, left: 20, bottom: 20 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="year" />
+            <YAxis />
+            <Tooltip content={() => null} /> {/* Tooltip desativado para não poluir */}
+            <Legend layout="vertical" align="right" verticalAlign="middle" />
+
+            {seriesKEKeys.map((key) => (
+              <Line
+                key={key}
+                type="monotone"
+                dataKey={key}
+                name={seriesKEKData.keys[key]}
+                stroke="transparent" // Linhas transparentes para focar nos ícones
+                strokeWidth={2}
+                dot={<CustomizedDot datakey={key} />}
+                activeDot={false}
+              />
+            ))}
+
+
+
+
+
+
+
+            <Brush
+              dataKey="year"
+              height={30}
+              stroke="#8884d8"
+              travellerWidth={10}
+            />
+
+
+
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (// ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘ DOM ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘➤ 
     <>
+
       <p // HERE windowSize ↯
         className="fixed right-10 top-30 text-xl text-slate-950 z-50"
       >
@@ -293,7 +712,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         className={classNames(
           "flex flex-col", // Organiza os painéis filhos em uma coluna
           "p-10 gap-4",
-          "h-full w-full bg-neutral-100", // h-full para ocupar a altura disponível, considere 'min-h-screen' se precisar sempre preencher a tela
+          "h-full w-full", // h-full para ocupar a altura disponível, considere 'min-h-screen' se precisar sempre preencher a tela
           "overflow-y-auto" // Permite rolagem se o conteúdo exceder a altura da tela
         )}
       >
@@ -447,6 +866,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           )}
         >
 
+
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={seriesVData?.data} // ⊙ seriesVData
@@ -487,6 +907,14 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           </ResponsiveContainer>
 
         </Box>
+
+
+
+        <IconPreviewChart />
+
+
+
+
 
 
       </Box >

@@ -9,7 +9,6 @@ import { toast } from 'react-toastify';
 import { CitySelect } from './CitySelect';
 import mapCity from '../../assets/BahiaCidades4.json';
 
-// ● 🧿⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
 
 // HERE Interfaces & types
 // --- Tipos para cada modelo ---

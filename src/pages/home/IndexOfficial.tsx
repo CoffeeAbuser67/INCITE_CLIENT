@@ -26,7 +26,6 @@ import { createPortal } from "react-dom";
 
 
 // . . . . . . .
-// 🧿
 
 const SCALE_ADJUSTMENT = 0.35
 
