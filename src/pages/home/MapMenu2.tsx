@@ -13,6 +13,10 @@ import {
 } from "@react-spring/web";
 
 import {
+  Box,
+  Button,
+  DropdownMenu,
+  Flex,
   Text
 } from "@radix-ui/themes";
 
@@ -25,7 +29,7 @@ import { COLORSTW, COLORSTW_HEX, VARIABLES, YEARS } from "../../assets/auxData";
 
 import { createPortal } from "react-dom";
 
-import { mapStore, BoundingBox } from "../../store/mapsStore";
+import { mapStore, BoundingBox, variableStore, yearStore } from "../../store/mapsStore";
 
 const SCALE_ADJUSTMENT = 0.35
 
@@ -77,6 +81,13 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   // type levels = 0 | 1;
   // const [currentLevel, setCurrentLevel] = useState<levels>(0);
 
+
+  // ✳ { variable, setVariable } 
+  const { variable, setVariable } = variableStore();
+
+  // ✳ { year, setYear } 
+  const { year, setYear } = yearStore();
+
   // ✳ { region, city, setRegion, setCity, mapTransform, setMapTransform, currentLevel, setCurrentLevel} 
   const { region, setRegion,
     city, setCity,
@@ -86,9 +97,12 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   } = mapStore();
 
 
+
+
   // WARN To salvando o estado da minha escala mas n to usando.
   // ✳ [currentScale, setCurrentScale]
   const [currentScale, setCurrentScale] = useState<number>(1);
+
 
   // ✳ [tooltip, setTooltip] 
   const [tooltip, setTooltip] = useState<TooltipState>({
@@ -101,9 +115,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   // ✳ [regionValues, setRegionValues] 
   const [regionValues, setRegionValues] = useState<{ [key: string]: number }>({});
   // . . . 
-
-  const year = 2023;
-  const variable = 'valor_da_producao';
 
 
   useEffect(() => { //HERE uE
@@ -417,56 +428,117 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
 
 
-  return ( // ── ◯─◡◠◡◠◡◠◡◠ DOM ◡◠◡◠◡◠─⫸ 🌑
-
+  return ( // ── ◯─◡◠◡◠◡◠◡◠ DOM ◡◠◡◠◡◠◡◠◡◠◡◠◡◠◡◠◡◠─⫸ 🌑
     <>
-      <div // ⋙── ── canvas-wrapper ── ──➤
-        id="canvas-wrapper"
-        className="relative rounded-3xl"
-        style={{
-          width: "602px",
-          height: "640px",
-          // border: "1px solid black",
-        }}>
+      <Flex direction="column">
+        <Box  // ── ⋙── ── ── DropDownSelector ── ── ──➤
+          id="DropDownComponent"
+          className="flex justify-start gap-6 w-full z-50"
 
-
-        {colorScale.legendData && // <○> GradientLegend
-          <GradientLegend {...colorScale.legendData} />
-        }
-
-
-
-        <AnimatedTooltip {...tooltip} />
-
-        <animated.svg //HERE  SVGCanvas // . . . props
-          id="SVGCanvas"
-          ref={svgRef}
-          viewBox="0 0 602 640"
-          overflow={"visible"}
-          style={{
-            width: "100%",
-            height: "100%",
-            ...springStyles, // ○ springStyles
-          }}
-          onClick={handleClick} // (○) handleClick // . . . children
-          onMouseMove={handleMouseMoveSVG}
-          onMouseLeave={handleMouseLeaveSVG}
         >
+          <DropdownMenu.Root
+          // ⊙  Variable ↺ setVariable
+          >
+            <DropdownMenu.Trigger>
+              <Button color="gray" variant="solid" highContrast>
+                {variable ? VARIABLES[variable] : "Variável medida"}
+                <DropdownMenu.TriggerIcon />
+              </Button>
+            </DropdownMenu.Trigger>
 
-          <g >
-            <defs>
-              <style>
-                {
-                  ".cls-22{fill:none;stroke:#000;stroke-width:2px;stroke-linecap:round;stroke-linejoin:round}"
-                }
-              </style>
-            </defs>
+            <DropdownMenu.Content color="gray" variant="soft" highContrast>
+              <DropdownMenu.Item onSelect={() => setVariable("valor_da_producao")} shortcut="💵">
+                Valor da produção
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator />
+              <DropdownMenu.Item onSelect={() => setVariable("area_plantada_ou_destinada_a_colheita")} shortcut="🌱">
+                Área plantada ou destinada a colheita
+              </DropdownMenu.Item>
+              <DropdownMenu.Item onSelect={() => setVariable("area_colhida")} shortcut="🥗">
+                Área colhida
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
 
-            {  // [○] mapRegion
-              mapRegion.map((el, i) => {
-                // Ignoramos o contorno do estado, ele não deve ser colorido
+          </DropdownMenu.Root>
+          <DropdownMenu.Root
+          // ⊙ Year  ↺ setYear
+          >
+            <DropdownMenu.Trigger>
+              <Button color="gray" variant="solid" highContrast>
+                {year ?? "Ano"}
+                <DropdownMenu.TriggerIcon />
+              </Button>
+            </DropdownMenu.Trigger>
 
-                if (el.id === "bahia_stroke") {
+            <DropdownMenu.Content color="gray" variant="soft" highContrast>
+              {YEARS.map((y, i) => (
+                <DropdownMenu.Item key={i} onSelect={() => setYear(y)} shortcut="●">{y}</DropdownMenu.Item>
+              ))}
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        </Box >
+
+
+        <div // ── ⋙── ── ── canvas-wrapper ── ── ── ──➤
+          id="canvas-wrapper"
+          className="relative rounded-3xl"
+          style={{
+            width: "602px",
+            height: "640px",
+            // border: "1px solid black",
+          }}>
+          {colorScale.legendData && // <○> GradientLegend
+            <GradientLegend {...colorScale.legendData} />
+          }
+
+          <AnimatedTooltip {...tooltip} />
+          <animated.svg //HERE  SVGCanvas // . . . props
+            id="SVGCanvas"
+            ref={svgRef}
+            viewBox="0 0 602 640"
+            overflow={"hidden"}
+            style={{
+              width: "100%",
+              height: "100%",
+              ...springStyles, // ○ springStyles
+            }}
+            onClick={handleClick} // (○) handleClick // . . . children
+            onMouseMove={handleMouseMoveSVG}
+            onMouseLeave={handleMouseLeaveSVG}
+          >
+
+            <g >
+              <defs>
+                <style>
+                  {
+                    ".cls-22{fill:none;stroke:#000;stroke-width:2px;stroke-linecap:round;stroke-linejoin:round}"
+                  }
+                </style>
+              </defs>
+
+              {  // [○] mapRegion
+                mapRegion.map((el, i) => {
+                  // Ignoramos o contorno do estado, ele não deve ser colorido
+
+                  if (el.id === "bahia_stroke") {
+                    return (
+                      <g key={i}>
+                        <animated.path
+                          id={el.id}
+                          d={el.d}
+                          data-name={el.name}
+                          data-type="region"
+                          className="cls-22" // Classe apenas para o contorno
+                          style={bahiaStrokeStyle}
+                          onMouseEnter={handleMouseEnterPath}
+                        />
+                      </g>
+                    );
+                  }
+
+                  // Obtém a classe de cor dinâmica para a região atual
+                  const fillColorClass = colorScale.getColor(el.id);
+
                   return (
                     <g key={i}>
                       <animated.path
@@ -474,86 +546,77 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
                         d={el.d}
                         data-name={el.name}
                         data-type="region"
-                        className="cls-22" // Classe apenas para o contorno
-                        style={bahiaStrokeStyle}
                         onMouseEnter={handleMouseEnterPath}
+                        // Combina as classes: a de cor dinâmica e as de estilo/hover
+                        className={classNames(
+                          fillColorClass, // cor dinâmica! ex: "fill-neutral-500"
+                          "stroke-black", // Usando stroke direto se 'cls-11' for removida
+                          "path-hover2"
+                        )}
+                        style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
                       />
                     </g>
                   );
-                }
+                })
+              } //. . .
 
-                // Obtém a classe de cor dinâmica para a região atual
-                const fillColorClass = colorScale.getColor(el.id);
+
+              {currentLevel === 1 && ( // ⊙ currentLevel
+                <rect
+                  opacity={0.98}
+                  x={-2000}
+                  y={-2000}
+                  width="4000"
+                  height="4000"
+                  fill={"white"}
+                  onClick={(e) => { // Permitir clique no overlay para resetar o mapa
+                    e.stopPropagation(); // Evitar que o clique propague para o SVGCanvas
+                    resetMap();
+                  }}
+                />
+              )}
+
+              {transition((style, cityItem) => { // [○] transition mapCity
+
+                const isActive = city.active === cityItem.id;
+
+                const finalFillColor = isActive
+                  ? 'fill-yellow-400'
+                  : colorScale.getColor(cityItem.id);
 
                 return (
-                  <g key={i}>
+                  <animated.g {...style}>
                     <animated.path
-                      id={el.id}
-                      d={el.d}
-                      data-name={el.name}
-                      data-type="region"
-                      onMouseEnter={handleMouseEnterPath}
-                      // Combina as classes: a de cor dinâmica e as de estilo/hover
+                      id={cityItem.id}
+                      d={cityItem.d}
+                      data-name={cityItem.name}
+                      data-type="city"
                       className={classNames(
-                        fillColorClass, // Nossa cor dinâmica! ex: "fill-neutral-500"
-                        "stroke-black", // Usando stroke direto se 'cls-11' for removida
-                        "path-hover2"
+                        finalFillColor,
+                        "path-hover2",
+                        "stroke-black",
                       )}
                       style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
+                      onMouseEnter={handleMouseEnterPath}
+
                     />
-                  </g>
+                  </animated.g>
                 );
-              })
-            } //. . .
+              })} //. . .
+
+            </g>
+          </animated.svg>
+        </div>
 
 
-            {currentLevel === 1 && ( // ⊙ currentLevel
-              <rect
-                opacity={0.98}
-                x={-2000}
-                y={-2000}
-                width="4000"
-                height="4000"
-                fill="white"
-                onClick={(e) => { // Permitir clique no overlay para resetar o mapa
-                  e.stopPropagation(); // Evitar que o clique propague para o SVGCanvas
-                  resetMap();
-                }}
-              />
-            )}
 
-            {transition((style, cityItem) => { // [○] transition mapCity
-
-              const isActive = city.active === cityItem.id;
-
-              const finalFillColor = isActive
-                ? 'fill-yellow-400'
-                : colorScale.getColor(cityItem.id);
+      </Flex>
 
 
-              return (
-                <animated.g {...style}>
-                  <animated.path
-                    id={cityItem.id}
-                    d={cityItem.d}
-                    data-name={cityItem.name}
-                    data-type="city"
-                    className={classNames(
-                      finalFillColor,
-                      "path-hover2",
-                      "stroke-black",
-                    )}
-                    style={{ strokeLinecap: 'round', strokeLinejoin: 'round' }}
-                    onMouseEnter={handleMouseEnterPath}
 
-                  />
-                </animated.g>
-              );
-            })} //. . .
 
-          </g>
-        </animated.svg>
-      </div>
+
+
 
 
 

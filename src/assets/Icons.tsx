@@ -1,5 +1,4 @@
 
-// 🧿
 
 const Algodao = (props) => (
   <svg

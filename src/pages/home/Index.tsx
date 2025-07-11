@@ -64,36 +64,13 @@ import { VARIABLES, COLORSHEX, SCOLORS } from "../../assets/auxData";
 import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
 // . . . . . . .
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // 🧿 
-//  WARN Xique-xique | santa teresinha | Muquém de São Francisco | itaparica | irece 
+
+//  WARN Xique-xique | santa teresinha | Muquém de São Francisco
+// 
+
+
+
 const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤ 
 
   // ✳ [windowSize, setWindowSize]
@@ -151,24 +128,21 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   const getSeriesValues = async () => { // {✪} getSeriesValues
     const axios = axiosPlain;
     try {
-      const area = city.active === '' ? region.active : city.active
+      const area = city.active === '' ? region.active : city.active //  ⊙ city
       const TYPE = city.active === '' ? "regiao" : "municipio"
       const url = "/getTopSeries/";
       const params = {
         area: area,
-        variable: variable,
+        variable: variable, // ⊙  variable
         type: TYPE
       };
 
       const response = await axios.get(url, { params }); // _PIN_ getTopSeries  ✉ 
       setSeriesVData(response.data); // ↺ setSeriesVData
 
-
       console.log('%c ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸ 🩸', 'color: red; font-size: 16px; font-weight: bold;');
       console.log('seriesVData:', response.data); // [LOG] seriesVData
       console.log('%c ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸ 🩸', 'color: red; font-size: 16px; font-weight: bold;');
-
-
 
     } catch (err: unknown) {
       if (err) {
@@ -181,14 +155,14 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     const axios = axiosPlain;
     try {
 
-      const area = city.active === '' ? region.active : city.active
+      const area = city.active === '' ? region.active : city.active //  ⊙ city
       const TYPE = city.active === '' ? "regiao" : "municipio"
 
       const url = "/getTopValues/";
       const params = {
-        year: year,
+        year: year, // ⊙  year
         area: area,
-        variable: variable,
+        variable: variable, // ⊙  variable
         type: TYPE
       };
 
@@ -200,10 +174,10 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         handleAxiosError(err);
       }
     }
-  } // ── ⋙── ── ── ── ── ── ── ──➤
+  }
 
-  const PieTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {   // <●> PieTooltip
-    if (active && payload && payload.length) {
+  const PieTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // ── ⋙── ── ── CHART AUX ── ── ── ── ──➤  
+    if (active && payload && payload.length) { // <●> PieTooltip
       const { id, name, v } = payload[0].payload; // Extract id from payload
 
       const SvgComponent = Icons[id as keyof typeof Icons];
@@ -219,18 +193,132 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
-  const BarTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // (●) BarTooltip
+
+  const BarTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // <●> BarTooltip
     if (active && payload && payload.length) {
-      const { name, v } = payload[0].payload; // Extract id from payload
+      const { name, v } = payload[0].payload;
+      let formattedValue = '';
+
+      if (variable === 'valor_da_producao') { // ⊙ variable 
+        const finalValue = v * 1000;
+        formattedValue = new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+        }).format(finalValue);
+      } else if (
+        variable === 'area_plantada_ou_destinada_a_colheita' ||
+        variable === 'area_colhida'
+      ) {
+        formattedValue = `${v.toLocaleString('pt-BR')} hectares`;
+      } else {
+        formattedValue = v.toLocaleString('pt-BR');
+      }
+
       return (
         <Card>
           <Text as="div"> <Strong>{`${name}`}</Strong> </Text>
-          <div>{`${v.toLocaleString('de-DE')} R$`}</div>
+          <div>{formattedValue}</div>
         </Card>
       );
     }
     return null;
-  }; // . . .
+  }; // . . . . . . . . . . . .
+
+
+
+
+  const SeriesTooltip = ({ active, payload }) => { // <●> SeriesTooltip
+    if (active && payload && payload.length) {
+      const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
+
+
+
+      return (
+        <Card size="2" className="bg-gray-100 opacity-90">
+          <Text as="div" size="3" weight="bold">
+            Ano: {payload[0].payload['year']}
+          </Text>
+          <Separator my="2" size="4" />
+
+
+          <Flex direction="column" gap="2">
+            {sortedPayload.map((item) => {
+
+              let formattedValue = '';
+
+              // Lógica para formatar o valor baseado na variável
+              if (variable === 'valor_da_producao') {
+                const finalValue = item.value * 1000;
+                formattedValue = new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+
+                }).format(finalValue);
+              } else if (
+                variable === 'area_plantada_ou_destinada_a_colheita' ||
+                variable === 'area_colhida'
+              ) {
+                formattedValue = `${item.value.toLocaleString('pt-BR')} hectares`;
+              } else {
+                formattedValue = item.value.toLocaleString('pt-BR');
+              }
+
+              const dataKey = item.dataKey;
+              const SvgComponent = Icons[dataKey];
+              const itemName = seriesVData?.keys[dataKey] || dataKey;
+
+              // A cor da linha está aqui!
+              const itemColor = item.color;
+
+              return (
+                <Flex key={dataKey} gap="3" align="center">
+
+                  <Box style={{ // bolinha que precede o icon
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: '50%',
+                    backgroundColor: itemColor,
+                    flexShrink: 0,
+                  }} />
+
+                  {SvgComponent && <SvgComponent />}
+
+                  <Text as="div" size="2">
+                    <Strong>{itemName}:</Strong> {formattedValue}
+                  </Text>
+                </Flex>
+              );
+            })}
+          </Flex>
+        </Card>
+      );
+    }
+
+    return null;
+  }; // . . . . . . . . . . . .
+
+
+
+
+  const QMRMTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // <●> QMRMTooltip
+    if (active && payload && payload.length) {
+      const { name, qp, rm } = payload[0].payload;
+
+      return (
+        <Card>
+          <Text as="div"> <Strong>{`${name}`}</Strong> </Text>
+          <Text size='3' as="div">
+            Quantidade Produzida: <Strong>{qp.toLocaleString('pt-BR')}</Strong> Toneladas </Text>
+          <Text as="div">
+            Rendimento Médio: <Strong>{rm.toLocaleString('pt-BR')}</Strong> Kg/Hectares
+          </Text>
+        </Card>
+      );
+    }
+    return null;
+  }; // . . . . . . . . . . . .
+
+
 
   const BarTopLabels = (props) => {  // (●) BarTopLabels
     const { x, y, width, index } = props;
@@ -242,337 +330,57 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     const centerY = y - svgHeight; // Position at the **exact top** of the bar
 
     return <SvgComponent x={centerX} y={centerY} />;
-  }; // . . .
-
-  const QMRMTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // {●} QMRMTooltip
-    if (active && payload && payload.length) {
-      const { name, qp, rm } = payload[0].payload;
-
-      return (
-        <Card>
-          <Text as="div"> <Strong>{`${name}`}</Strong> </Text>
-          <Text size='3' as="div"> Quantidade Produzida: <Strong>{qp.toLocaleString('de-DE')}</Strong> Toneladas* </Text>
-          <Text as="div"> Rendimento Médio: <Strong>{rm.toLocaleString('de-DE')}</Strong> Kg/Hectares </Text>
-        </Card>
-      );
-    }
-    return null;
   }; // . . . . . . . . . . . .
 
-  // const CustomizedDot = (props) => { // ● CustomizedDot
-  //   const { cx, cy, datakey } = props;
-
-  //   if (cx == null || cy == null) return null;
-  //   const SvgComponent = Icons[datakey as keyof typeof Icons];
-
-  //   if (!SvgComponent) return null;
-
-  //   return (
-  //     <g transform={`translate(${cx - 15}, ${cy - 15})`}>
-  //       <circle cx="15" cy="15" r="18" fill="gray" stroke="black" strokeWidth="2" />
-  //       <defs>
-  //         <clipPath id={`clip-${datakey}`}>
-  //           <circle cx="15" cy="15" r="15" />
-  //         </clipPath>
-  //       </defs>
-  //       <g clipPath={`url(#clip-${datakey})`}>
-  //         <SvgComponent />
-  //       </g>
-  //     </g>
-  //   );
-  // };
 
 
-  const SeriesTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // ● SeriesTooltip
-    if (active && payload && payload.length) {
+  const yAxisValueFormatter = (value) => { // (●) yAxisValueFormatter
 
-      const Items = payload
-        .sort((a, b) => b.value - a.value)
-        .map(({ name, value }) => ({ [seriesVData?.keys[name]]: value }));
-
-      return (
-        <Card>
-          <Text as="div"> <Strong>Ano: </Strong> {payload[0].payload['year']} </Text>
-          <Separator my="1" color="gray" size="4" />
-          {
-            Items.map((item) => {
-
-              const key = Object.keys(item)[0];
-
-
-              const value = item[key];
-              return (
-                <Text as="div" key={key}> <Strong>{`${key} :`}</Strong> {value.toLocaleString('de-DE')} </Text>
-              )
-            })
-          }
-        </Card >
-      );
+    if (variable === 'valor_da_producao') {
+      const finalValue = value * 1000;
+      return new Intl.NumberFormat('pt-BR', {
+        notation: 'compact',
+        compactDisplay: 'short',
+        style: 'currency',
+        currency: 'BRL',
+      }).format(finalValue);
     }
 
-    return null;
-  };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const generateMockDataFromIcons = (iconsObject) => {
-    // Pega todas as chaves (nomes dos ícones) do seu objeto
-    const allIconKeys = Object.keys(iconsObject);
-
-
-    // Cria o objeto 'keys' para a legenda do gráfico
-    const legendKeys = {};
-
-
-
-    allIconKeys.forEach(key => {
-      // Transforma 'meu_icone_legal' em 'Meu Icone Legal' para a legenda
-      const legendName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      legendKeys[key] = legendName;
-    });
-
-    
-    
-    const PartialIcons = allIconKeys.slice(60,70);
-
-    
-    console.log('%c ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸ 🩸', 'color: blue; font-size: 16px; font-weight: bold;');
-    console.log('PartialIcons:', PartialIcons); // [LOG] allIconKeys
-    console.log('%c ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸ 🩸', 'color: blue; font-size: 16px; font-weight: bold;');
-
-
-    // Cria os dados para os pontos do gráfico (2 pontos para cada linha)
-
-    const dataPoints = [
-      { year: 2022 },
-      { year: 2023 },
-      { year: 2024 }
-
-    ];
-
-    PartialIcons.forEach((key, index) => {
-      // Atribui valores Y diferentes para cada linha para evitar sobreposição
-      dataPoints[0][key] = (index + 1) * 20;
-      dataPoints[1][key] = (index + 1) * 20;
-      dataPoints[2][key] = (index + 1) * 20;
-
-    });
-
-    return {
-      keys: legendKeys,
-      data: dataPoints
-    };
-  };
-
-
-
-
-
-  // Gerando os dados dinamicamente
-  const seriesKEKData = generateMockDataFromIcons(Icons);
-  const seriesKEKeys = Object.keys(seriesKEKData.keys);
-  // =================================================================================
-
-  // 3. COMPONENTE CUSTOMIZADO PARA RENDERIZAR O PONTO (DOT)
-  //    Ele usará o seu objeto 'Icons' importado
-  const CustomizedDot = (props) => {
-    const { cx, cy, datakey } = props;
-    if (cx == null || cy == null) return null;
-
-    const SvgComponent = Icons[datakey];
-    if (!SvgComponent) return null;
-
-    return (
-      <g transform={`translate(${cx - 15}, ${cy - 15})`}>
-        <SvgComponent />
-      </g>
-    );
-  };
-
-  // 4. O COMPONENTE DO GRÁFICO (AGORA 100% DINÂMICO)
-  const IconPreviewChart = () => {
-    if (seriesKEKeys.length === 0) {
-      return <div>Nenhum ícone encontrado. Verifique seu arquivo de ícones.</div>;
+    if (
+      variable === 'area_plantada_ou_destinada_a_colheita' ||
+      variable === 'area_colhida'
+    ) {
+      const formattedNumber = new Intl.NumberFormat('pt-BR', {
+        notation: 'compact',
+        compactDisplay: 'short',
+      }).format(value);
+      // Adiciona o sufixo 'ha' para hectares
+      return `${formattedNumber} ha`;
     }
+    // Caso Padrão: Se for qualquer outra variável no futuro
+    return new Intl.NumberFormat('pt-BR').format(value);
 
-    return (
-      <div style={{ width: '100%', height: '80vh', padding: '20px', background: '#f9f9f9', borderRadius: '10px' }}>
-        <h2 style={{ textAlign: 'center', fontFamily: 'sans-serif' }}>
-          Preview de Todos os Ícones ({seriesKEKeys.length} ícones encontrados)
-        </h2>
-        <ResponsiveContainer>
-          <LineChart
-            data={seriesKEKData.data}
-            margin={{ top: 20, right: 40, left: 20, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="year" />
-            <YAxis />
-            <Tooltip content={() => null} /> {/* Tooltip desativado para não poluir */}
-            <Legend layout="vertical" align="right" verticalAlign="middle" />
+  };
 
-            {seriesKEKeys.map((key) => (
-              <Line
-                key={key}
-                type="monotone"
-                dataKey={key}
-                name={seriesKEKData.keys[key]}
-                stroke="transparent" // Linhas transparentes para focar nos ícones
-                strokeWidth={2}
-                dot={<CustomizedDot datakey={key} />}
-                activeDot={false}
-              />
-            ))}
+  const yAxisTonsFormatter = (value) => {  // (●) yAxisTonsFormatter
+    const formattedNumber = new Intl.NumberFormat('pt-BR', {
+      notation: 'compact',
+      compactDisplay: 'short',
+    }).format(value);
+    return `${formattedNumber} t`; // Adiciona o sufixo "t" de toneladas
+  };
 
-
-
-
-
-
-
-            <Brush
-              dataKey="year"
-              height={30}
-              stroke="#8884d8"
-              travellerWidth={10}
-            />
-
-
-
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    );
+  const yAxisKgHaFormatter = (value) => {
+    const formattedNumber = new Intl.NumberFormat('pt-BR', {  // (●) yAxisKgHaFormatter
+      notation: 'compact',
+      compactDisplay: 'short',
+    }).format(value);
+    return `${formattedNumber} kg/ha`; // Adiciona o sufixo "kg/ha"
   };
 
 
+  // . . . . . . . . . . . .
 
 
 
@@ -583,124 +391,29 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
 
 
+  // [●] glassmorphismClass
+  const glassmorphismClass = 'bg-white/10 backdrop-blur-xl  shadow-lg';
 
+  //  const glassmorphismClass = 'bg-black/40 backdrop-blur-xl border border-white/10 shadow-lg';
 
+  // const glassmorphismClass = 'bg-slate-800/40 backdrop-blur-lg border border-slate-500/30 shadow-lg';
 
+  // const glassmorphismClass = 'bg-black/20 backdrop-blur-lg border border-white/10 shadow-lg';
 
 
 
 
+  // [●] lineColors
+  const lineColors = ["#D58A9E", "#8C8CC3", "#D29E64", "#81BFE8", "#8CE78A", "#B5B5B5", "#B7AFFF", "#B59FE0"];
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  // . . . . . . . . . . . .
 
 
 
 
   return (// ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘ DOM ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘➤ 
     <>
-
       <p // HERE windowSize ↯
         className="fixed right-10 top-30 text-xl text-slate-950 z-50"
       >
@@ -710,38 +423,34 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
       <Box
         className={classNames(
-          "flex flex-col", // Organiza os painéis filhos em uma coluna
+          "flex flex-col",
           "p-10 gap-4",
-          "h-full w-full", // h-full para ocupar a altura disponível, considere 'min-h-screen' se precisar sempre preencher a tela
-          "overflow-y-auto" // Permite rolagem se o conteúdo exceder a altura da tela
+          "h-full w-full",
+          "bg-white",
+          "overflow-y-auto"
         )}
       >
-
 
         <Box className={classNames(
           "flex items-start",
           "gap-4",
         )}>
 
-
           <MapMenu />
 
-          <Box className="flex flex-col flex-1 gap-4 h-[640px]">
+
+          <Box className="flex flex-col flex-1 gap-4 h-full">
 
             <Box className="flex gap-4 h-2/5">
 
-              <Card id="p1" className="flex-1 bg-purple-300 rounded-xl p-4">
+              <Box id="p1" className={classNames("flex-1 rounded-xl p-4", glassmorphismClass)}>
                 <Heading as="h3" size="4">Card P1</Heading>
                 <Text as="p">Substitua este conteúdo.</Text>
-              </Card>
+              </Box>
 
               <Box  // ── ⋙── ── pie ── ──➤
                 id='pie'
-                className={classNames(
-                  'flex-1 rounded-xl',
-                  'bg-neutral-400',
-                  'overflow-hidden'
-                )}
+                className={classNames('flex-1 rounded-xl overflow-hidden', glassmorphismClass)}
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -770,12 +479,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
             <Box // ── ⋙── ── bar ── ──➤
               id='bar'
-              className={classNames(
-                'flex flex-col items-center w-full z-0',
-                'rounded-xl bg-emerald-700',
-                'flex-1',
-                'overflow-hidden p-3'
-              )}
+              className={classNames('flex flex-col items-center w-full z-0 flex-1 rounded-xl overflow-hidden p-3', glassmorphismClass)}
             >
               <Text as='div' size="4" highContrast>
                 <Strong>{VARIABLES[variable]} </Strong>
@@ -785,23 +489,33 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                   data={topVData?.data} // ⊙ topVData
                   margin={{ top: 20, right: 20, left: 10, bottom: 5, }}
                 >
+
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" stroke="#000" />
-                  <YAxis stroke="#000" />
-                  <Tooltip content={<BarTooltip />} />
+
+                  <YAxis stroke="#000" tickFormatter={yAxisValueFormatter} /> // (○) yAxisValueFormatter
+
+
+                  <Tooltip // <○> Tooltip
+                    content={<BarTooltip />}
+                  />
+
                   <Bar name='🦀' dataKey="v" fill="#8884d8" minPointSize={5}>
                     {topVData?.data.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORSHEX[variable]?.[index % COLORSHEX[variable].length]} />
                     ))}
+
                     <LabelList // (○) BarTopLabels
                       dataKey="name"
                       content={BarTopLabels} />
+
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </Box>
-          </Box>
 
+
+          </Box>
         </Box>
 
 
@@ -812,34 +526,42 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           )}
         >
 
-          <Card id="px" className="bg-orange-300 rounded-xl p-4 w-1/3 h-[440px]">
+          <Box id="px" className={classNames("rounded-xl p-4 w-1/3 h-[440px]", glassmorphismClass)}>
             <Heading as="h3" size="4">Card PX</Heading>
             <Text as="p">Este é um card de exemplo para ocupar o espaço à esquerda.</Text>
-          </Card>
+          </Box>
 
 
           <Box // ── ⋙──  ── QPRM_bars ── ──➤
             id='QPRM_bars'
-            className={classNames(
-              'flex-1 rounded-xl h-[440px]', // flex-1 para ocupar o espaço restante
-              'bg-gradient-to-r from-emerald-50 to-green-50',
-              'p-4'
-            )}
+            className={classNames('flex-1 rounded-xl h-[440px] p-4', glassmorphismClass)}
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={topVData?.QP_RM} // ⊙ topVData
                 margin={{
                   top: 46,
-                  right: 20,
+                  right: 30,
                   left: 20,
                   bottom: 5,
                 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
-                <YAxis yAxisId="left" orientation="left" stroke="#AC4D39" />
-                <YAxis yAxisId="right" orientation="right" stroke="#FFC53D" />
+
+                <YAxis
+                  yAxisId="left"
+                  orientation="left"
+                  stroke="#AC4D39"
+                  tickFormatter={yAxisTonsFormatter} // (○) yAxisTonsFormatter
+                />
+
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  stroke="#FFC53D"
+                  tickFormatter={yAxisKgHaFormatter} // (○) yAxisKgHaFormatter
+                />
                 <Tooltip // {○} QMRMTootip
                   content={<QMRMTooltip />} />
 
@@ -855,46 +577,57 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
               </BarChart>
             </ResponsiveContainer>
           </Box>
+
         </Box>
 
 
         <Box // ── ⋙── ── TopSeriesBox ── ──➤
-          className={classNames(
-            "flex",
-            'rounded-xl w-full h-[660px] p-10',
-            'bg-gradient-to-r from-violet-100 to-fuchsia-100',
-          )}
+          id="topseries"
+          className={classNames("flex rounded-xl w-full h-[660px] p-10", glassmorphismClass)}
         >
-
-
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              data={seriesVData?.data} // ⊙ seriesVData
-              margin={{
-                top: 20,
-                right: 20,
-                left: 20,
-                bottom: 20,
-              }}
+              data={seriesVData?.data}
+              margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="year" stroke="#000" />
-              <YAxis stroke="#000" scale="log"
+              <YAxis
+                stroke="#000"
+                scale="log"
                 domain={['auto', 'auto']}
+                tickFormatter={yAxisValueFormatter} // (○) yAxisValueFormatter
+
+
+              />
+              <Tooltip
+                content={<SeriesTooltip />}
+                cursor={{ stroke: 'red', strokeWidth: 2, strokeDasharray: '3 3' }}
               />
 
-              <Tooltip // ○ SeriesTooltip
-                content={SeriesTooltip} />
+              <Legend />
 
-              {seriesKeys.map((key) => (
-                <Line
-                  key={key}
-                  type="monotone"
-                  dataKey={key}
-                  stroke="#000"
-                  // ○ CustomizedDot
-                  dot={<CustomizedDot datakey={key} />} />
-              ))}
+              {seriesKeys.map((key, index) => {
+                const color = lineColors[index % lineColors.length];
+                const itemName = seriesVData?.keys[key] || key;
+
+                return (
+                  <Line
+                    key={key}
+                    type="monotone"
+                    dataKey={key}
+                    name={itemName}
+                    stroke={color}
+                    strokeWidth={2}
+
+                    // AQUI ESTÁ A MUDANÇA: Ponto sólido, sem borda
+                    dot={{ r: 5, fill: color }}
+
+                    // AQUI ESTÁ A MUDANÇA: Ponto ativo sólido e maior
+                    activeDot={{ r: 8, fill: color, stroke: color }}
+                  />
+                );
+              })}
 
               <Brush
                 dataKey="year"
@@ -902,19 +635,9 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                 stroke="#8884d8"
                 travellerWidth={10}
               />
-
             </LineChart>
           </ResponsiveContainer>
-
         </Box>
-
-
-
-        <IconPreviewChart />
-
-
-
-
 
 
       </Box >
