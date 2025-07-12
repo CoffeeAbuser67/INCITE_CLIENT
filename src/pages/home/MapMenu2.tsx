@@ -29,7 +29,7 @@ import { COLORSTW, COLORSTW_HEX, VARIABLES, YEARS } from "../../assets/auxData";
 
 import { createPortal } from "react-dom";
 
-import { mapStore, BoundingBox, variableStore, yearStore } from "../../store/mapsStore";
+import { mapStore, BoundingBox, variableStore, yearStore, regionDataStore } from "../../store/mapsStore";
 
 const SCALE_ADJUSTMENT = 0.35
 
@@ -77,10 +77,8 @@ const mapRegion: Region[] = regionData;
 const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
   const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
 
-
   // type levels = 0 | 1;
   // const [currentLevel, setCurrentLevel] = useState<levels>(0);
-
 
   // ✳ { variable, setVariable } 
   const { variable, setVariable } = variableStore();
@@ -97,12 +95,9 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   } = mapStore();
 
 
-
-
   // WARN To salvando o estado da minha escala mas n to usando.
   // ✳ [currentScale, setCurrentScale]
   const [currentScale, setCurrentScale] = useState<number>(1);
-
 
   // ✳ [tooltip, setTooltip] 
   const [tooltip, setTooltip] = useState<TooltipState>({
@@ -112,9 +107,11 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     y: 0,
   });
 
-  // ✳ [regionValues, setRegionValues] 
-  const [regionValues, setRegionValues] = useState<{ [key: string]: number }>({});
+  // ✳ {regionValues, setRegionVales}
+  const { regionValues, setRegionValues } = regionDataStore();
   // . . . 
+
+  // const [regionValues, setRegionValues] = useState<{ [key: string]: number }>({});
 
 
   useEffect(() => { //HERE uE
@@ -141,11 +138,12 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       const response = await axios.get(url, { params }); // _PIN_ getRegionValues  ✉ 
       const data = response?.data
 
-
       console.log("── ⋙⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸");
       console.log("params:", params); // [LOG] 
-      console.log("/getRegionValues:", data); // [LOG] 
       console.log("── ⋙⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸");
+      console.log('%c ── ◯─◠◡◠◡◠◡◠◡◠◡◠◡◠◡─➤ 🌑', 'color: purple; font-size: 16px; font-weight: bold;');
+      console.log("/getRegionValues:", data); // [LOG] 
+      console.log('%c ── ◯─◡◠◡◠◡◠◡◠◡◠◡◠◡◠─➤ 🌑', 'color: purple; font-size: 16px; font-weight: bold;');
 
       setRegionValues(data) // ↺ setRegionValues
 
@@ -607,18 +605,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
             </g>
           </animated.svg>
         </div>
-
-
-
       </Flex>
-
-
-
-
-
-
-
-
 
     </>
   );

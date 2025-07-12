@@ -51,6 +51,9 @@ export const mapStore = create<mapStoreI>((set) => ({
 }));
 
 // ── ⋙── ── ── ── ── ── ── ──➤
+
+// [✪] variableStore
+
 import { VARIABLES } from "../assets/auxData";
 
 type VariableKey = keyof typeof VARIABLES;
@@ -60,15 +63,30 @@ interface variableStoreI {
   setVariable: (variable: VariableKey) => void;
 }
 
-// [✪] variableStore
 export const variableStore = create<variableStoreI>((set) => ({
   variable: "valor_da_producao",
   setVariable: (variable) => set({ variable }),
-}));
+})); // ── ⋙── ── ── ── ── ── ── ──➤
 
 
 
-// ── ⋙── ── ── ── ── ── ── ──➤
+// [✪] regionDataStore
+interface RegionDataState {
+    regionValues: { [key: string]: number };
+}
+interface RegionDataActions {
+    setRegionValues: (data: { [key: string]: number }) => void;
+}
+
+type RegionDataStoreType = RegionDataState & RegionDataActions;
+
+export const regionDataStore = create<RegionDataStoreType>((set) => ({
+  regionValues: {},
+  setRegionValues: (data) => set({ regionValues: data }),
+}));  // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+
 // [✪] yearStore
 
 interface yearStoreI {

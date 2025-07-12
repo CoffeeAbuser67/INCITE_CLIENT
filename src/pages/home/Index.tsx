@@ -8,7 +8,6 @@ import React, {
 } from "react";
 
 import classNames from "classnames";
-
 import {
   Box,
   Card,
@@ -33,7 +32,6 @@ import {
 import { axiosPlain } from "../../utils/axios";
 import handleAxiosError from "../../utils/handleAxiosError";
 import { useWindowResize } from "../../hooks/useWindowResize";
-
 import {
   PieChart,
   Pie,
@@ -59,13 +57,13 @@ import { TooltipProps } from "recharts";
 import MapMenu from "./MapMenu2";
 import Icons from "../../assets/Icons";
 import ICON_SIZES from "../../assets/IconsSizes";
-
 import { VARIABLES, COLORSHEX, SCOLORS } from "../../assets/auxData";
-import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
+import { mapStore, variableStore, yearStore, regionDataStore } from "../../store/mapsStore";
+
+import CardV1 from "./CardV1";
 // . . . . . . .
 
 // 🧿 
-
 //  WARN Xique-xique | santa teresinha | Muquém de São Francisco
 // 
 
@@ -87,6 +85,10 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   //  ✳ {variable}
   const { variable } = variableStore();
+
+  //  ✳ {regionValues}
+  const { regionValues } = regionDataStore();
+
 
   type A_Item = { id: string; name: string; v: number };
   type A_Item2 = { id: string; name: string; qp: number, rm: number };
@@ -139,10 +141,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
       const response = await axios.get(url, { params }); // _PIN_ getTopSeries  ✉ 
       setSeriesVData(response.data); // ↺ setSeriesVData
-
-      console.log('%c ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸ 🩸', 'color: red; font-size: 16px; font-weight: bold;');
-      console.log('seriesVData:', response.data); // [LOG] seriesVData
-      console.log('%c ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸ 🩸', 'color: red; font-size: 16px; font-weight: bold;');
 
     } catch (err: unknown) {
       if (err) {
@@ -225,12 +223,9 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   }; // . . . . . . . . . . . .
 
 
-
-
   const SeriesTooltip = ({ active, payload }) => { // <●> SeriesTooltip
     if (active && payload && payload.length) {
       const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
-
 
 
       return (
@@ -293,11 +288,8 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         </Card>
       );
     }
-
     return null;
   }; // . . . . . . . . . . . .
-
-
 
 
   const QMRMTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // <●> QMRMTooltip
@@ -317,7 +309,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     }
     return null;
   }; // . . . . . . . . . . . .
-
 
 
   const BarTopLabels = (props) => {  // (●) BarTopLabels
@@ -385,12 +376,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
 
 
-
-
-
-
-
-
   // [●] glassmorphismClass
   const glassmorphismClass = 'bg-white/10 backdrop-blur-xl  shadow-lg';
 
@@ -401,25 +386,21 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   // const glassmorphismClass = 'bg-black/20 backdrop-blur-lg border border-white/10 shadow-lg';
 
 
-
-
   // [●] lineColors
   const lineColors = ["#D58A9E", "#8C8CC3", "#D29E64", "#81BFE8", "#8CE78A", "#B5B5B5", "#B7AFFF", "#B59FE0"];
-
 
   // . . . . . . . . . . . .
 
 
-
-
   return (// ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘ DOM ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘➤ 
     <>
-      <p // HERE windowSize ↯
+
+      {/* <p // windowSize ↯
         className="fixed right-10 top-30 text-xl text-slate-950 z-50"
       >
         🦀{` wdith: ${windowSize.width}`} <br />
         🦀{` height: ${windowSize.height}`}
-      </p>
+      </p> */}
 
       <Box
         className={classNames(
@@ -435,19 +416,12 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           "flex items-start",
           "gap-4",
         )}>
-
           <MapMenu />
 
-
           <Box className="flex flex-col flex-1 gap-4 h-full">
-
             <Box className="flex gap-4 h-2/5">
-
-              <Box id="p1" className={classNames("flex-1 rounded-xl p-4", glassmorphismClass)}>
-                <Heading as="h3" size="4">Card P1</Heading>
-                <Text as="p">Substitua este conteúdo.</Text>
-              </Box>
-
+              <CardV1 // ✪ CardV1
+              />
               <Box  // ── ⋙── ── pie ── ──➤
                 id='pie'
                 className={classNames('flex-1 rounded-xl overflow-hidden', glassmorphismClass)}
@@ -474,9 +448,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                   </PieChart>
                 </ResponsiveContainer>
               </Box>
-
             </Box>
-
             <Box // ── ⋙── ── bar ── ──➤
               id='bar'
               className={classNames('flex flex-col items-center w-full z-0 flex-1 rounded-xl overflow-hidden p-3', glassmorphismClass)}
@@ -513,9 +485,8 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                 </BarChart>
               </ResponsiveContainer>
             </Box>
-
-
           </Box>
+
         </Box>
 
 

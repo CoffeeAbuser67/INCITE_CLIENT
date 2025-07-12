@@ -64,7 +64,7 @@ import { VARIABLES, COLORSHEX, SCOLORS } from "../../assets/auxData";
 import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
 // . . . . . . .
 
-// 🧿 
+
 //  WARN Xique-xique | santa teresinha | Muquém de São Francisco
 // 
 const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤ 
