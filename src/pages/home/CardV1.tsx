@@ -23,7 +23,7 @@ const CardV1 = () => {
     if (variable === 'valor_da_producao') {
         const finalValue = totalValue * 1000;
         formattedTotal = new Intl.NumberFormat('pt-BR', {
-            style: 'currency', currency: 'BRL', notation: 'compact', compactDisplay: 'long'
+            style: 'currency', currency: 'BRL', notation: "compact", maximumFractionDigits: 1, compactDisplay: "long"
         }).format(finalValue);
     } else if (
         variable === 'area_plantada_ou_destinada_a_colheita' ||

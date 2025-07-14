@@ -545,7 +545,6 @@ const Incite = () => { // ★ Incite ⋙─────────────�
 
                                             return (
                                                 <g key={i}>
-                                                    <title>{el.name}</title>
                                                     <animated.path
                                                         id={el.id}
                                                         d={el.d}

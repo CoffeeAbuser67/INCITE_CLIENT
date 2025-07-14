@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Heading, Box, Text, Flex, Spinner, Card, Avatar, Badge, Tabs, Button } from '@radix-ui/themes';
 import { axiosPlain } from '../../utils/axios';
-import { MapPin, Mail, Phone, Newspaper, User as UserIcon, ArrowRightIcon } from 'lucide-react';
+import { MapPin, Mail, Phone, Newspaper, User as UserIcon } from 'lucide-react';
 import { Instituicao } from '../settings/Instituicao';
 
 
@@ -94,8 +94,13 @@ const InstituicaoProfilePage = () => {
             try {
                 const response = await axiosPlain.get(`/profile/instituicoes/${id}/`);
                 setInstituicao(response.data);
+
+
                 console.log('%c ── ⋙⇌⇌⇌⇌ instituicao ⇌⇌⇌⇌⇌⇌⫸ 🏢', 'color: black; font-size: 16px; font-weight: bold;');
                 console.log(response.data);
+
+
+
 
             } catch (error) {
                 console.error("Falha ao carregar instituição:", error);
@@ -117,6 +122,7 @@ const InstituicaoProfilePage = () => {
     return (
 
         <div className="max-w-5xl mx-auto p-4 sm:p-8">
+
             <Flex gap="5" align="center" mb="6">
                 <Avatar
                     src={instituicao.marcador_logo ?? undefined}
@@ -136,79 +142,26 @@ const InstituicaoProfilePage = () => {
                 </Box>
             </Flex>
 
+            <Button variant="soft" asChild size="2" className='my-4 text-black'>
+                <Link to={`/blog/${instituicao.id}`}>
+                    <Newspaper size="18" className="mr-1" /> Notícias
+                </Link>
+            </Button>
 
             <Tabs.Root defaultValue="sobre">
                 <Tabs.List>
                     <Tabs.Trigger value="sobre">Sobre</Tabs.Trigger>
                     <Tabs.Trigger value="pesquisadores">Pesquisadores ({instituicao.pesquisadores.length})</Tabs.Trigger>
                     <Tabs.Trigger value="pesquisas">Pesquisas ({instituicao.pesquisas.length})</Tabs.Trigger>
-                    <Tabs.Trigger value="acoes">Ações ({instituicao.acoes_extensionistas.length})</Tabs.Trigger>
-                    <Tabs.Trigger value="produtos">Produtos ({instituicao.produtos.length})</Tabs.Trigger>
-                    <Tabs.Trigger value="noticias">Notícias ({instituicao.postagens.length})</Tabs.Trigger>
                 </Tabs.List>
 
+
                 <Box pt="6">
-                    <Tabs.Content value="sobre">
-                        <SobreTab instituicao={instituicao} />
-                    </Tabs.Content>
-                    <Tabs.Content value="pesquisadores">
-                        <PesquisadoresList pesquisadores={instituicao.pesquisadores || []} />
-                    </Tabs.Content>
-
-                    {/* ▼▼▼ ABAS PREENCHIDAS COM OS NOVOS COMPONENTES ▼▼▼ */}
-                    <Tabs.Content value="pesquisas">
-                        <PesquisasList pesquisas={instituicao.pesquisas || []} />
-                    </Tabs.Content>
-                    <Tabs.Content value="acoes">
-                        <AcoesExtensionistasList acoes={instituicao.acoes_extensionistas || []} />
-                    </Tabs.Content>
-                    <Tabs.Content value="produtos">
-                        <ProdutosList produtos={instituicao.produtos || []} />
-                    </Tabs.Content>
-
-                    <Tabs.Content value="noticias">
-                        <Flex direction="column" gap="4">
-                            <Heading size="4">Notícias e Atualizações Recentes</Heading>
-
-                            {/* Verificamos se a instituição tem postagens */}
-                            {instituicao.postagens && instituicao.postagens.length > 0 ? (
-                                <Flex direction="column" gap="3">
-                                    {/* 1. Pegamos apenas os 3 primeiros posts e os mapeamos */}
-                                    {instituicao.postagens.slice(0, 3).map((post: Postagem) => (
-                                        // 2. Cada item da lista é um link para o post completo
-                                        <Link to={`/blog/${post.id}`} key={post.id} className="no-underline text-current">
-                                            <Card className="hover:bg-gray-50 transition-colors">
-                                                <Flex align="center" gap="3">
-                                                    <Newspaper size={24} className="text-gray-600 flex-shrink-0" />
-                                                    <Box>
-                                                        <Text as="p" weight="bold" className="text-gray-800">{post.title}</Text>
-                                                        <Text as="p" size="2" color="gray">
-                                                            {new Date(post.created_at).toLocaleDateString('pt-BR', { dateStyle: 'long' })}
-                                                        </Text>
-                                                    </Box>
-                                                </Flex>
-                                            </Card>
-                                        </Link>
-                                    ))}
-                                </Flex>
-                            ) : (
-                                // 3. Mensagem para quando não há posts
-                                <Text color="gray">Nenhuma notícia publicada por esta instituição.</Text>
-                            )}
-
-                            {/* 4. O botão "Ver mais" que leva para a página de blog filtrada */}
-                            {/* Ele só aparece se houver posts para mostrar */}
-                            {instituicao.postagens && instituicao.postagens.length > 0 && (
-                                <Button variant="soft" asChild mt="3" className='my-4 text-black' style={{ width: 'fit-content' }}>
-                                    <Link to={`/blog?instituicao=${encodeURIComponent(instituicao.nome)}`}>
-                                        Ver notícias ({instituicao.postagens.length})
-                                        <ArrowRightIcon className="ml-2" />
-                                    </Link>
-                                </Button>
-                            )}
-                        </Flex>
-                    </Tabs.Content>
+                    <Tabs.Content value="sobre"><SobreTab instituicao={instituicao} /></Tabs.Content>
+                    <Tabs.Content value="pesquisadores"><PesquisadoresList pesquisadores={instituicao.pesquisadores || []} /></Tabs.Content>
+                    <Tabs.Content value="pesquisas"><Text>Conteúdo da aba de pesquisas...</Text></Tabs.Content>
                 </Box>
+
             </Tabs.Root>
 
 

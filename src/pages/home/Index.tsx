@@ -295,9 +295,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   const CustomXAxisTick = (props) => { // {●} CustomXAxisTick
     const { x, y, payload } = props;
-    console.log('%c ◯⫘payload⫘⫸ 🌌', 'color: blue; font-size: 16px; font-weight: bold;');
-    console.log(payload);
-
     const dataKey = payload.value;
     const SvgComponent = Icons[dataKey as keyof typeof Icons];
     // Se não houver um ícone para essa chave, não renderiza nada.

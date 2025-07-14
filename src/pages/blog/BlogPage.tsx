@@ -6,13 +6,26 @@ import { Heading, Grid, Box, Flex, Text, Spinner, Card, AspectRatio, Select, Sep
 import { axiosPlain } from '../../utils/axios';
 import { PostCard } from './PostCard';
 import { PublicPost, InstituicaoParaFiltro } from './blogTypes';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import classNames from 'classnames';
+
+
+function useQuery() {
+    return new URLSearchParams(useLocation().search);
+}
+
 
 const BlogPage = () => {
     const [posts, setPosts] = useState<PublicPost[]>([]);
     const [instituicoes, setInstituicoes] = useState<InstituicaoParaFiltro[]>([]);
-    const [filtroInstituicao, setFiltroInstituicao] = useState<string | null>(null);
+
+
+
+    const query = useQuery();
+    const instituicaoDaUrl = query.get('instituicao');
+
+
+    const [filtroInstituicao, setFiltroInstituicao] = useState<string | null>(instituicaoDaUrl);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {

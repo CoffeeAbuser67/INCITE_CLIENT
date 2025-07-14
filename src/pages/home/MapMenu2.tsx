@@ -160,10 +160,21 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     getRegionValues(); // (○) getRegionValues
   }, [getRegionValues]);
 
-
+  //  ── ⋙── ── ── ── ── ── ──➤
   // (✪) colorScale 
   const colorScale = useMemo(() => {
-    const values = Object.values(regionValues).filter(v => typeof v === 'number' && isFinite(v));
+
+
+    const activeRegionKey = region.active;
+
+    const values = Object.entries(regionValues)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .filter(([key, _]) => key !== activeRegionKey) // 1. Filtra os pares, mantendo apenas aqueles cuja chave NÃO é a ativa.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .map(([_, value]) => value);                     // 2. Do resultado filtrado, extrai apenas o valor de cada par.
+
+      console.log('%c values 🩸', 'color: red; font-size: 16px; font-weight: bold;');
+      console.log(values)
 
     // CASO 1: Não há dados ou os dados ainda não carregaram.
     if (values.length === 0) {
@@ -399,12 +410,36 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       backgroundImage: `linear-gradient(to top, ${colors.from}, ${colors.to})`,
     };
 
-    const formatNumber = (num: number) => {
-      return new Intl.NumberFormat('pt-BR', {
-        notation: 'compact',
-        maximumFractionDigits: 1
-      }).format(num);
+    // const formatNumber = (num: number) => {
+    //   return new Intl.NumberFormat('pt-BR', {
+    //     notation: 'compact',
+    //     maximumFractionDigits: 1
+    //   }).format(num);
+    // };
+
+    const formatNumber = (value: number) => { 
+      if (variable === 'valor_da_producao') {
+        const finalValue = value * 1000;
+        return new Intl.NumberFormat('pt-BR', {
+          notation: 'compact',
+          maximumFractionDigits: 1,
+        }).format(finalValue);
+      }
+
+      if (
+        variable === 'area_plantada_ou_destinada_a_colheita' ||
+        variable === 'area_colhida'
+      ) {
+        return new Intl.NumberFormat('pt-BR', {
+          notation: 'compact',
+          compactDisplay: 'short',
+        }).format(value);
+      }
+
+      return new Intl.NumberFormat('pt-BR').format(value);
     };
+
+
 
     return (
       <div
