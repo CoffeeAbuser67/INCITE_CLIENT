@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import { Box, Card, Flex, Heading, Separator, Text } from "@radix-ui/themes";
+import { Box, Flex, Heading, Separator, Text } from "@radix-ui/themes";
 import { mapStore, yearStore, variableStore } from "../../store/mapsStore";
 import { regionDataStore } from '../../store/mapsStore';
 
@@ -13,17 +13,10 @@ const CardV1 = () => {
     const { variable } = variableStore();
     const { regionValues } = regionDataStore();
 
-    const locationName = city.name || region.name || "Carregando...";
+    const locationName = city.name || region.name || "Bahia";
     const locationTarget = city.active || region.active || 'bahia';
 
-    console.log('%c ── ⋙── ── ── ── ── ── ── ──➤', 'color: green; font-size: 12px; font-weight: bold;');
-    console.log("locationTarget:", locationTarget); // [LOG] 
-
     const totalValue = regionValues[locationTarget] || 0;
-
-    console.log('%c ── ◯─◠◡◠◡◠◡◠◡◠◡◠◡◠◡─➤ 🧪', 'color: green; font-size: 16px; font-weight: bold;');
-    console.log("totalValue:", totalValue); // [LOG] 
-    console.log('%c ── ◯─◡◠◡◠◡◠◡◠◡◠◡◠◡◠─➤ 🧪', 'color: green; font-size: 16px; font-weight: bold;');
 
     // ================== LÓGICA DE FORMATAÇÃO ==================
     let formattedTotal = '';

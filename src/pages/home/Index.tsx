@@ -1,10 +1,7 @@
 // HERE Home
 import React, {
   useState,
-  useCallback,
-  useRef,
   useEffect,
-  useMemo,
 } from "react";
 
 import classNames from "classnames";
@@ -12,22 +9,10 @@ import {
   Box,
   Card,
   Flex,
-  Avatar,
   Text,
-  IconButton,
-  Table,
-  Badge,
   Heading,
-  AlertDialog,
-  Button,
-  Tabs,
-  ScrollArea,
-  TextField,
-  TextArea,
-  Dialog,
   Separator,
   Strong,
-  DropdownMenu,
 } from "@radix-ui/themes";
 import { axiosPlain } from "../../utils/axios";
 import handleAxiosError from "../../utils/handleAxiosError";
@@ -48,8 +33,6 @@ import {
   Legend,
   ResponsiveContainer,
   Rectangle,
-  ReferenceArea,
-  Label,
   Brush
 } from 'recharts';
 
@@ -57,10 +40,13 @@ import { TooltipProps } from "recharts";
 import MapMenu from "./MapMenu2";
 import Icons from "../../assets/Icons";
 import ICON_SIZES from "../../assets/IconsSizes";
-import { VARIABLES, COLORSHEX, SCOLORS } from "../../assets/auxData";
+import { VARIABLES, COLORSHEX } from "../../assets/auxData";
 import { mapStore, variableStore, yearStore, regionDataStore } from "../../store/mapsStore";
 
 import CardV1 from "./CardV1";
+import CardVX from './CardVX';
+import { ChartColumnBig, ChartColumnDecreasing, LineChart as LineChartIcon } from "lucide-react";
+
 // . . . . . . .
 
 // 🧿 
@@ -191,7 +177,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
-
   const BarTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // <●> BarTooltip
     if (active && payload && payload.length) {
       const { name, v } = payload[0].payload;
@@ -221,7 +206,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     }
     return null;
   }; // . . . . . . . . . . . .
-
 
   const SeriesTooltip = ({ active, payload }) => { // <●> SeriesTooltip
     if (active && payload && payload.length) {
@@ -259,7 +243,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
               }
 
               const dataKey = item.dataKey;
-              const SvgComponent = Icons[dataKey];
+              const SvgComponent = Icons[dataKey as keyof typeof Icons];
               const itemName = seriesVData?.keys[dataKey] || dataKey;
 
               // A cor da linha está aqui!
@@ -291,7 +275,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
-
   const QMRMTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // <●> QMRMTooltip
     if (active && payload && payload.length) {
       const { name, qp, rm } = payload[0].payload;
@@ -310,8 +293,25 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
+  const CustomXAxisTick = (props) => { // {●} CustomXAxisTick
+    const { x, y, payload } = props;
+    console.log('%c ◯⫘payload⫘⫸ 🌌', 'color: blue; font-size: 16px; font-weight: bold;');
+    console.log(payload);
 
-  const BarTopLabels = (props) => {  // (●) BarTopLabels
+    const dataKey = payload.value;
+    const SvgComponent = Icons[dataKey as keyof typeof Icons];
+    // Se não houver um ícone para essa chave, não renderiza nada.
+    if (!SvgComponent) {
+      return null;
+    }
+    return (
+      <g transform={`translate(${x - 15}, ${y})`}>
+        <SvgComponent width={30} height={30} />
+      </g>
+    );
+  }; // . . . . . . . . . . . .
+
+  const BarTopLabels = (props) => {  // {●} BarTopLabels
     const { x, y, width, index } = props;
     const dataName = topVData?.data[index]?.id ?? "default"; // ⊙ topVData
     const SvgComponent = Icons[dataName as keyof typeof Icons];
@@ -322,8 +322,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
     return <SvgComponent x={centerX} y={centerY} />;
   }; // . . . . . . . . . . . .
-
-
 
   const yAxisValueFormatter = (value) => { // (●) yAxisValueFormatter
 
@@ -388,13 +386,10 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   // [●] lineColors
   const lineColors = ["#D58A9E", "#8C8CC3", "#D29E64", "#81BFE8", "#8CE78A", "#B5B5B5", "#B7AFFF", "#B59FE0"];
-
   // . . . . . . . . . . . .
-
 
   return (// ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘ DOM ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘➤ 
     <>
-
       {/* <p // windowSize ↯
         className="fixed right-10 top-30 text-xl text-slate-950 z-50"
       >
@@ -449,24 +444,37 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                 </ResponsiveContainer>
               </Box>
             </Box>
+
             <Box // ── ⋙── ── bar ── ──➤
               id='bar'
               className={classNames('flex flex-col items-center w-full z-0 flex-1 rounded-xl overflow-hidden p-3', glassmorphismClass)}
             >
-              <Text as='div' size="4" highContrast>
-                <Strong>{VARIABLES[variable]} </Strong>
-              </Text>
+
+
+              <Flex justify='center' gap="2" align="center">
+                <ChartColumnDecreasing size={20} />
+                <Text weight="bold" size="4"> <Strong>{VARIABLES[variable]}</Strong></Text>
+              </Flex>
+
+
+
+
+
+
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={topVData?.data} // ⊙ topVData
-                  margin={{ top: 20, right: 20, left: 10, bottom: 5, }}
+                  margin={{ top: 46, right: 20, left: 30, bottom: 5, }}
                 >
 
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" stroke="#000" />
+
+                  {/* <XAxis dataKey="name" stroke="#000" /> */}
+                  {/* <XAxis dataKey="name" tick={false} /> */}
+                  <XAxis dataKey="name" tickFormatter={() => ''} />
+
 
                   <YAxis stroke="#000" tickFormatter={yAxisValueFormatter} /> // (○) yAxisValueFormatter
-
 
                   <Tooltip // <○> Tooltip
                     content={<BarTooltip />}
@@ -477,18 +485,18 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                       <Cell key={`cell-${index}`} fill={COLORSHEX[variable]?.[index % COLORSHEX[variable].length]} />
                     ))}
 
-                    <LabelList // (○) BarTopLabels
+                    <LabelList // {○} BarTopLabels
                       dataKey="name"
                       content={BarTopLabels} />
-
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+
             </Box>
+
           </Box>
 
         </Box>
-
 
         <Box
           className={classNames(
@@ -497,28 +505,48 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           )}
         >
 
-          <Box id="px" className={classNames("rounded-xl p-4 w-1/3 h-[440px]", glassmorphismClass)}>
+          {/* <Box id="px" className={classNames("rounded-xl p-4 w-1/3 h-[440px]", glassmorphismClass)}>
             <Heading as="h3" size="4">Card PX</Heading>
             <Text as="p">Este é um card de exemplo para ocupar o espaço à esquerda.</Text>
-          </Box>
+          </Box> */}
 
+          <CardVX // ── ⋙── ── ── ── ── ── ── ──➤
+          // ✪ CardVX
+          />
 
           <Box // ── ⋙──  ── QPRM_bars ── ──➤
             id='QPRM_bars'
-            className={classNames('flex-1 rounded-xl h-[440px] p-4', glassmorphismClass)}
+            className={classNames('flex-1 flex-col w-full rounded-xl h-[440px] p-4', glassmorphismClass)}
           >
+
+            <Flex justify='center' gap="2" align="center">
+              <ChartColumnBig size={20} />
+              <Text weight="bold" size="4"> <Strong>Produção e Rendimento</Strong></Text>
+            </Flex>
+
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={topVData?.QP_RM} // ⊙ topVData
                 margin={{
-                  top: 46,
-                  right: 30,
+                  top: 15,
+                  right: 25,
                   left: 20,
-                  bottom: 5,
+                  bottom: 22,
                 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
+
+                {/* <XAxis dataKey="name" />*/}
+
+                <XAxis
+                  dataKey="id"
+                  tick={<CustomXAxisTick />} // {○} CustomXAxisTick
+                  axisLine={{ stroke: '#ccc' }}
+                  tickLine={false}
+                  height={60}
+                  interval={0}
+                />
+
 
                 <YAxis
                   yAxisId="left"
@@ -533,18 +561,16 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                   stroke="#FFC53D"
                   tickFormatter={yAxisKgHaFormatter} // (○) yAxisKgHaFormatter
                 />
-                <Tooltip // {○} QMRMTootip
+
+                <Tooltip // <○> QMRMTootip
                   content={<QMRMTooltip />} />
 
                 <Legend />
-                <Bar name='Quantidade Produzida' yAxisId="left" dataKey="qp" fill="#AC4D39" activeBar={<Rectangle stroke="#000" />}  >
-                  <LabelList
-                    dataKey="name"
-                    content={BarTopLabels}  // (○) BarTopLabels
 
-                  />
-                </Bar>
+                <Bar name='Quantidade Produzida' yAxisId="left" dataKey="qp" fill="#AC4D39" activeBar={<Rectangle stroke="#000" />} />
+
                 <Bar name="Rendimento Médio" yAxisId="right" dataKey="rm" fill="#FFC53D" activeBar={<Rectangle stroke="#000" />} />
+
               </BarChart>
             </ResponsiveContainer>
           </Box>
@@ -554,8 +580,15 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
         <Box // ── ⋙── ── TopSeriesBox ── ──➤
           id="topseries"
-          className={classNames("flex rounded-xl w-full h-[660px] p-10", glassmorphismClass)}
+          className={classNames("flex flex-col rounded-xl w-full h-[660px] p-10", glassmorphismClass)}
         >
+
+          <Flex justify='center' gap="2" align="center">
+            <LineChartIcon size={20} />
+            <Text weight="bold" size="4"> <Strong>Séries Históricas</Strong></Text>
+          </Flex>
+
+
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={seriesVData?.data}
