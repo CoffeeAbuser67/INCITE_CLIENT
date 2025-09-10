@@ -9,7 +9,6 @@ import { toast } from 'react-toastify';
 import { CitySelect } from './CitySelect';
 import mapCity from '../../assets/BahiaCidades4.json';
 
-
 // HERE Interfaces & types
 // --- Tipos para cada modelo ---
 export type Postagem = { id: number; title: string; content: string; resumo: string; imagem_destaque: string | null; created_at: string };
@@ -80,13 +79,8 @@ const formatarData = (timestamp: string): string => { // (●) formatarData
     }).format(data);
 };
 
-
 const todasAsCidades = Object.values(mapCity).flat(); // (●) todasAsCidades
 const mapaDeNomesDeCidade = new Map(todasAsCidades.map(city => [city.id, city.name])); // (●) mapaDeNomesDeCidade
-
-
-
-
 
 // ── ⋙── ── ── FORMS ── ── ── ──➤
 
@@ -112,7 +106,7 @@ export const PesquisadorForm: React.FC<SubFormProps<Pesquisador>> = ({ dadosInic
             </Flex>
         </form>
     );
-}; // . . . 
+}; // . . .
 
 export const PesquisaForm: React.FC<SubFormProps<Pesquisa>> = ({ dadosIniciais, onSave, onCancel }) => {// ✪ PesquisaForm
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
@@ -144,7 +138,8 @@ export const PesquisaForm: React.FC<SubFormProps<Pesquisa>> = ({ dadosIniciais, 
             </Flex>
         </form>
     );
-} // . . . 
+} // . . .
+
 export const AcaoExtensionistaForm: React.FC<SubFormProps<AcaoExtensionista>> = ({ dadosIniciais, onSave, onCancel }) => {// ✪ AcaoExtensionistaForm
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [info, setInfo] = useState(dadosIniciais?.info || '');
@@ -204,7 +199,7 @@ export const AcaoExtensionistaForm: React.FC<SubFormProps<AcaoExtensionista>> = 
         </form>
     );
 
-}; // . . . 
+}; // . . .
 
 export const ProdutoInovacaoForm: React.FC<SubFormProps<ProdutoInovacao>> = ({ dadosIniciais, onSave, onCancel }) => { // ✪ ProdutoInovacaoForm
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
@@ -246,29 +241,6 @@ export const ProdutoInovacaoForm: React.FC<SubFormProps<ProdutoInovacao>> = ({ d
         </form>
     );
 }; // ── ⋙── ── ── ── ── ── ── ──➤
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: PostagensTabProps) => { // {✪} PostagensTab
@@ -481,74 +453,7 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
             </AlertDialog.Root>
         </div>
     );
-
-
-
-
 }; // ── ⋙── ── ── ── ── ── ── ──➤
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }: FormProps) => { // ★ InstituicaoForm
@@ -564,13 +469,10 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
     const [offsetX, setOffsetX] = useState(initialData?.offset_x || 0);
     const [offsetY, setOffsetY] = useState(initialData?.offset_y || 0);
 
-
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(initialData?.marcador_logo || null);
     const [isUploading, setIsUploading] = useState(false);
-
-
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -579,7 +481,6 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
             setLogoPreview(URL.createObjectURL(file)); // Cria uma URL local para o preview
         }
     };
-
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -1047,5 +948,6 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
         </div>
     );
 }; // ── ⋙── ── ── ── ── ── ── ──➤
+
 
 
