@@ -6,8 +6,8 @@ import LandingLayout from "./layouts/Landing";
 import { RouteProtector } from "./components/guard/RouteProtector";
 
 
+const Dashboard = lazy(() => import("./pages/dashboard/Index"));
 const Home = lazy(() => import("./pages/home/Index"));
-const Incite = lazy(() => import("./pages/home/IndexOfficial"));
 const Settings = lazy(() => import("./pages/settings/Settings"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const AuxMap = lazy(() => import("./pages/aux_MapPositioning"));
@@ -25,7 +25,7 @@ const routes = [
     children: [
       {
         path: "", // [ROUTE]  /
-        element: <Incite />,
+        element: <Home />,
       },
     ],
   },
@@ -40,7 +40,7 @@ const routes = [
     children: [
       {
         path: "dashboard", // [ROUTE]  /dashboard
-        element: <Home />,
+        element: <Dashboard />,
       },
 
       {

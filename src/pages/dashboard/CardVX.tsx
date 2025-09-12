@@ -1,9 +1,9 @@
 
 import classNames from 'classnames';
 import { Box, Flex, Heading, Separator, Strong, Text } from "@radix-ui/themes";
-import { BarChart, LineChart, ChartColumnBig, ChartColumnDecreasing} from 'lucide-react';
-import { mapStore, yearStore, variableStore } from "../../store/mapsStore"; 
-import { VARIABLES } from '../../assets/auxData'; 
+import { BarChart, LineChart, ChartColumnBig, ChartColumnDecreasing } from 'lucide-react';
+import { mapStore, yearStore, variableStore } from "../../store/mapsStore";
+import { VARIABLES } from '../../assets/auxData';
 
 
 
@@ -19,10 +19,10 @@ const CardVX = () => {
     const seriesUnitText = variable === 'valor_da_producao' ? "em Reais (R$)" : "em Hectares (ha)";
 
     return (
-        <Box id="px" className={classNames("rounded-xl p-4 w-1/3 h-[440px]", glassmorphismClass)}>
-            
-            <Flex direction="column" height="100%" gap="3">
-                <Heading as="h3" mb ='3' size="5">Análise da produção agrícola </Heading>
+        <Box id="px" className={classNames("rounded-xl p-4 w-full lg:w-1/3", glassmorphismClass)}>
+
+            <Flex direction="column" gap="3">
+                <Heading as="h3" mb='3' size="5">Análise da produção agrícola </Heading>
 
 
                 <Flex direction="column" gap="2">

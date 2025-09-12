@@ -1,10 +1,7 @@
 // HERE Home
 import React, {
   useState,
-  useCallback,
-  useRef,
   useEffect,
-  useMemo,
 } from "react";
 
 import classNames from "classnames";
@@ -12,22 +9,10 @@ import {
   Box,
   Card,
   Flex,
-  Avatar,
   Text,
-  IconButton,
-  Table,
-  Badge,
   Heading,
-  AlertDialog,
-  Button,
-  Tabs,
-  ScrollArea,
-  TextField,
-  TextArea,
-  Dialog,
   Separator,
   Strong,
-  DropdownMenu,
 } from "@radix-ui/themes";
 import { axiosPlain } from "../../utils/axios";
 import handleAxiosError from "../../utils/handleAxiosError";
@@ -48,8 +33,6 @@ import {
   Legend,
   ResponsiveContainer,
   Rectangle,
-  ReferenceArea,
-  Label,
   Brush
 } from 'recharts';
 
@@ -57,10 +40,13 @@ import { TooltipProps } from "recharts";
 import MapMenu from "./MapMenu2";
 import Icons from "../../assets/Icons";
 import ICON_SIZES from "../../assets/IconsSizes";
-import { VARIABLES, COLORSHEX, SCOLORS } from "../../assets/auxData";
+import { VARIABLES, COLORSHEX } from "../../assets/auxData";
 import { mapStore, variableStore, yearStore, regionDataStore } from "../../store/mapsStore";
 
 import CardV1 from "./CardV1";
+import CardVX from './CardVX';
+import { ChartColumnBig, ChartColumnDecreasing, LineChart as LineChartIcon } from "lucide-react";
+
 // . . . . . . .
 
 // 🧿 
@@ -191,7 +177,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
-
   const BarTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // <●> BarTooltip
     if (active && payload && payload.length) {
       const { name, v } = payload[0].payload;
@@ -221,7 +206,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     }
     return null;
   }; // . . . . . . . . . . . .
-
 
   const SeriesTooltip = ({ active, payload }) => { // <●> SeriesTooltip
     if (active && payload && payload.length) {
@@ -259,7 +243,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
               }
 
               const dataKey = item.dataKey;
-              const SvgComponent = Icons[dataKey];
+              const SvgComponent = Icons[dataKey as keyof typeof Icons];
               const itemName = seriesVData?.keys[dataKey] || dataKey;
 
               // A cor da linha está aqui!
@@ -291,7 +275,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
-
   const QMRMTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // <●> QMRMTooltip
     if (active && payload && payload.length) {
       const { name, qp, rm } = payload[0].payload;
@@ -310,8 +293,22 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
+  const CustomXAxisTick = (props) => { // {●} CustomXAxisTick
+    const { x, y, payload } = props;
+    const dataKey = payload.value;
+    const SvgComponent = Icons[dataKey as keyof typeof Icons];
+    // Se não houver um ícone para essa chave, não renderiza nada.
+    if (!SvgComponent) {
+      return null;
+    }
+    return (
+      <g transform={`translate(${x - 15}, ${y})`}>
+        <SvgComponent width={30} height={30} />
+      </g>
+    );
+  }; // . . . . . . . . . . . .
 
-  const BarTopLabels = (props) => {  // (●) BarTopLabels
+  const BarTopLabels = (props) => {  // {●} BarTopLabels
     const { x, y, width, index } = props;
     const dataName = topVData?.data[index]?.id ?? "default"; // ⊙ topVData
     const SvgComponent = Icons[dataName as keyof typeof Icons];
@@ -322,8 +319,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
     return <SvgComponent x={centerX} y={centerY} />;
   }; // . . . . . . . . . . . .
-
-
 
   const yAxisValueFormatter = (value) => { // (●) yAxisValueFormatter
 
@@ -388,13 +383,10 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   // [●] lineColors
   const lineColors = ["#D58A9E", "#8C8CC3", "#D29E64", "#81BFE8", "#8CE78A", "#B5B5B5", "#B7AFFF", "#B59FE0"];
-
   // . . . . . . . . . . . .
 
-
-  return (// ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘ DOM ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘➤ 
+  return (// ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘ DOM ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘➤
     <>
-
       {/* <p // windowSize ↯
         className="fixed right-10 top-30 text-xl text-slate-950 z-50"
       >
@@ -402,35 +394,32 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         🦀{` height: ${windowSize.height}`}
       </p> */}
 
+
       <Box
-        className={classNames(
-          "flex flex-col",
-          "p-10 gap-4",
-          "h-full w-full",
-          "bg-white",
-          "overflow-y-auto"
-        )}
+        className="flex flex-col h-full w-full bg-white overflow-y-auto gap-8 p-4 lg:p-10 pt-4 md:pt-6 lg:pt-8"
       >
 
-        <Box className={classNames(
-          "flex items-start",
-          "gap-4",
-        )}>
-          <MapMenu />
 
-          <Box className="flex flex-col flex-1 gap-4 h-full">
-            <Box className="flex gap-4 h-2/5">
+        <Box className="flex flex-col gap-8 p-4">
+          <Box className="flex flex-col xl:flex-row xl:items-start gap-8 lg:gap-4">
+            <div className="w-full xl:w-auto overflow-x-auto rounded-xl">
+              <div className="flex-shrink-0">
+                <MapMenu />
+              </div>
+            </div>
+
+            <Box className="flex flex-col flex-1 gap-8">
               <CardV1 // ✪ CardV1
               />
-              <Box  // ── ⋙── ── pie ── ──➤
+
+              <Box // ── ⋙── ── pie ── ──➤
                 id='pie'
-                className={classNames('flex-1 rounded-xl overflow-hidden', glassmorphismClass)}
+                className={classNames('w-full h-[400px] rounded-xl', glassmorphismClass)}
               >
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
+                  <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                     <Pie
-                      // ⊙ topVData
-                      data={topVData?.percent_data}
+                      data={topVData?.percent_data} // ⊙ topVData
                       cx="50%"
                       cy="50%"
                       label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
@@ -443,31 +432,33 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                       ))}
                     </Pie>
                     <Tooltip // <○> PieTooltip
-                      content={<PieTooltip />}
-                    />
+                      content={<PieTooltip />} />
                   </PieChart>
                 </ResponsiveContainer>
               </Box>
             </Box>
+          </Box>
 
-            <Box // ── ⋙── ── bar ── ──➤
-              id='bar'
-              className={classNames('flex flex-col items-center w-full z-0 flex-1 rounded-xl overflow-hidden p-3', glassmorphismClass)}
-            >
-              <Text as='div' size="4" highContrast>
-                <Strong>{VARIABLES[variable]} </Strong>
-              </Text>
+          <Box // ── ⋙── ── bar ── ──➤
+            id='bar'
+            className={classNames('flex flex-col items-center w-full z-0 rounded-xl', glassmorphismClass)}
+          >
+            <Flex justify='center' gap="2" align="center" className="flex-shrink-0 mt-4">
+              <ChartColumnDecreasing size={20} />
+              <Text weight="bold" size="4"> <Strong>{VARIABLES[variable]}</Strong></Text>
+            </Flex>
+            <div className="w-full relative h-[350px] lg:h-[500px]"> {/* Aumentei a altura no desktop */}
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={topVData?.data} // ⊙ topVData
+                  data={topVData?.data}
                   margin={{ top: 46, right: 20, left: 30, bottom: 5, }}
                 >
-
                   <CartesianGrid strokeDasharray="3 3" />
 
-                  <XAxis dataKey="name" stroke="#000" />
+                  {/* <XAxis dataKey="name" stroke="#000" /> */}
                   {/* <XAxis dataKey="name" tick={false} /> */}
                   <XAxis dataKey="name" tickFormatter={() => ''} />
+
 
                   <YAxis stroke="#000" tickFormatter={yAxisValueFormatter} /> // (○) yAxisValueFormatter
 
@@ -480,145 +471,187 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                       <Cell key={`cell-${index}`} fill={COLORSHEX[variable]?.[index % COLORSHEX[variable].length]} />
                     ))}
 
-                    <LabelList // (○) BarTopLabels
+                    <LabelList // {○} BarTopLabels
                       dataKey="name"
                       content={BarTopLabels} />
-
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-            </Box>
-
+            </div>
           </Box>
 
         </Box>
 
 
-        <Box
-          className={classNames(
-            "flex items-start", // Organiza px e QPRM_bars lado a lado
-            "gap-4",
-          )}
-        >
+        <div className="w-full overflow-x-auto">
+          <Box className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-4 p-4">
 
-          <Box id="px" className={classNames("rounded-xl p-4 w-1/3 h-[440px]", glassmorphismClass)}>
-            <Heading as="h3" size="4">Card PX</Heading>
-            <Text as="p">Este é um card de exemplo para ocupar o espaço à esquerda.</Text>
+            <CardVX // ── ⋙── ── ── ── ── ── ── ──➤
+            // ✪ CardVX
+            />
+
+            <Box // ── ⋙──  ── QPRM_bars ── ──➤
+              id='QPRM_bars'
+              className={classNames('flex flex-col w-full rounded-xl p-4', glassmorphismClass)}
+            >
+
+              <Flex justify='center' gap="2" align="center" className="flex-shrink-0">
+                <ChartColumnBig size={20} />
+                <Text weight="bold" size="4"> <Strong>Produção e Rendimento</Strong></Text>
+              </Flex>
+
+
+              <div className="w-full relative h-[350px] lg:h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={topVData?.QP_RM} // ⊙ topVData
+                    margin={{
+                      top: 15,
+                      right: 25,
+                      left: 20,
+                      bottom: 22,
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+
+                    {/* <XAxis dataKey="name" />*/}
+
+                    <XAxis
+                      dataKey="id"
+                      tick={<CustomXAxisTick />} // {○} CustomXAxisTick
+                      axisLine={{ stroke: '#ccc' }}
+                      tickLine={false}
+                      height={60}
+                      interval={0}
+                    />
+
+
+                    <YAxis
+                      yAxisId="left"
+                      orientation="left"
+                      stroke="#AC4D39"
+                      tickFormatter={yAxisTonsFormatter} // (○) yAxisTonsFormatter
+                    />
+
+                    <YAxis
+                      yAxisId="right"
+                      orientation="right"
+                      stroke="#FFC53D"
+                      tickFormatter={yAxisKgHaFormatter} // (○) yAxisKgHaFormatter
+                    />
+
+                    <Tooltip // <○> QMRMTootip
+                      content={<QMRMTooltip />} />
+
+                    <Legend />
+
+                    <Bar name='Quantidade Produzida' yAxisId="left" dataKey="qp" fill="#AC4D39" activeBar={<Rectangle stroke="#000" />} />
+
+                    <Bar name="Rendimento Médio" yAxisId="right" dataKey="rm" fill="#FFC53D" activeBar={<Rectangle stroke="#000" />} />
+
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Box>
           </Box>
 
+        </div>
 
-          <Box // ── ⋙──  ── QPRM_bars ── ──➤
-            id='QPRM_bars'
-            className={classNames('flex-1 rounded-xl h-[440px] p-4', glassmorphismClass)}
+
+        <div className="w-full overflow-x-auto">
+
+          <Box // ── ⋙── ── TopSeriesBox ── ──➤
+            id="topseries"
+            className={classNames("flex flex-col rounded-xl w-full h-[450px] lg:h-[660px] p-4 lg:p-10 min-w-[600px]", glassmorphismClass)}
           >
+
+            <Flex justify='center' gap="2" align="center">
+              <LineChartIcon size={20} />
+              <Text weight="bold" size="4"> <Strong>Séries Históricas</Strong></Text>
+            </Flex>
+
+
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={topVData?.QP_RM} // ⊙ topVData
-                margin={{
-                  top: 46,
-                  right: 30,
-                  left: 20,
-                  bottom: 5,
-                }}
+              <LineChart
+                data={seriesVData?.data}
+                margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-
+                <XAxis dataKey="year" stroke="#000" />
                 <YAxis
-                  yAxisId="left"
-                  orientation="left"
-                  stroke="#AC4D39"
-                  tickFormatter={yAxisTonsFormatter} // (○) yAxisTonsFormatter
-                />
+                  stroke="#000"
+                  scale="log"
+                  domain={['auto', 'auto']}
+                  tickFormatter={yAxisValueFormatter} // (○) yAxisValueFormatter
 
-                <YAxis
-                  yAxisId="right"
-                  orientation="right"
-                  stroke="#FFC53D"
-                  tickFormatter={yAxisKgHaFormatter} // (○) yAxisKgHaFormatter
+
                 />
-                <Tooltip // {○} QMRMTootip
-                  content={<QMRMTooltip />} />
+                <Tooltip
+                  content={<SeriesTooltip />}
+                  cursor={{ stroke: 'red', strokeWidth: 2, strokeDasharray: '3 3' }}
+                />
 
                 <Legend />
-                <Bar name='Quantidade Produzida' yAxisId="left" dataKey="qp" fill="#AC4D39" activeBar={<Rectangle stroke="#000" />}  >
-                  <LabelList
-                    dataKey="name"
-                    content={BarTopLabels}  // (○) BarTopLabels
 
-                  />
-                </Bar>
-                <Bar name="Rendimento Médio" yAxisId="right" dataKey="rm" fill="#FFC53D" activeBar={<Rectangle stroke="#000" />} />
-              </BarChart>
+                {seriesKeys.map((key, index) => {
+                  const color = lineColors[index % lineColors.length];
+                  const itemName = seriesVData?.keys[key] || key;
+
+                  return (
+                    <Line
+                      key={key}
+                      type="monotone"
+                      dataKey={key}
+                      name={itemName}
+                      stroke={color}
+                      strokeWidth={2}
+
+                      // AQUI ESTÁ A MUDANÇA: Ponto sólido, sem borda
+                      dot={{ r: 5, fill: color }}
+
+                      // AQUI ESTÁ A MUDANÇA: Ponto ativo sólido e maior
+                      activeDot={{ r: 8, fill: color, stroke: color }}
+                    />
+                  );
+                })}
+
+                <Brush
+                  dataKey="year"
+                  height={30}
+                  stroke="#8884d8"
+                  travellerWidth={10}
+                />
+              </LineChart>
             </ResponsiveContainer>
           </Box>
-
-        </Box>
-
-
-        <Box // ── ⋙── ── TopSeriesBox ── ──➤
-          id="topseries"
-          className={classNames("flex rounded-xl w-full h-[660px] p-10", glassmorphismClass)}
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={seriesVData?.data}
-              margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="year" stroke="#000" />
-              <YAxis
-                stroke="#000"
-                scale="log"
-                domain={['auto', 'auto']}
-                tickFormatter={yAxisValueFormatter} // (○) yAxisValueFormatter
-
-
-              />
-              <Tooltip
-                content={<SeriesTooltip />}
-                cursor={{ stroke: 'red', strokeWidth: 2, strokeDasharray: '3 3' }}
-              />
-
-              <Legend />
-
-              {seriesKeys.map((key, index) => {
-                const color = lineColors[index % lineColors.length];
-                const itemName = seriesVData?.keys[key] || key;
-
-                return (
-                  <Line
-                    key={key}
-                    type="monotone"
-                    dataKey={key}
-                    name={itemName}
-                    stroke={color}
-                    strokeWidth={2}
-
-                    // AQUI ESTÁ A MUDANÇA: Ponto sólido, sem borda
-                    dot={{ r: 5, fill: color }}
-
-                    // AQUI ESTÁ A MUDANÇA: Ponto ativo sólido e maior
-                    activeDot={{ r: 8, fill: color, stroke: color }}
-                  />
-                );
-              })}
-
-              <Brush
-                dataKey="year"
-                height={30}
-                stroke="#8884d8"
-                travellerWidth={10}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
-
-
+        </div>
       </Box >
     </>
   );
 
 };  // ★ ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
 export default Home;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

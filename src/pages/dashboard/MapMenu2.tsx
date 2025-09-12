@@ -519,6 +519,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
             width: "602px",
             height: "640px",
             // border: "1px solid black",
+            overflow: "hidden"
           }}>
           {colorScale.legendData && // <○> GradientLegend
             <GradientLegend {...colorScale.legendData} />
