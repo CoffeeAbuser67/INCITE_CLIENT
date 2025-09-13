@@ -28,6 +28,9 @@ import { createPortal } from "react-dom";
 // . . . . . . .
 
 const SCALE_ADJUSTMENT = 0.35
+const PIN_ZOOM_LEVEL = 6; 
+
+
 
 interface InstituicaoMarker {
     id: number;
@@ -200,18 +203,21 @@ const Home = () => { // ★ Home ⋙──────────────�
             return;
         }
 
-        // 4. Encontra o elemento SVG da região no DOM usando seu ID
-        const regionElement = svgRef.current?.querySelector(`#${regionId}`) as SVGPathElement;
-        if (!regionElement) {
-            console.error("Elemento SVG da região não encontrado no DOM:", regionId);
+        // 4. Encontra as coordenadas exatas do pin/cidade
+        const coords = mapaDeCoordenadas.get(instituicao.cidade_id_mapa);
+        if (!coords) {
+            console.error("Coordenadas da cidade não encontradas para o marcador:", instituicao.cidade_id_mapa);
             return;
         }
 
         // 5. Executa a mágica!
         setCurrentLevel(1);
         handleSetRegion(regionId, regionObject.name);
-        runToFit(regionElement.getBBox(), regionElement.getBoundingClientRect());
+        const pinX = coords.x + (instituicao.offset_x || 0);
+        const pinY = coords.y + (instituicao.offset_y || 0);
+        zoomToPoint(pinX, pinY);
     }; // ── ⋙── ── ── ── ── ── ── ──➤
+
 
     // (●) mapaDeCoordenadas
     const mapaDeCoordenadas = useMemo(() => {
@@ -246,6 +252,24 @@ const Home = () => { // ★ Home ⋙──────────────�
         config: { tension: 62, friction: 35, mass: 7 },
     })); // ── ⋙── ── ── ── ── ── ──➤
 
+    // <✪> zoomToPoint
+    const zoomToPoint = (x: number, y: number) => {
+        const svgBox = originalBBoxRef.current;
+        if (!svgBox) return;
+
+        const SVGCX = svgBox.width / 2;
+        const SVGCY = svgBox.height / 2;
+
+        const translateX = SVGCX - x;
+        const translateY = SVGCY - y;
+
+        setCurrentScale(PIN_ZOOM_LEVEL); // ↺ setCurrentScale
+
+        api.start({
+            transform: `scale(${PIN_ZOOM_LEVEL}) translate(${translateX}px, ${translateY}px)`,
+        });
+    }; // ── ⋙── ── ── ── ── ── ──➤
+    
     // <✪> runToFit
     const runToFit = (bbox: BoundingBox, rect: BoundingBox) => {
         const svgRect = svgRef.current?.getBoundingClientRect();
@@ -350,9 +374,6 @@ const Home = () => { // ★ Home ⋙──────────────�
             handleMarkerClick(instituicaoSelecionada);
         }
     };
-
-
-
 
 
     // ── ⋙── ── ── ── ToolTip  ── ── ── ──➤
