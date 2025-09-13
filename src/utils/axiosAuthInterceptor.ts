@@ -1,3 +1,4 @@
+// src/utils/axiosAuthInterceptor.ts
 import { axiosForInterceptor } from "./axios";
 import { authService } from "../services/authService";
 
@@ -9,61 +10,70 @@ let failedQueue: Array<{
 
 const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
+    if (error) prom.reject(error);
+    else prom.resolve(token);
   });
   failedQueue = [];
 };
 
+/**
+ * Configura o interceptor global para o axiosForInterceptor.
+ * - Se 401 e não for /auth/token/refresh/, tenta renovar token uma única vez (fila).
+ * - Se a renovação falhar, chama logoutUser() e rejeita a promise.
+ */
 export const setupAxiosInterceptor = (logoutUser: () => void) => {
   axiosForInterceptor.interceptors.response.use(
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
 
-      // Verifica se o erro é 401 e se não é uma tentativa de refresh que falhou
-      if (
-        error.response?.status === 401 &&
-        originalRequest.url !== "/auth/token/refresh/"
-      ) {
-        // Se já existe um refresh em andamento, coloca a requisição na fila
+      // Sem response (ex.: CORS, rede) — repasse o erro
+      if (!error.response) {
+        return Promise.reject(error);
+      }
+
+      // Só tenta refresh em 401 e se não for a rota de refresh
+      const is401 = error.response?.status === 401;
+      const isRefreshUrl = originalRequest?.url?.includes("/auth/token/refresh/");
+
+      if (is401 && !isRefreshUrl) {
+        // Se já tem refresh em andamento, enfileira e aguarda
         if (isRefreshing) {
           return new Promise((resolve, reject) => {
             failedQueue.push({ resolve, reject });
           })
-            .then(() => {
-              console.log("Fila: Token renovado, refazendo a requisição...");
-              return axiosForInterceptor(originalRequest);
-            })
-            .catch((err) => {
-              return Promise.reject(err);
-            });
+            .then(() => axiosForInterceptor(originalRequest))
+            .catch((err) => Promise.reject(err));
         }
 
-        // Se for a primeira requisição a falhar, inicia o processo de refresh
-        originalRequest._retry = true;
+        // Marca para evitar loop do mesmo request
+        if ((originalRequest as any)._retry) {
+          // Já tentamos — evita loop
+          return Promise.reject(error);
+        }
+        (originalRequest as any)._retry = true;
+
         isRefreshing = true;
 
         try {
-          const isRefreshed = await authService.tryRefreshToken();
+          const ok = await authService.tryRefreshToken();
 
-          if (isRefreshed) {
-            console.log("Token renovado, refazendo a requisição original...");
-            processQueue(null); // Processa a fila com sucesso
+          if (ok) {
+            // Processa a fila com sucesso e refaz a request original
+            processQueue(null);
+            console.log('Token de acesso renovado 🎟️')
+            console.log('Refazendo request original')
             return axiosForInterceptor(originalRequest);
           } else {
-            // Se o refresh falhar, o tryRefreshToken já deve ter lidado com o logout,
-            // mas podemos garantir aqui.
-            const refreshError = new Error("Incapaz de renovar o token");
-            processQueue(refreshError); // Processa a fila com erro
+            // Falhou renovar — todo mundo falha e fazemos logout
+            const refreshError = new Error("Não foi possível renovar o token (refresh falhou).");
+            processQueue(refreshError);
             logoutUser();
             return Promise.reject(refreshError);
           }
         } catch (refreshError) {
-          processQueue(refreshError as Error); // Processa a fila com erro
+          // Proteção extra (em teoria não cai aqui pois tryRefreshToken não lança)
+          processQueue(refreshError as Error);
           logoutUser();
           return Promise.reject(refreshError);
         } finally {

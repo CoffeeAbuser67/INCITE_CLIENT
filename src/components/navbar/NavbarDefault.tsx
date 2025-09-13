@@ -1,14 +1,9 @@
-import { useEffect, useState } from "react";
 import classNames from "classnames";
-import { Avatar, Box, Dialog, DropdownMenu, Text, Tooltip } from "@radix-ui/themes";
+import { Avatar, Box, DropdownMenu, Text, Tooltip } from "@radix-ui/themes";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthService } from "../../hooks/useAuthService";
 import { LayoutDashboard, LogIn, LogOut, BookOpen, ChartColumnBig, } from "lucide-react";
-
-
 import { useUserStore } from "../../store/userStore";
-
-
 
 const navItems = [ // [✪] navItems
 
@@ -17,16 +12,11 @@ const navItems = [ // [✪] navItems
 
 ];
 
-
-
 const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙────────────────➤
-
 
     const user = useUserStore((state) => state.user);
     const navigate = useNavigate();
     const { logout } = useAuthService();
-
-
 
 
     return (// ── ◯⫘⫘⫘⫘⫘⫘⫘ DOM ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
@@ -77,7 +67,6 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
 
 
 
-
                 <nav className="flex items-center space-x-6">
                     {navItems.map((item, index) => {
                         const Icon = item.icon;
@@ -98,14 +87,17 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                                         size={24}
                                         className="transition-transform duration-150 group-hover:-translate-y-0.5"
                                     />
-                                    <span className="font-semibold">{item.label}</span>
+
+                                    <span className="font-semibold hidden md:inline">{item.label}</span>
+
                                 </Link>
 
                                 {isNotLast && (
                                     <span
                                         className={classNames(
                                             "ml-5 h-5 w-px bg-black/30",
-                                            "h-5"
+                                            "h-5",
+                                            "hidden md:block" // _// Esconde no mobile, mostra no desktop_
                                         )}
                                     ></span>
                                 )}
@@ -115,68 +107,47 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                 </nav>
 
 
+                {user ? (
 
-                {user ? ( // (○) getOptimisticUserInfo
+                    <DropdownMenu.Root>
+                        <DropdownMenu.Trigger>
 
-                    <Dialog.Root>
-                        <DropdownMenu.Root>
-                            <DropdownMenu.Trigger>
+                            <button className={classNames(
+                                "flex items-center gap-3 ",
+                                "text-sm font-medium rounded-full p-1",
+                                "hover:bg-green-50 transition-colors focus:outline-none"
+                            )}>
+                                <Text className={"text-base"}>Olá,
+                                    <Text className={"text-base"} weight="bold">{user.first_name}</Text>
+                                </Text>
 
-                                <button className={classNames(
-                                    "flex items-center gap-3 ",
-                                    "text-sm font-medium rounded-full p-1",
-                                    "hover:bg-green-50 transition-colors focus:outline-none"
-
-                                )}>
-                                    <Text className={"text-base"}>Olá,
-                                        <Text className={"text-base"} weight="bold">{user.first_name}</Text>
-                                    </Text>
-
-                                    <Avatar
-                                        size={"3"}
-                                        src={`https://ui-avatars.com/api/?name=${user.first_name}&background=random`}
-                                        fallback={"🦀"}
-                                        radius="full"
-                                    />
-                                </button>
-
-                            </DropdownMenu.Trigger>
+                                <Avatar
+                                    size={"3"}
+                                    src={`https://ui-avatars.com/api/?name=${user.first_name}&background=random`}
+                                    fallback={"🦀"}
+                                    radius="full"
+                                />
+                            </button>
+                        </DropdownMenu.Trigger>
 
 
-                            <DropdownMenu.Content>
-                                <DropdownMenu.Label>Minha Conta</DropdownMenu.Label>
-
-                                {/* O Dialog.Trigger abre a modal de edição de perfil */}
-
-
-                                <DropdownMenu.Item
-                                    onClick={() => navigate('/settings')}
-                                >
-                                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                                    Painel
-                                </DropdownMenu.Item>
-
-                                {/* <DropdownMenu.Item><User className="mr-2 h-4 w-4" /> Meu Perfil</DropdownMenu.Item> */}
-
-
-                                {/* TODO: Criar um formulário para editar o perfil do usuário */}
-
-                                <DropdownMenu.Separator />
-
-                                <DropdownMenu.Item
-                                    onClick={() => logout()} color="red"
-                                >
-                                    <LogOut className="mr-2 h-4 w-4" /> Sair
-                                </DropdownMenu.Item>
-
-                            </DropdownMenu.Content>
-
-
-                        </DropdownMenu.Root>
-
-
-                    </Dialog.Root>
-
+                        <DropdownMenu.Content>
+                            <DropdownMenu.Label>Minha Conta</DropdownMenu.Label>
+                            {/* O Dialog.Trigger abre a modal de edição de perfil */}
+                            <DropdownMenu.Item
+                                onClick={() => navigate('/settings')}
+                            >
+                                <LayoutDashboard className="mr-2 h-4 w-4" />
+                                Painel
+                            </DropdownMenu.Item>
+                            <DropdownMenu.Separator />
+                            <DropdownMenu.Item
+                                onClick={() => logout()} color="red"
+                            >
+                                <LogOut className="mr-2 h-4 w-4" /> Sair
+                            </DropdownMenu.Item>
+                        </DropdownMenu.Content>
+                    </DropdownMenu.Root>
 
                 ) : (
 
@@ -198,9 +169,7 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                             />
                         </Box>
                     </Tooltip>
-
                 )}
-
 
 
 

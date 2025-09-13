@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from "react";
+import { Suspense } from "react";
 import { useRoutes } from "react-router-dom";
 
 import { HelmetProvider, Helmet } from "react-helmet-async";
@@ -10,13 +10,15 @@ import { Theme } from "@radix-ui/themes";
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 import { setupAxiosInterceptor } from "./utils/axiosAuthInterceptor";
 import { useAuthService } from "./hooks/useAuthService";
+import AppInitializer from './components/AppInitializer';
 
 
 function App() {
 
-  const content = useRoutes(routes); 
+  const content = useRoutes(routes);
 
   const { logout } = useAuthService();
   setupAxiosInterceptor(logout);
@@ -28,7 +30,9 @@ function App() {
       />
 
       <Theme appearance="light" accentColor="bronze" grayColor="sand">
-        <Suspense fallback={<Loader />}>{content}</Suspense>
+        <AppInitializer>
+          <Suspense fallback={<Loader />}>{content}</Suspense>
+        </AppInitializer>
       </Theme>
 
       <ToastContainer

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import classNames from "classnames";
-import { Avatar, Box, Button, Dialog, DropdownMenu, Text, Tooltip } from "@radix-ui/themes";
+import { Avatar, Box, DropdownMenu, Text, Tooltip } from "@radix-ui/themes";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthService } from "../../hooks/useAuthService";
 import { LayoutDashboard, LogIn, LogOut, BookOpen, ChartColumnBig } from "lucide-react";
@@ -12,7 +12,6 @@ const navItems = [ // [✪] navItems
     { icon: ChartColumnBig, href: "/dashboard", label: "Dashboard" },
 
 ];
-
 
 const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙────────────────➤
     const [scrolled, setScrolled] = useState(false);
@@ -108,14 +107,17 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                                         size={scrolled ? 20 : 24}
                                         className="transition-transform duration-150 group-hover:-translate-y-0.5"
                                     />
-                                    <span className="font-semibold">{item.label}</span>
+
+                                    <span className="font-semibold hidden md:inline">{item.label}</span>
+
                                 </Link>
 
                                 {isNotLast && (
                                     <span
                                         className={classNames(
                                             "ml-5 h-5 w-px bg-black/30",
-                                            scrolled ? "h-4" : "h-5"
+                                            "h-5",
+                                            "hidden md:block"
                                         )}
                                     ></span>
                                 )}
@@ -126,62 +128,60 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
 
 
 
-                {user ? ( // (○) getOptimisticUserInfo
+                {user ? (
 
-                    <Dialog.Root>
-                        <DropdownMenu.Root>
-                            <DropdownMenu.Trigger>
+                    <DropdownMenu.Root>
+                        <DropdownMenu.Trigger>
 
-                                <button className={classNames(
-                                    "flex items-center gap-3 ",
-                                    "text-sm font-medium rounded-full p-1",
-                                    "hover:bg-green-50 transition-colors focus:outline-none"
+                            <button className={classNames(
+                                "flex items-center gap-3 ",
+                                "text-sm font-medium rounded-full p-1",
+                                "hover:bg-green-50 transition-colors focus:outline-none"
 
-                                )}>
-                                    <Text className={scrolled ? "text-sm" : "text-base"}>Olá,
-                                        <Text className={scrolled ? "text-sm" : "text-base"} weight="bold">{user.first_name}</Text>
-                                    </Text>
+                            )}>
+                                <Text className={scrolled ? "text-sm" : "text-base"}>Olá,
+                                    <Text className={scrolled ? "text-sm" : "text-base"} weight="bold">{user.first_name}</Text>
+                                </Text>
 
-                                    <Avatar
-                                        size={scrolled ? "2" : "3"}
-                                        src={`https://ui-avatars.com/api/?name=${user.first_name}&background=random`}
-                                        fallback={"🦀"}
-                                        radius="full"
-                                    />
-                                </button>
+                                <Avatar
+                                    size={scrolled ? "2" : "3"}
+                                    src={`https://ui-avatars.com/api/?name=${user.first_name}&background=random`}
+                                    fallback={"🦀"}
+                                    radius="full"
+                                />
+                            </button>
 
-                            </DropdownMenu.Trigger>
-
-
-                            <DropdownMenu.Content>
-                                <DropdownMenu.Label>Minha Conta</DropdownMenu.Label>
-
-                                {/* O Dialog.Trigger abre a modal de edição de perfil */}
+                        </DropdownMenu.Trigger>
 
 
-                                <DropdownMenu.Item
-                                    onClick={() => navigate('/settings')}
-                                >
-                                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                                    Painel
-                                </DropdownMenu.Item>
+                        <DropdownMenu.Content>
+                            <DropdownMenu.Label>Minha Conta</DropdownMenu.Label>
 
-                                {/* <DropdownMenu.Item><User className="mr-2 h-4 w-4" /> Meu Perfil</DropdownMenu.Item> */}
+                            {/* O Dialog.Trigger abre a modal de edição de perfil */}
 
 
-                                {/* TODO: Criar um formulário para editar o perfil do usuário */}
+                            <DropdownMenu.Item
+                                onClick={() => navigate('/settings')}
+                            >
+                                <LayoutDashboard className="mr-2 h-4 w-4" />
+                                Painel
+                            </DropdownMenu.Item>
 
-                                <DropdownMenu.Separator />
+                            {/* <DropdownMenu.Item><User className="mr-2 h-4 w-4" /> Meu Perfil</DropdownMenu.Item> */}
 
-                                <DropdownMenu.Item
-                                    onClick={() =>  logout()} color="red"
-                                >
-                                    <LogOut className="mr-2 h-4 w-4" /> Sair
-                                </DropdownMenu.Item>
-                            </DropdownMenu.Content>
-                        </DropdownMenu.Root>
 
-                    </Dialog.Root>
+                            {/* TODO: Criar um formulário para editar o perfil do usuário */}
+
+                            <DropdownMenu.Separator />
+
+                            <DropdownMenu.Item
+                                onClick={() => logout()} color="red"
+                            >
+                                <LogOut className="mr-2 h-4 w-4" /> Sair
+                            </DropdownMenu.Item>
+                        </DropdownMenu.Content>
+                    </DropdownMenu.Root>
+
 
 
                 ) : (

@@ -421,7 +421,7 @@ const Home = () => { // ★ Home ⋙──────────────�
                         className="flex flex-col gap-8 justify-between items-center w-full lg:w-1/2 text-left"
                     >
 
-                        <Heading color="gray" size="6">
+                        <Heading color="gray" size="6" className="text-balance text-center break-words hyphens-none">
                             Instituto de Ciência, Inovação e Tecnologia do Estado da Bahia
                         </Heading>
 
