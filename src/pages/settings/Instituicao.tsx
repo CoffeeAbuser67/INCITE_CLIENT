@@ -348,8 +348,9 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
         <div>
             <Flex justify="between" align="center" mb="4">
                 <Heading size="5">Postagens do Blog</Heading>
-                <Button onClick={mostrarFormCriacao}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Nova Postagem
+                <Button size={{ initial: '2', sm: '3' }} onClick={mostrarFormCriacao}>
+                    <PlusCircle className="h-5 w-5 sm:mr-2" />
+                    <span className="hidden sm:inline">Nova Postagem</span>
                 </Button>
             </Flex>
 
@@ -732,11 +733,12 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
 
     return (
         <div>
+
             <Flex justify="between" align="center" mb="6">
                 <Heading>Gerenciamento de Instituições</Heading>
-                <Button size="3" onClick={onShowCreateForm}>
-                    <PlusCircle className="mr-2 h-5 w-5" />
-                    Adicionar Instituição
+                <Button size={{ initial: '2', sm: '3' }} onClick={onShowCreateForm}>
+                    <PlusCircle className="h-5 w-5 sm:mr-2" />
+                    <span className="hidden sm:inline">Adicionar Instituição</span>
                 </Button>
             </Flex>
 

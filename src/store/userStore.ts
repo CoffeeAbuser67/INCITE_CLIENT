@@ -7,16 +7,27 @@ import { axiosForInterceptor } from '../utils/axios';
 interface UserStore {
     user: User | null;
     sessionChecked: boolean;
+    userList: User[]; 
     setActiveUser: (user: User | null) => void;
     checkSession: () => Promise<void>; 
+    setUserList: (users: User[]) => void;
+    removeUser: () => void;
+
 }
 
 
 export const useUserStore = create<UserStore>((set) => ({
     user: null,
     sessionChecked: false,
+    userList: [],
 
     setActiveUser: (user) => set({ user }),
+
+    setUserList: (users) => set({ userList: users }),
+
+    removeUser: () => {
+        set({ user: null, sessionChecked: true }); 
+    },
 
     checkSession: async () => {
         try {

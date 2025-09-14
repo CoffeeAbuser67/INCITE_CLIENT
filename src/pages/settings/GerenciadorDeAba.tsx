@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Heading, Button, Flex, Card, Text, Dialog, Separator, AlertDialog } from '@radix-ui/themes';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import { axiosPlain } from '../../utils/axios';
-import { toast } from 'react-toastify'; 
+import { toast } from 'react-toastify';
 
 
 interface GerenciadorProps<T extends { id: number, nome?: string }> {
@@ -25,7 +25,7 @@ interface GerenciadorProps<T extends { id: number, nome?: string }> {
 }
 
 
-export const GerenciadorDeAba = <T extends { id: number ; nome?: string  }>({
+export const GerenciadorDeAba = <T extends { id: number; nome?: string }>({
     tituloAba,
     nomeItem,
     items,
@@ -38,7 +38,7 @@ export const GerenciadorDeAba = <T extends { id: number ; nome?: string  }>({
 }: GerenciadorProps<T>) => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [itemAlvo, setItemAlvo] = useState<T | null >(null);
+    const [itemAlvo, setItemAlvo] = useState<T | null>(null);
     const [itemParaExcluir, setItemParaExcluir] = useState<T | null>(null);
 
 
@@ -95,8 +95,9 @@ export const GerenciadorDeAba = <T extends { id: number ; nome?: string  }>({
         <div>
             <Flex justify="between" align="center" mb="4">
                 <Heading size="5">{tituloAba}</Heading>
-                <Button onClick={abrirModalCriacao}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Adicionar {nomeItem}
+                <Button size={{ initial: '2', sm: '3' }} onClick={abrirModalCriacao}>
+                    <PlusCircle className="h-5 w-5 sm:mr-2" />
+                    <span className="hidden sm:inline">Adicionar {nomeItem}</span>
                 </Button>
             </Flex>
 
@@ -125,7 +126,7 @@ export const GerenciadorDeAba = <T extends { id: number ; nome?: string  }>({
                     <Dialog.Title>{itemAlvo ? 'Editar' : 'Adicionar'} {nomeItem}</Dialog.Title>
                     <Separator my="3" size="4" />
                     <FormularioComponent
-                        dadosIniciais={itemAlvo?? undefined }
+                        dadosIniciais={itemAlvo ?? undefined}
                         onSave={handleSalvar}
                         onCancel={() => setIsModalOpen(false)}
                     />

@@ -105,13 +105,15 @@ export const GerenciamentoPostsGerais = () => { // ★ GerenciamentoPostsGerais 
 
     return ( // ── ⋙⇌⇌⇌⇌⇌⇌⇌ DOM ⇌⇌⇌⇌⇌⇌⇌⇌⫸
         <Card>
+
             <Flex justify="between" align="center" mb="4">
                 <Heading>Postagens Gerais do Site</Heading>
-                <Button onClick={mostrarFormCriacao}>
-                    <PlusCircle size={16} /> Novo Post Geral
+                <Button size={{ initial: '2', sm: '3' }} onClick={mostrarFormCriacao}>
+                    <PlusCircle className="h-5 w-5 sm:mr-2" />
+                    <span className="hidden sm:inline">Novo Post Geral</span>
                 </Button>
             </Flex>
-
+            
             {isLoading ? (
                 <Spinner />
             ) : (

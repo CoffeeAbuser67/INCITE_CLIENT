@@ -227,7 +227,8 @@ const Toolbar = ({ editor }) => {
 
     return (
         <>
-            <Flex as="div" gap="3" align="center" className="p-2 bg-gray-50 border-b border-gray-200">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 p-2 bg-gray-50 border-b border-gray-200">
+
                 <Tooltip content="Negrito">
                     <IconButton variant={editor.isActive('bold') ? 'soft' : 'ghost'} aria-label="Negrito" onClick={() => editor.chain().focus().toggleBold().run()}>
                         <Bold size={18} />
@@ -274,7 +275,7 @@ const Toolbar = ({ editor }) => {
                         <ImageIcon size={18} />
                     </IconButton>
                 </Tooltip>
-            </Flex>
+            </div>
             <ImageUploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onImageUploaded={handleImageInsert} />
         </>
     );

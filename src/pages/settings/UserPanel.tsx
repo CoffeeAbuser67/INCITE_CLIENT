@@ -147,7 +147,7 @@ const AddUserForm = ({ onSave, onCancel }) => { // <✪> AddUserForm
 
                 {/* Grupo */}
                 <label>
-                    <Text>Grupo</Text>
+                    <Text className = "mr-4">Tipo</Text>
                     <Select.Root
                         name="user_group"
                         value={formik.values.user_group.toString()}
@@ -218,11 +218,14 @@ export const UserPanel = () => { // ★ UserPanel
 
     return ( // ── ◯─◡◠◡◠◡◠ DOM ◡◠◡◠◡◠◡◠─➤
         <Card variant='ghost'>
+
             <Flex justify="between" align="center" mb="4">
                 <Heading>Gerenciamento de Usuários do Sistema</Heading>
-                <Button onClick={() => setIsAddModalOpen(true)}><PlusCircle size={16} /> Adicionar Usuário</Button>
+                <Button size={{ initial: '2', sm: '3' }} onClick={() => setIsAddModalOpen(true)}>
+                    <PlusCircle className="h-5 w-5 sm:mr-2" />
+                    <span className="hidden sm:inline">Adicionar Usuário</span>
+                </Button>
             </Flex>
-
             <Table.Root variant="surface">
                 <Table.Header>
                     <Table.Row>
@@ -238,7 +241,7 @@ export const UserPanel = () => { // ★ UserPanel
                         <Table.Row><Table.Cell colSpan={4}>Carregando...</Table.Cell></Table.Row>
                     ) : (
                         userList.map(user => (
-                            <Table.Row  align="center" key={user.pkid}>
+                            <Table.Row align="center" key={user.pkid}>
                                 <Table.Cell >{user.first_name} {user.last_name}</Table.Cell>
                                 <Table.Cell>{user.email}</Table.Cell>
                                 <Table.Cell>
