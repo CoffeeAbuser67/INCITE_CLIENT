@@ -9,15 +9,6 @@ import { toast } from 'react-toastify';
 import { CitySelect } from './CitySelect';
 import mapCity from '../../assets/BahiaCidades4.json';
 
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-
-
-
-
-
-
-
 // HERE Interfaces & types
 // --- Tipos para cada modelo ---
 export type Postagem = { id: number; title: string; content: string; resumo: string; imagem_destaque: string | null; created_at: string };
@@ -73,16 +64,6 @@ interface PostagensTabProps {
     instituicaoId: number;
     onDataChange: () => void;
 }
-
-
-interface FormProps {
-    initialData?: any;
-    onSaveSuccess: () => void;
-    onCancel: () => void;
-}
-
-
-
 
 // ── ⋙── ── ── AUX  ── ── ── ──➤
 const formatarData = (timestamp: string): string => { // (●) formatarData
@@ -476,155 +457,148 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
 }; // ── ⋙── ── ── ── ── ── ── ──➤
 
 
-
-
-
-
-
-
 export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }: FormProps) => { // ★ InstituicaoForm
+    // Lógica simples de formulário com useState
+    const [nome, setNome] = useState(initialData?.nome || '');
+    const [cidadeId, setCidadeId] = useState(initialData?.cidade_id_mapa || '');
+    const [coordenador, setCoordenador] = useState(initialData?.coordenador_responsavel || '');
+    const [email, setEmail] = useState(initialData?.email || '');
+    const [telefone, setTelefone] = useState(initialData?.telefone || '');
+    const [infoAdicionais, setInfoAdicionais] = useState(initialData?.informacoes_adicionais || '');
 
 
-    const validationSchema = Yup.object({
-        nome: Yup.string().required('O nome da instituição é obrigatório'),
-        cidadeId: Yup.string().required('A seleção de uma cidade é obrigatória'),
-        coordenador: Yup.string().required('O nome do coordenador é obrigatório'),
-        email: Yup.string().email('Formato de e-mail inválido').required('O e-mail é obrigatório'),
-        telefone: Yup.string().required('O telefone é obrigatório'),
-        infoAdicionais: Yup.string(),
-        offsetX: Yup.number(),
-        offsetY: Yup.number(),
-    });
+    const [offsetX, setOffsetX] = useState(initialData?.offset_x || 0);
+    const [offsetY, setOffsetY] = useState(initialData?.offset_y || 0);
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(initialData?.marcador_logo || null);
-
-    const formik = useFormik({
-        initialValues: {
-            nome: initialData?.nome || '',
-            cidadeId: initialData?.cidade_id_mapa || '',
-            coordenador: initialData?.coordenador_responsavel || '',
-            email: initialData?.email || '',
-            telefone: initialData?.telefone || '',
-            infoAdicionais: initialData?.informacoes_adicionais || '',
-            offsetX: initialData?.offset_x || 0,
-            offsetY: initialData?.offset_y || 0,
-        },
-        validationSchema: validationSchema,
-        onSubmit: async (values, { setSubmitting }) => {
-            const formData = new FormData();
-            const nomeDaCidade = mapaDeNomesDeCidade.get(values.cidadeId) || '';
-
-            Object.entries(values).forEach(([key, value]) => {
-                const keyMap: Record<string, string> = {
-                    cidadeId: 'cidade_id_mapa',
-                    coordenador: 'coordenador_responsavel',
-                    infoAdicionais: 'informacoes_adicionais',
-                    offsetX: 'offset_x',
-                    offsetY: 'offset_y',
-                };
-                formData.append(keyMap[key] || key, value.toString());
-            });
-            formData.append('cidade_nome', nomeDaCidade);
-
-            if (logoFile) {
-                formData.append('marcador_logo', logoFile);
-            }
-
-            try {
-                if (initialData) {
-                    await axiosForInterceptor.put(`/instituicoes/${initialData.id}/`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-                    toast.success(`Instituição "${values.nome}" atualizada!`);
-                } else {
-                    await axiosForInterceptor.post('/instituicoes/', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-                    toast.success(`Instituição "${values.nome}" criada!`);
-                }
-                onSaveSuccess();
-            } catch (err) {
-                console.error("Erro ao salvar postagem:", err.response?.data || err);
-                toast.error("Erro ao salvar postagem.");
-            } finally {
-                setSubmitting(false);
-            }
-        },
-    });
+    const [isUploading, setIsUploading] = useState(false);
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            setLogoFile(file);
-            setLogoPreview(URL.createObjectURL(file));
+            setLogoFile(file); // Guarda o objeto do arquivo para o upload
+            setLogoPreview(URL.createObjectURL(file)); // Cria uma URL local para o preview
         }
     };
 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        //  USAMOS FormData pois HÁ ARQUIVOS 
+        const formData = new FormData();
+        const nomeDaCidade = mapaDeNomesDeCidade.get(cidadeId) || '';  // (○) mapaDeNomesDeCidade
+
+        // Adicionamos cada campo ao FormData
+        formData.append('nome', nome);
+        formData.append('cidade_id_mapa', cidadeId);
+        formData.append('cidade_nome', nomeDaCidade);
+        formData.append('coordenador_responsavel', coordenador);
+        formData.append('email', email);
+        formData.append('telefone', telefone);
+        formData.append('informacoes_adicionais', infoAdicionais);
+        formData.append('offset_x', offsetX.toString());
+        formData.append('offset_y', offsetY.toString());
+
+        // Se o usuário selecionou um novo arquivo de logo, adicione-o
+        if (logoFile) {
+            formData.append('marcador_logo', logoFile);
+        }
+
+        setIsUploading(true);
+        try {
+            if (initialData) {
+                // Para PUT com arquivos, o Axios também usa FormData
+                await axiosForInterceptor.put(`/instituicoes/${initialData.id}/`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+                toast.success(`Instituição "${nome}" atualizada!`);
+            } else {
+                await axiosForInterceptor.post('/instituicoes/', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+                toast.success(`Instituição "${nome}" criada!`);
+            }
+            onSaveSuccess();
+        } catch (err) {
+            console.error("Erro ao salvar postagem:", err.response?.data || err);
+            toast.error("Erro ao salvar postagem.");
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+
     return (
-        <form onSubmit={formik.handleSubmit}>
+        <form onSubmit={handleSubmit}>
             <Heading size="7" mb="6">{initialData ? 'Editar Instituição' : 'Criar Nova Instituição'}</Heading>
             <Flex direction="column" gap="4">
+
+                {/* --- CAMPOS OBRIGATÓRIOS --- */}
 
                 <Heading size="3" color="gray" highContrast>Informações de Contato</Heading>
                 <label>
                     <Text as="div" size="2" mb="1" weight="bold">Nome da Instituição</Text>
-                    <TextField.Root name="nome" value={formik.values.nome} onChange={formik.handleChange} onBlur={formik.handleBlur} placeholder="Ex: Universidade Federal..." />
-                    {formik.touched.nome && formik.errors.nome ? <Text color="red" size="1" mt="1">{formik.errors.nome}</Text> : null}
+                    <TextField.Root size="3" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: Universidade Federal..." required />
                 </label>
 
                 <label>
                     <Text as="div" size="2" mb="1" weight="bold">Cidade</Text>
-                    <CitySelect
-                        value={formik.values.cidadeId}
-                        onChange={(selectedId) => formik.setFieldValue('cidadeId', selectedId)}
+                    <CitySelect // (○) CitySelect 🌆
+                        value={cidadeId}
+                        onChange={setCidadeId}
                     />
-                    {formik.touched.cidadeId && formik.errors.cidadeId ? <Text color="red" size="1" mt="1">{formik.errors.cidadeId}</Text> : null}
                 </label>
+
 
                 <label>
                     <Text as="div" size="2" mb="1" weight="bold">Coordenador Responsável</Text>
-                    <TextField.Root name="coordenador" value={formik.values.coordenador} onChange={formik.handleChange} onBlur={formik.handleBlur} placeholder="Nome completo do coordenador" />
-                    {formik.touched.coordenador && formik.errors.coordenador ? <Text color="red" size="1" mt="1">{formik.errors.coordenador}</Text> : null}
+                    <TextField.Root size="3" value={coordenador} onChange={(e) => setCoordenador(e.target.value)} placeholder="Nome completo do coordenador" required />
                 </label>
-
                 <label>
                     <Text as="div" size="2" mb="1" weight="bold">Email</Text>
-                    <TextField.Root type="email" name="email" value={formik.values.email} onChange={formik.handleChange} onBlur={formik.handleBlur} placeholder="contato@instituicao.br" />
-                    {formik.touched.email && formik.errors.email ? <Text color="red" size="1" mt="1">{formik.errors.email}</Text> : null}
+                    <TextField.Root size="3" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="contato@instituicao.br" required />
                 </label>
-
                 <label>
                     <Text as="div" size="2" mb="1" weight="bold">Telefone (WhatsApp)</Text>
-                    <TextField.Root name="telefone" value={formik.values.telefone} onChange={formik.handleChange} onBlur={formik.handleBlur} placeholder="(XX) XXXXX-XXXX" />
-                    {formik.touched.telefone && formik.errors.telefone ? <Text color="red" size="1" mt="1">{formik.errors.telefone}</Text> : null}
+                    <TextField.Root size="3" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(XX) XXXXX-XXXX" required />
                 </label>
 
-                <Separator my="4" size="4" />
+
+                <Separator // HERE  INPUT INFO ADICIONAL ❔
+                    my="4" size="4"
+                />
                 <Heading size="3" color="gray" highContrast>Informações Adicionais</Heading>
                 <label>
-                    <TextArea name="infoAdicionais" value={formik.values.infoAdicionais} onChange={formik.handleChange} onBlur={formik.handleBlur} placeholder="Qualquer informação adicional relevante sobre a instituição..." />
+                    <TextArea size="3" value={infoAdicionais} onChange={(e) => setInfoAdicionais(e.target.value)} placeholder="Qualquer informação adicional relevante sobre a instituição..." />
                 </label>
 
-                <Separator my="4" size="4" />
+
+                <Separator // . . .  Logo fields 🏴‍☠️
+                    my="4"
+                    size="4"
+                />
+
                 <Heading size="3" color="gray" highContrast>Ajustes do Marcador no Mapa</Heading>
                 <Text as="p" size="2" color="gray" mb="3">
                     Use as setas do teclado ou o scroll do mouse nos campos X e Y para ajustar a posição do pino no mapa, caso o centro da cidade não seja ideal ou para evitar sobreposição.
                 </Text>
 
-                <Flex gap="5" align="start">
-                    <Flex direction="column" gap="3" className="flex-1">
+
+                <Flex
+                    gap="5" align="start"
+                >
+
+                    <Flex // HERE  INPUT DE AJUSET DO MARCADOR 📍
+                        direction="column" gap="3" className="flex-1">
                         <Text as="p" size="2" color="gray">
                             Ajuste fino da posição do pino para evitar sobreposição ou centralização incorreta.
                         </Text>
                         <Flex gap="3">
                             <label className="flex-1">
                                 <Text as="div" size="2" mb="1" weight="bold">Deslocamento X</Text>
-                                <TextField.Root
-                                    type="number"
-                                    step="0.1"
-                                    name="offsetX"
-                                    value={formik.values.offsetX}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                />
+                                <TextField.Root type="number" step="0.1" value={offsetX} onChange={(e) => setOffsetX(parseFloat(e.target.value) || 0)} />
                             </label>
                             <label className="flex-1">
                                 <Flex align="center" gap="2" mb="1">
@@ -633,33 +607,44 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
                                         <Info size={16} style={{ color: 'var(--gray-a9)', cursor: 'help' }} />
                                     </Tooltip>
                                 </Flex>
-                                <TextField.Root
-                                    type="number"
-                                    step="0.1"
-                                    name="offsetY"
-                                    value={formik.values.offsetY}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                />
+                                <TextField.Root type="number" step="0.1" value={offsetY} onChange={(e) => setOffsetY(parseFloat(e.target.value) || 0)} />
                             </label>
                         </Flex>
                     </Flex>
 
 
+                    {/* --- SEPARADOR VERTICAL --- */}
                     <div className="w-px bg-gray-300 self-stretch" />
 
-                    <Flex direction="column" gap="3" className="flex-1">
+                    <Flex //  HERE  INPUT DO LOGO 🗃️
+                        direction="column" gap="3" className="flex-1">
                         <Text as="div" size="2" weight="bold">Logo do Marcador (Opcional)</Text>
-                        <input type="file" accept="image/png, image/jpeg, image/svg+xml" onChange={handleFileSelect} ref={fileInputRef} style={{ display: 'none' }} />
-                        <Button type="button" variant="soft" onClick={() => fileInputRef.current?.click()} disabled={formik.isSubmitting}>
+
+                        {/* Input de arquivo escondido */}
+                        <input
+                            type="file"
+                            accept="image/png, image/jpeg, image/svg+xml"
+                            onChange={handleFileSelect}
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                        />
+
+                        {/* Botão estilizado do Radix que aciona o input escondido */}
+                        <Button type="button" variant="soft" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                             <Upload size={16} />
                             {logoFile ? 'Trocar Imagem' : 'Escolher Imagem'}
                         </Button>
-                        {formik.isSubmitting && <Flex align="center" gap="2"><Spinner /> Processando...</Flex>}
+
+                        {isUploading && <Flex align="center" gap="2"><Spinner /> Processando...</Flex>}
+
+                        {/* Pré-visualização da imagem */}
                         {logoPreview && (
                             <Flex align="center" gap="3">
                                 <img src={logoPreview} alt="Preview do logo" className="w-14 h-14 object-cover rounded-full border" />
-                                <Button type="button" size="1" variant="ghost" color="red" onClick={() => { setLogoFile(null); setLogoPreview(null); }}>
+                                <Button type="button" size="1" variant="ghost" color="red" onClick={() => {
+                                    setLogoFile(null);
+                                    setLogoPreview(null);
+                                }}>
                                     Remover
                                 </Button>
                             </Flex>
@@ -667,10 +652,11 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
                     </Flex>
                 </Flex>
 
+
                 <Flex gap="3" mt="6" justify="end">
-                    <Button type="button" variant="soft" color="gray" size="3" onClick={onCancel} disabled={formik.isSubmitting}>Cancelar</Button>
-                    <Button type="submit" size="3" disabled={formik.isSubmitting}>
-                        {formik.isSubmitting ? 'Salvando...' : 'Salvar'}
+                    <Button type="button" variant="soft" color="gray" size="3" onClick={onCancel}>Cancelar</Button>
+                    <Button type="submit" size="3" disabled={isUploading}>
+                        {isUploading ? 'Salvando...' : 'Salvar'}
                     </Button>
                 </Flex>
             </Flex>
