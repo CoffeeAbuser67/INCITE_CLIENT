@@ -40,7 +40,7 @@ const CardV1 = () => {
     return ( // ── ◯─◡◠◡◠◡◠◡ DOM ◠◡◠◡◠◡◠─➤
         <Box id="p1"
             className={classNames(
-                "w-full lg:flex-1 rounded-xl p-4 min-w-[300px] h-[350px] lg:h-auto",
+                "w-full flex-1 lg:flex-1 rounded-xl p-4 h-[350px] lg:h-auto",
                 glassmorphismClass
             )}
         >

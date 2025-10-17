@@ -365,7 +365,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return `${formattedNumber} kg/ha`; // Adiciona o sufixo "kg/ha"
   };
 
-
   // . . . . . . . . . . . .
 
 
@@ -379,6 +378,10 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   // const glassmorphismClass = 'bg-slate-800/40 backdrop-blur-lg border border-slate-500/30 shadow-lg';
 
   // const glassmorphismClass = 'bg-black/20 backdrop-blur-lg border border-white/10 shadow-lg';
+
+
+  // [●] isMobile
+  const isMobile = windowSize.width > 0 && windowSize.width < 768;
 
 
   // [●] lineColors
@@ -396,10 +399,10 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
 
       <Box
-        className="flex flex-col h-full w-full bg-white overflow-y-auto gap-8 p-4 lg:p-10 pt-4 md:pt-6 lg:pt-8 md:items-center xl:items-stretch"
+        className="flex flex-col h-full w-full bg-white overflow-y-auto gap-4 md:gap-8 p-4 md:p-6 lg:p-8 pt-4 md:pt-6 lg:pt-8"
       >
 
-        <Box className="flex flex-col items-center xl:flex-row xl:items-stretch gap-8 p-4">
+        <Box className="flex flex-col items-stretch xl:flex-row xl:items-stretch gap-4 md:gap-8 p-0 md:p-4">
 
           <div className="w-full items-center xl:w-auto overflow-x-auto rounded-xl">
             <div className="flex-shrink-0">
@@ -407,9 +410,9 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
             </div>
           </div>
 
-          <Box className="flex flex-col flex-1 gap-8">
+          <Box className="flex flex-col flex-1 gap-4 md:gap-8">
 
-            <Box className="flex flex-col xl:flex-row gap-8 xl:gap-4">
+            <Box className="flex flex-col items-stretch xl:flex-row gap-4 md:gap-8 xl:gap-4">
               <CardV1 // ✪ CardV1
               />
               <Box id='pie' className={classNames('w-full xl:flex-1 h-[400px] xl:h-auto rounded-xl', glassmorphismClass)}>
@@ -452,7 +455,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={topVData?.data}
-                    margin={{ top: 46, right: 20, left: 30, bottom: 5, }}
+                    margin={{ top: 46, right: isMobile ? 0 : 20, left: isMobile ? 0 : 30, bottom: 5, }}
                   >
 
                     <CartesianGrid strokeDasharray="3 3" />
@@ -460,7 +463,11 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                     <XAxis dataKey="name" tickFormatter={() => ''} />
 
 
-                    <YAxis stroke="#000" tickFormatter={yAxisValueFormatter} /> // (○) yAxisValueFormatter
+                    <YAxis stroke="#000" tickFormatter={yAxisValueFormatter} width={isMobile ? 0 : 80} />// (○) yAxisValueFormatter
+
+
+
+
 
                     <Tooltip // <○> Tooltip
                       content={<BarTooltip />}
@@ -485,7 +492,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
 
         <div className="w-full overflow-x-auto">
-          <Box className="flex flex-col lg:flex-row items-stretch gap-8 lg:gap-4 p-4">
+          <Box className="flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 lg:gap-4">
 
             <CardVX // ── ⋙── ── ── ── ── ── ── ──➤
             // ✪ CardVX
@@ -508,8 +515,8 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                     data={topVData?.QP_RM} // ⊙ topVData
                     margin={{
                       top: 15,
-                      right: 25,
-                      left: 20,
+                      right: isMobile ? 0 : 25,
+                      left: isMobile ? 0 : 20,
                       bottom: 22,
                     }}
                   >
@@ -527,19 +534,31 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                     />
 
 
+
+
+
+
+
                     <YAxis
                       yAxisId="left"
                       orientation="left"
                       stroke="#AC4D39"
                       tickFormatter={yAxisTonsFormatter} // (○) yAxisTonsFormatter
+                      width={isMobile ? 0 : 60}
                     />
-
                     <YAxis
                       yAxisId="right"
                       orientation="right"
                       stroke="#FFC53D"
                       tickFormatter={yAxisKgHaFormatter} // (○) yAxisKgHaFormatter
+                      width={isMobile ? 0 : 60}
                     />
+
+
+
+
+
+
 
                     <Tooltip // <○> QMRMTootip
                       content={<QMRMTooltip />} />
@@ -563,7 +582,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
           <Box // ── ⋙── ── TopSeriesBox ── ──➤
             id="topseries"
-            className={classNames("flex flex-col rounded-xl w-full h-[450px] lg:h-[660px] p-4 lg:p-10 min-w-[600px]", glassmorphismClass)}
+            className={classNames("flex flex-col rounded-xl w-full h-[450px] lg:h-[660px] p-4 lg:p-10", glassmorphismClass)}
           >
 
             <Flex justify='center' gap="2" align="center">
@@ -575,18 +594,20 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={seriesVData?.data}
-                margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
+                margin={{ top: 20, right: isMobile ? 5 : 20, left: isMobile ? 6 : 20, bottom: 20 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="year" stroke="#000" />
+
                 <YAxis
                   stroke="#000"
                   scale="log"
                   domain={['auto', 'auto']}
-                  tickFormatter={yAxisValueFormatter} // (○) yAxisValueFormatter
-
-
+                  tickFormatter={yAxisValueFormatter}// (○) yAxisValueFormatter
+                  width={isMobile ? 0 : 80}
                 />
+
+
                 <Tooltip
                   content={<SeriesTooltip />}
                   cursor={{ stroke: 'red', strokeWidth: 2, strokeDasharray: '3 3' }}
@@ -607,10 +628,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                       stroke={color}
                       strokeWidth={2}
 
-                      // AQUI ESTÁ A MUDANÇA: Ponto sólido, sem borda
                       dot={{ r: 5, fill: color }}
-
-                      // AQUI ESTÁ A MUDANÇA: Ponto ativo sólido e maior
                       activeDot={{ r: 8, fill: color, stroke: color }}
                     />
                   );

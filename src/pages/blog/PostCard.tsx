@@ -1,5 +1,3 @@
-// src/components/PostCard.tsx
-
 import React from 'react';
 import { Card, AspectRatio, Text, Heading, Flex, Box } from '@radix-ui/themes';
 import { Link } from 'react-router-dom';
