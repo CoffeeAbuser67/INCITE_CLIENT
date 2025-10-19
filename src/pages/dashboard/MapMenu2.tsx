@@ -31,15 +31,12 @@ import { createPortal } from "react-dom";
 
 import { mapStore, BoundingBox, variableStore, yearStore, regionDataStore } from "../../store/mapsStore";
 
-const SCALE_ADJUSTMENT = 0.35
 
-// Tipagem para regiões
 interface Region {
   id: string;
   d: string;
   name: string;
 }
-
 // Tipagem para cidades
 interface City {
   id: string;
@@ -48,7 +45,6 @@ interface City {
   x: number;
   y: number;
 }
-
 // Adicione este tipo para o nosso estado de tooltip
 interface TooltipState {
   visible: boolean;
@@ -73,31 +69,24 @@ const mapCity: CityData = cityData;
 // [●] mapRegion
 const mapRegion: Region[] = regionData;
 
-
-const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
+const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤
   const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
+  const originalBBox = useRef<BoundingBox | null>(null); // HERE originalBBoxRef
 
   // type levels = 0 | 1;
   // const [currentLevel, setCurrentLevel] = useState<levels>(0);
-
   // ✳ { variable, setVariable } 
   const { variable, setVariable } = variableStore();
 
   // ✳ { year, setYear } 
   const { year, setYear } = yearStore();
 
-  // ✳ { region, city, setRegion, setCity, mapTransform, setMapTransform, currentLevel, setCurrentLevel} 
-  const { region, setRegion,
+  // ✳ { region, city, setRegion, setCity, currentLevel, setCurrentLevel} 
+  const {
+    region, setRegion,
     city, setCity,
-    mapTransform, setMapTransform,
     currentLevel, setCurrentLevel,
-    originalBBox, setOriginalBBox
   } = mapStore();
-
-
-  // WARN To salvando o estado da minha escala mas n to usando.
-  // ✳ [currentScale, setCurrentScale]
-  const [currentScale, setCurrentScale] = useState<number>(1);
 
   // ✳ [tooltip, setTooltip] 
   const [tooltip, setTooltip] = useState<TooltipState>({
@@ -109,20 +98,29 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
   // ✳ {regionValues, setRegionVales}
   const { regionValues, setRegionValues } = regionDataStore();
-  // . . . 
+  // . . .
 
-  // const [regionValues, setRegionValues] = useState<{ [key: string]: number }>({});
-
-
-  useEffect(() => { //HERE uE
-    if (svgRef.current && !originalBBox) {
-      setOriginalBBox(svgRef.current.getBBox()); // ↺ setOriginalBBox
+  const initialViewBox = useMemo(() => {
+    const bbox = originalBBox.current;
+    if (bbox) {
+      return [bbox.x, bbox.y, bbox.width, bbox.height];
     }
-  }, [originalBBox, setOriginalBBox]);
+    return [0, 0, 602, 640];
+  }, []);
+
+
+  const [{ viewBox }, api] = useSpring(() => ({
+    viewBox: initialViewBox,
+    config: { tension: 62, friction: 35, mass: 7 },
+  }));
+
+  useEffect(() => {
+    api.set({ viewBox: initialViewBox });
+  }, [initialViewBox, api]);
 
 
   // ── ⋙── ── ── ── ── ── ──➤
-  // (✪) getRegionValues 
+  // (✪) getRegionValues
   const getRegionValues = useCallback(async () => {
     const axios = axiosPlain;
     try {
@@ -153,18 +151,16 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       }
     }
 
-  }, [region.active, year, variable]) // . . . 
+  }, [region.active, year, variable]) // . . .
 
 
   useEffect(() => { // (●) uE
     getRegionValues(); // (○) getRegionValues
-  }, [getRegionValues]);
+  }, [getRegionValues]);   // ── ⋙── ── ── ── ── ── ──➤
 
-  //  ── ⋙── ── ── ── ── ── ──➤
+
   // (✪) colorScale 
   const colorScale = useMemo(() => {
-
-
     const activeRegionKey = region.active;
 
     const values = Object.entries(regionValues)
@@ -173,8 +169,8 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .map(([_, value]) => value);                     // 2. Do resultado filtrado, extrai apenas o valor de cada par.
 
-      console.log('%c values 🩸', 'color: red; font-size: 16px; font-weight: bold;');
-      console.log(values)
+    console.log('%c values 🩸', 'color: red; font-size: 16px; font-weight: bold;');
+    console.log(values)
 
     // CASO 1: Não há dados ou os dados ainda não carregaram.
     if (values.length === 0) {
@@ -235,9 +231,9 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
         variable: variable
       }
     };
-  }, [regionValues, variable]); // Dependências não mudam
+  }, [regionValues, variable]); // ── ⋙── ── ── ── ── ── ── ──➤
 
-  // ── ⋙── ── ── ── ── ── ── ──➤
+
   const transition = useTransition(mapCity[region.active] || [], {   // [✪] transition mapCity
     trail: 600 / mapCity[region.active].length || 1,
     from: { opacity: 0, transform: "scale(0)" },
@@ -252,65 +248,31 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
   const bahiaStrokeStyle = useSpring({
     opacity: currentLevel === 1 ? 0 : 1,
     config: { duration: 300 } // Ajuste a duração conforme necessário
-  });
-
-  // ✪ springStyles
-  const [springStyles, api] = useSpring(() => ({
-    transform: `scale(1) translate(0px, 0px)`,
-    config: { tension: 62, friction: 35, mass: 7 },
-  }));
+  });// ── ⋙── ── ── ── ── ── ──➤
 
 
-  useEffect(() => { //HERE uE
 
-    api.start({ transform: mapTransform });
-  }, [mapTransform, api]);
-
-
-  // ── ⋙── ── ── ── ── ── ──➤
   const resetMap = () => { // {✪} resetMap
     setCurrentLevel(0); // ↺ setCurrentLevel
-    setCurrentScale(1); // ↺ setCurrentScale
     setRegion("bahia", "Bahia"); // ↺ setRegion
     setCity("", ""); // ↺ setCity
-    const newTransform = "scale(1) translate(0px, 0px)";
-    api.start({
-      transform: newTransform,
-    });
-    setMapTransform(newTransform);
+    api.start({ viewBox: initialViewBox });
   };
 
 
   // ── ⋙── ── ── ── ── ── ── ──➤
+
   // (✪) runToFit
-  const runToFit = (bbox: BoundingBox, rect: BoundingBox) => {
-    const svgRect = svgRef.current?.getBoundingClientRect();
-    // const svgBox = svgRef.current?.getBBox()
-    const svgBox = originalBBox;
+  const runToFit = (bbox: BoundingBox) => {
+    const padding = 30; // Ajuste para mais ou menos "respiro"
+    const newWidth = bbox.width + padding * 2;
+    const newHeight = bbox.height + padding * 2;
+    const newMinX = bbox.x - padding;
+    const newMinY = bbox.y - padding;
 
-    if (!svgRect || !svgBox) return;
-
-    const CBX = bbox.x + bbox.width / 2;
-    const CBY = bbox.y + bbox.height / 2;
-
-    const SVGCX = svgBox.width / 2;
-    const SVGCY = svgBox.height / 2;
-
-    // + 5 is the offset from the edge of the canvas
-    const translateX = SVGCX - CBX //+ 5;
-    const translateY = SVGCY - CBY //+ 5;
-
-    const scaleX = svgRect.width / rect.width;
-    const scaleY = svgRect.height / rect.height;
-    const maxScale = Math.min(scaleX, scaleY);
-
-    const finalScale = maxScale - SCALE_ADJUSTMENT;
-    setCurrentScale(finalScale);  // ↺ setCurrentScale
-    const newTransform = `scale(${finalScale}) translate(${translateX}px, ${translateY}px)`;
-
-    api.start({ transform: newTransform });
-    setMapTransform(newTransform); // Salve no store
+    api.start({ viewBox: [newMinX, newMinY, newWidth, newHeight] });
   };
+
 
 
   // ── ⋙── ── ── ── ── ── ──➤
@@ -326,7 +288,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       if (target_type === "region" && target_id !== "bahia_stroke") {
         setCurrentLevel(1);
         setRegion(target_id, target_name || "");
-        runToFit(target.getBBox(), target.getBoundingClientRect());
+        runToFit(target.getBBox());
       }
     }
 
@@ -338,7 +300,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     console.log("✦────────────────────────────➤");
 
     // . . .
-
     // ⊙ currentLevel 1
     if (currentLevel === 1) {
       if (target_type === "city") {
@@ -351,7 +312,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       }
     }
   }
-
 
   // ── ⋙── ── ── ── ToolTip  ── ── ── ──➤
   // <✪> AnimatedTooltip
@@ -399,7 +359,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     setTooltip(prev => ({ ...prev, visible: false }));
   };
 
-
   // ── ⋙── ── ── ── ── ── ── ──➤
   const GradientLegend = ({ min, max, variable }: GradientLegendProps) => { // <✪> GradientLegend
     // Pega as cores 'from' e 'to' do nosso novo objeto de cores HEX
@@ -417,7 +376,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     //   }).format(num);
     // };
 
-    const formatNumber = (value: number) => { 
+    const formatNumber = (value: number) => {
       if (variable === 'valor_da_producao') {
         const finalValue = value * 1000;
         return new Intl.NumberFormat('pt-BR', {
@@ -439,8 +398,6 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
       return new Intl.NumberFormat('pt-BR').format(value);
     };
 
-
-
     return (
       <div
         className="absolute w-12 h-48 flex flex-col justify-between p-2 text-white text-xs"
@@ -459,9 +416,7 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
     );
   };
 
-
-
-  return ( // ── ◯─◡◠◡◠◡◠◡◠ DOM ◡◠◡◠◡◠◡◠◡◠◡◠◡◠◡◠◡◠─⫸ 🌑
+  return ( // ── ◯─◡◠◡◠◡◠◡◠ DOM ◡◠◡◠◡◠◡◠◡◠◡◠─⫸ 🌑
     <>
       <Flex direction="column">
         <Box  // ── ⋙── ── ── DropDownSelector ── ── ──➤
@@ -514,13 +469,12 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
 
         <div // ── ⋙── ── ── canvas-wrapper ── ── ── ──➤
           id="canvas-wrapper"
-          className="relative rounded-3xl"
-          style={{
-            width: "602px",
-            height: "640px",
-            // border: "1px solid black",
-            overflow: "hidden"
-          }}>
+          className="
+            relative rounded-3xl overflow-hidden
+            w-full aspect-square
+            md:w-[602px] md:h-[640px] md:aspect-auto
+          "
+        >
           {colorScale.legendData && // <○> GradientLegend
             <GradientLegend {...colorScale.legendData} />
           }
@@ -529,12 +483,12 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
           <animated.svg //HERE  SVGCanvas // . . . props
             id="SVGCanvas"
             ref={svgRef}
-            viewBox="0 0 602 640"
+            viewBox={viewBox.to((...v) => v.join(" "))}
             overflow={"hidden"}
             style={{
               width: "100%",
               height: "100%",
-              ...springStyles, // ○ springStyles
+              cursor: 'pointer',
             }}
             onClick={handleClick} // (○) handleClick // . . . children
             onMouseMove={handleMouseMoveSVG}
@@ -641,10 +595,12 @@ const MapMenu = () => { // ★ MapMenu  ⋙── ── ── ── ── �
             </g>
           </animated.svg>
         </div>
+
       </Flex>
 
     </>
   );
+
 };
 export default MapMenu;
 // ★ ⋙── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──➤

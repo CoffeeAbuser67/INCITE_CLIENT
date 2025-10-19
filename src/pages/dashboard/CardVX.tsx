@@ -19,7 +19,7 @@ const CardVX = () => {
     const seriesUnitText = variable === 'valor_da_producao' ? "em Reais (R$)" : "em Hectares (ha)";
 
     return (
-        <Box id="px" className={classNames("rounded-xl p-4 w-full lg:w-1/3", glassmorphismClass)}>
+        <Box id="px" className={classNames("rounded-xl p-4 m-4 w-full lg:w-1/3 h-full", glassmorphismClass)}>
 
             <Flex direction="column" gap="3">
                 <Heading as="h3" mb='3' size="5">Análise da produção agrícola </Heading>

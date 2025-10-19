@@ -366,7 +366,6 @@ const Home = () => { // ★ Home ⋙──────────────�
         }
     };
 
-
     // ── ⋙── ── ── ── ToolTip  ── ── ── ──➤
     // <✪> AnimatedTooltip
     const AnimatedTooltip = ({ visible, content, x, y }: TooltipState) => {
@@ -401,7 +400,6 @@ const Home = () => { // ★ Home ⋙──────────────�
             setTooltip(prev => ({ ...prev, visible: true, content }));
         }
     };
-
 
     const handleMouseMoveSVG = (event: React.MouseEvent<SVGSVGElement>) => { // <●> handleMouseMoveSVG
         const x = event.pageX + 12; // Usamos pageX

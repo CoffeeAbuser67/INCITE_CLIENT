@@ -41,7 +41,7 @@ import MapMenu from "./MapMenu2";
 import Icons from "../../assets/Icons";
 import ICON_SIZES from "../../assets/IconsSizes";
 import { VARIABLES, COLORSHEX } from "../../assets/auxData";
-import { mapStore, variableStore, yearStore, regionDataStore } from "../../store/mapsStore";
+import { mapStore, variableStore, yearStore } from "../../store/mapsStore";
 
 import CardV1 from "./CardV1";
 import CardVX from './CardVX';
@@ -52,7 +52,6 @@ import { ChartColumnBig, ChartColumnDecreasing, LineChart as LineChartIcon } fro
 // 🧿 
 //  WARN Xique-xique | santa teresinha | Muquém de São Francisco
 // 
-
 
 
 const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤ 
@@ -66,15 +65,11 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   // ✳ {region, city} 
   const { region, city } = mapStore();
 
-  //  ✳ {year}
+  // ✳ {year}
   const { year } = yearStore();
 
-  //  ✳ {variable}
+  // ✳ {variable}
   const { variable } = variableStore();
-
-  //  ✳ {regionValues}
-  const { regionValues } = regionDataStore();
-
 
   type A_Item = { id: string; name: string; v: number };
   type A_Item2 = { id: string; name: string; qp: number, rm: number };
@@ -85,7 +80,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     var: string;
   };
 
-  //  ✳ [topVData, setTopVData]
+  // ✳ [topVData, setTopVData]
   const [topVData, setTopVData] = useState<AgriculturalData | null>(null);
 
   type DataS = {
@@ -98,7 +93,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     keys: { [key: string]: string };
   };
 
-  //  ✳ [seriesVData, setSeriesVData]
+  // ✳ [seriesVData, setSeriesVData]
   const [seriesVData, setSeriesVData] = useState<DataSeries | null>(null);
   // ── ⋙── ── ── ── ── ── ── ──➤
 
@@ -367,9 +362,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   // . . . . . . . . . . . .
 
-
-
-
   // [●] glassmorphismClass
   const glassmorphismClass = 'bg-white/10 backdrop-blur-xl  shadow-lg';
 
@@ -379,10 +371,8 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   // const glassmorphismClass = 'bg-black/20 backdrop-blur-lg border border-white/10 shadow-lg';
 
-
   // [●] isMobile
   const isMobile = windowSize.width > 0 && windowSize.width < 768;
-
 
   // [●] lineColors
   const lineColors = ["#D58A9E", "#8C8CC3", "#D29E64", "#81BFE8", "#8CE78A", "#B5B5B5", "#B7AFFF", "#B59FE0"];
@@ -399,15 +389,13 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
 
       <Box
-        className="flex flex-col h-full w-full bg-white overflow-y-auto gap-4 md:gap-8 p-4 md:p-6 lg:p-8 pt-4 md:pt-6 lg:pt-8"
+        className="flex flex-col h-full w-full bg-white overflow-y-auto gap-4 md:gap-8 p-4 md:p-6 pt-4 md:pt-6 lg:pt-8"
       >
 
         <Box className="flex flex-col items-stretch xl:flex-row xl:items-stretch gap-4 md:gap-8 p-0 md:p-4">
 
-          <div className="w-full items-center xl:w-auto overflow-x-auto rounded-xl">
-            <div className="flex-shrink-0">
-              <MapMenu />
-            </div>
+          <div className="w-full xl:w-auto">
+            <MapMenu />
           </div>
 
           <Box className="flex flex-col flex-1 gap-4 md:gap-8">
@@ -465,10 +453,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
                     <YAxis stroke="#000" tickFormatter={yAxisValueFormatter} width={isMobile ? 0 : 80} />// (○) yAxisValueFormatter
 
-
-
-
-
                     <Tooltip // <○> Tooltip
                       content={<BarTooltip />}
                     />
@@ -492,15 +476,15 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
 
         <div className="w-full overflow-x-auto">
+
           <Box className="flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 lg:gap-4">
 
-            <CardVX // ── ⋙── ── ── ── ── ── ── ──➤
-            // ✪ CardVX
+            <CardVX // ── ⋙── ── ── ── ── ── ── ──➤ // ✪ CardVX 
             />
 
             <Box // ── ⋙──  ── QPRM_bars ── ──➤
               id='QPRM_bars'
-              className={classNames('flex flex-col w-full rounded-xl p-4', glassmorphismClass)}
+              className={classNames('flex flex-col w-full rounded-xl mb-4 p-4', glassmorphismClass)}
             >
 
               <Flex justify='center' gap="2" align="center" className="flex-shrink-0">
@@ -509,7 +493,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
               </Flex>
 
 
-              <div className="w-full relative h-[350px] lg:h-[400px]">
+              <div className="w-full relative h-[350px] lg:h-[420px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={topVData?.QP_RM} // ⊙ topVData
@@ -533,12 +517,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                       interval={0}
                     />
 
-
-
-
-
-
-
                     <YAxis
                       yAxisId="left"
                       orientation="left"
@@ -554,12 +532,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                       width={isMobile ? 0 : 60}
                     />
 
-
-
-
-
-
-
                     <Tooltip // <○> QMRMTootip
                       content={<QMRMTooltip />} />
 
@@ -571,6 +543,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
                   </BarChart>
                 </ResponsiveContainer>
+
               </div>
             </Box>
           </Box>
@@ -582,7 +555,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
           <Box // ── ⋙── ── TopSeriesBox ── ──➤
             id="topseries"
-            className={classNames("flex flex-col rounded-xl w-full h-[450px] lg:h-[660px] p-4 lg:p-10", glassmorphismClass)}
+            className={classNames("flex flex-col rounded-xl w-full h-[450px] lg:h-[660px] p-4 lg:p-6", glassmorphismClass)}
           >
 
             <Flex justify='center' gap="2" align="center">
