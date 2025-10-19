@@ -176,7 +176,7 @@ const Home = () => { // ★ Home ⋙──────────────�
     const initialViewBox = [0, 0, 601, 640];
     // Maior precisão! 
     //  const initialViewBox = [0.47, 0.87, 600.62, 638.08];
-    
+
     // HERE [{ viewBox }, api] 
     const [{ viewBox }, api] = useSpring(() => ({
         viewBox: initialViewBox,
@@ -337,6 +337,7 @@ const Home = () => { // ★ Home ⋙──────────────�
         setCurrentScale(1);
         handleSetRegion("bahia", "Bahia");
         api.start({ viewBox: initialViewBox });
+        setSelectedInstituicao(null);
     }; // ── ⋙── ── ── ── ── ── ── ──➤
 
     const marcadoresOrdenados = useMemo(() => { // {✪} marcadoresOrdenados
@@ -349,6 +350,7 @@ const Home = () => { // ★ Home ⋙──────────────�
         return [...outrosMarcadores, selectedInstituicao];
     }, [instituicoes, selectedInstituicao]); // ── ⋙── ── ── ── ── ── ── ──➤
     // Recalcula apenas quando a lista ou a seleção mudar
+
 
     const handleSelectChange = (instituicaoId: string) => { // (✪) handleSelectChange
         if (!instituicaoId) {
@@ -412,14 +414,13 @@ const Home = () => { // ★ Home ⋙──────────────�
     };
 
 
-
     return (// ── ⋙⇌⇌⇌⇌⇌⇌⇌ DOM ⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸
         <>
             <Box // CANVAS ── ── ── ──➤
                 id="CANVAS"
-                className="flex flex-col gap-6 px-4 pb-4 mx-8 pt-36 md:px-8 md:pb-8 md:pt-28 lg:px-14 lg:pb-14 lg:pt-32"
+                className="flex flex-col gap-6 px-4 pb-4 pt-36 md:px-6 md:pb-8 md:pt-28 lg:px-12 lg:pb-14 lg:pt-32"
             >
-                <Box // ──  PANEL1
+                <Box // ── PANEL1
                     id="PANEL1"
                     className="flex flex-col-reverse lg:flex-row w-full mb-12 gap-8">
 
@@ -439,7 +440,7 @@ const Home = () => { // ★ Home ⋙──────────────�
                             Incite - <span className="text-green-700">Agricultura Familiar</span> Diversificada e Sustentável
                         </Heading>
 
-                        <Text className="pt-10">
+                        <Text className="pt-10 px-4">
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
                         </Text>
 
@@ -448,7 +449,7 @@ const Home = () => { // ★ Home ⋙──────────────�
                             id="Intituicao-Text-Selector">
                             <Heading as="h3" size="4" mb="2">Navegar por Instituição</Heading>
                             <Select.Root
-                                // ⊙  selectedInstituicao
+                                // ⊙ selectedInstituicao
                                 value={selectedInstituicao ? selectedInstituicao.id.toString() : ""}
                                 // (○) handleSelectChange
                                 onValueChange={handleSelectChange}
@@ -471,7 +472,7 @@ const Home = () => { // ★ Home ⋙──────────────�
 
                     <Box
                         id="LOGO_HEADER"
-                        className="flex h-[300px] md:h-[450px] lg:h-[600px] w-full lg:w-1/2 justify-center "
+                        className="flex h-[420px] md:h-[490px] lg:h-[600px] w-full lg:w-1/2 justify-center "
                         style={{
                             backgroundImage: `url(${BG})`,
                             backgroundSize: "contain",
@@ -491,7 +492,7 @@ const Home = () => { // ★ Home ⋙──────────────�
                     id="PANEL2"
                     className={classNames(
                         "flex flex-col items-center w-full gap-10 mb-24,",
-                        "lg:flex-row lg:items-start lg:justify-around lg:gap-6",
+                        "lg:flex-row lg:items-start lg:justify-evenly lg:gap-6",
                     )}
                 >
 
@@ -503,13 +504,12 @@ const Home = () => { // ★ Home ⋙──────────────�
                         <div className="w-full overflow-x-auto rounded-3xl">
                             <div // ⋙── ── canvas-wrapper ── ──➤
                                 id="canvas-wrapper"
-                                className="relative bg-transparent flex-shrink-0"
-                                style={{
-                                    width: "602px",
-                                    height: "640px",
-                                    overflow: "hidden",
-                                    // border: "1px solid black",
-                                }}>
+                                className="
+                                    relative bg-transparent flex-shrink-0
+                                    w-full aspect-square overflow-hidden
+                                    lg:w-[602px] lg:h-[640px] lg:aspect-auto
+                                    "
+                            >
 
                                 <AnimatedTooltip {...tooltip} />
 
@@ -616,6 +616,7 @@ const Home = () => { // ★ Home ⋙──────────────�
                                                         level={currentLevel}
                                                         // O marcador é 'ativo' se seu ID for o mesmo da instituição selecionada
                                                         isActive={selectedInstituicao?.id === instituicao.id}
+                                                        isAnyPinActive={selectedInstituicao !== null}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleMarkerClick(instituicao);

@@ -11,6 +11,7 @@ interface PinMarkerProps {
     tooltipContent: React.ReactNode;
     level: 0 | 1;
     isActive: boolean; // Nova prop para saber se este é o marcador ativo
+    isAnyPinActive: boolean;
     onClick: (event: React.MouseEvent) => void;
 }
 
@@ -27,7 +28,7 @@ const PinShape = ({ fillColor, strokeColor }) => (
 );
 
 export const PinMarker: React.FC<PinMarkerProps> = ({
-    x, y, imageUrl, tooltipContent, level, isActive, onClick
+    x, y, imageUrl, tooltipContent, level, isActive, isAnyPinActive, onClick
 }) => {
     const [isHovered, setIsHovered] = useState(false);
 
@@ -38,20 +39,30 @@ export const PinMarker: React.FC<PinMarkerProps> = ({
     const [springProps, api] = useSpring(() => ({
         scale: scaleLevel0,
         yOffset: 0,
+        opacity: 1, // Começa com opacidade total
         config: { tension: 300, friction: 15 },
     }));
 
+
     useEffect(() => {
         const baseScale = level === 0 ? scaleLevel0 : scaleLevel1;
-        // O marcador ativo ou em hover fica maior
         const targetScale = isHovered || isActive ? baseScale * 1.2 : baseScale;
         const yOffset = isHovered || isActive ? -5 : 0;
+
+
+        const targetOpacity = isAnyPinActive && !isActive ? 0.5 : 1;
 
         api.start({
             scale: targetScale,
             yOffset: yOffset,
+            opacity: targetOpacity,
+
         });
-    }, [level, isHovered, isActive, api]);
+    }, [level, isHovered, isActive, isAnyPinActive, api]);
+
+
+
+
 
     const handleMouseEnter = () => setIsHovered(true);
     const handleMouseLeave = () => setIsHovered(false);
@@ -61,8 +72,8 @@ export const PinMarker: React.FC<PinMarkerProps> = ({
 
     return (
         <animated.g
-
             transform={springProps.scale.to(s => `translate(${x}, ${y}) scale(${s})`)}
+            opacity={springProps.opacity}
             onClick={onClick}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
@@ -71,7 +82,7 @@ export const PinMarker: React.FC<PinMarkerProps> = ({
             <g transform="translate(-16, -32)"> {/* Centraliza o pino pela ponta inferior */}
                 <Tooltip content={tooltipContent}>
                     <g>
-                        
+
 
                         <PinShape fillColor={isActive ? "#facc15" : "#FFFFFF"} strokeColor="#333" />
 
