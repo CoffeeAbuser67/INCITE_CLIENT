@@ -45,11 +45,13 @@ const CardV1 = () => {
             )}
         >
             <Flex direction="column" justify="center" height="100%">
+
                 <Text size="5" weight="light">Total para</Text>
                 <Heading as="h2" size="8" highContrast>
                     {locationName}
                 </Heading>
                 <Separator my="3" size="4" />
+
                 <Text size="7" weight="bold" color="indigo">
                     {formattedTotal}
                 </Text>
@@ -57,6 +59,7 @@ const CardV1 = () => {
                     em {year}
                 </Text>
             </Flex>
+            
         </Box>
     );
 };

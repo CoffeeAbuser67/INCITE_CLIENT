@@ -58,6 +58,7 @@ export const COLORSTW = {
     "fill-sky-900",
     "fill-sky-950",
   ],
+  
 };
 
 //  [●] COLORSTW_HEX

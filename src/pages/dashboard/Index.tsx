@@ -391,7 +391,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
       <Box
         className="flex flex-col h-full w-full bg-white overflow-y-auto gap-4 md:gap-8 p-4 md:p-6 pt-4 md:pt-6 lg:pt-8"
       >
-
         <Box className="flex flex-col items-stretch xl:flex-row xl:items-stretch gap-4 md:gap-8 p-0 md:p-4">
 
           <div className="w-full xl:w-auto">
@@ -401,7 +400,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           <Box className="flex flex-col flex-1 gap-4 md:gap-8">
 
             <Box className="flex flex-col items-stretch xl:flex-row gap-4 md:gap-8 xl:gap-4">
-              <CardV1 // ✪ CardV1
+              <CardV1 // . . . CardV1
               />
               <Box id='pie' className={classNames('w-full xl:flex-1 h-[400px] xl:h-auto rounded-xl', glassmorphismClass)}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -430,7 +429,8 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
               </Box>
             </Box>
 
-            <Box
+
+            <Box //. . . bar
               id='bar'
               className={classNames('flex flex-col items-center w-full z-0 rounded-xl xl:flex-1', glassmorphismClass)}
             >
@@ -471,7 +471,10 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                 </ResponsiveContainer>
               </div>
             </Box>
+
+
           </Box>
+          
         </Box>
 
 

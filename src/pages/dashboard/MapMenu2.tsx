@@ -17,6 +17,7 @@ import {
   Button,
   DropdownMenu,
   Flex,
+  Separator,
   Text
 } from "@radix-ui/themes";
 
@@ -26,9 +27,7 @@ import handleAxiosError from "../../utils/handleAxiosError";
 import regionData from "../../assets/BahiaRegiao2.json";
 import cityData from "../../assets/BahiaCidades4.json";
 import { COLORSTW, COLORSTW_HEX, VARIABLES, YEARS } from "../../assets/auxData";
-
 import { createPortal } from "react-dom";
-
 import { mapStore, BoundingBox, variableStore, yearStore, regionDataStore } from "../../store/mapsStore";
 
 
@@ -45,7 +44,7 @@ interface City {
   x: number;
   y: number;
 }
-// Adicione este tipo para o nosso estado de tooltip
+
 interface TooltipState {
   visible: boolean;
   content: string;
@@ -118,7 +117,7 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
     api.set({ viewBox: initialViewBox });
   }, [initialViewBox, api]);
 
-
+  
   // ── ⋙── ── ── ── ── ── ──➤
   // (✪) getRegionValues
   const getRegionValues = useCallback(async () => {
@@ -259,7 +258,6 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
     api.start({ viewBox: initialViewBox });
   };
 
-
   // ── ⋙── ── ── ── ── ── ── ──➤
 
   // (✪) runToFit
@@ -269,10 +267,9 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
     const newHeight = bbox.height + padding * 2;
     const newMinX = bbox.x - padding;
     const newMinY = bbox.y - padding;
-
+    originalBBox.current = { x: newMinX, y: newMinY, width: newWidth, height: newHeight };
     api.start({ viewBox: [newMinX, newMinY, newWidth, newHeight] });
   };
-
 
 
   // ── ⋙── ── ── ── ── ── ──➤
@@ -337,6 +334,7 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
       >
         {content}
       </animated.div>,
+
       document.body // O destino do portal
     )
   };
@@ -419,52 +417,77 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
   return ( // ── ◯─◡◠◡◠◡◠◡◠ DOM ◡◠◡◠◡◠◡◠◡◠◡◠─⫸ 🌑
     <>
       <Flex direction="column">
-        <Box  // ── ⋙── ── ── DropDownSelector ── ── ──➤
-          id="DropDownComponent"
-          className="flex justify-start gap-6 w-full z-50"
 
+        <Box id="ParameterCard"
+          className={classNames(
+
+            "w-full flex-1 lg:flex-1 rounded-xl m-2 p-4 max-h-[200px] lg:h-auto",
+            'bg-black/10 backdrop-blur-xl  shadow-lg' // glassmorphismClass
+          )}
         >
-          <DropdownMenu.Root
-          // ⊙  Variable ↺ setVariable
-          >
-            <DropdownMenu.Trigger>
-              <Button color="gray" variant="solid" highContrast>
-                {variable ? VARIABLES[variable] : "Variável medida"}
-                <DropdownMenu.TriggerIcon />
-              </Button>
-            </DropdownMenu.Trigger>
 
-            <DropdownMenu.Content color="gray" variant="soft" highContrast>
-              <DropdownMenu.Item onSelect={() => setVariable("valor_da_producao")} shortcut="💵">
-                Valor da produção
-              </DropdownMenu.Item>
-              <DropdownMenu.Separator />
-              <DropdownMenu.Item onSelect={() => setVariable("area_plantada_ou_destinada_a_colheita")} shortcut="🌱">
-                Área plantada ou destinada a colheita
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={() => setVariable("area_colhida")} shortcut="🥗">
-                Área colhida
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
+          <Flex direction="column" justify="center" height="100%">
 
-          </DropdownMenu.Root>
-          <DropdownMenu.Root
-          // ⊙ Year  ↺ setYear
-          >
-            <DropdownMenu.Trigger>
-              <Button color="gray" variant="solid" highContrast>
-                {year ?? "Ano"}
-                <DropdownMenu.TriggerIcon />
-              </Button>
-            </DropdownMenu.Trigger>
+            🦀
 
-            <DropdownMenu.Content color="gray" variant="soft" highContrast>
-              {YEARS.map((y, i) => (
-                <DropdownMenu.Item key={i} onSelect={() => setYear(y)} shortcut="●">{y}</DropdownMenu.Item>
-              ))}
-            </DropdownMenu.Content>
-          </DropdownMenu.Root>
-        </Box >
+            <Separator my="2" size="4" />
+
+            <Box  // ── ⋙── ── ── DropDownSelector ── ── ──➤
+              id="DropDownComponent"
+              className="flex justify-start gap-6 w-full z-50"
+            >
+
+              <DropdownMenu.Root
+              // ⊙  Variable ↺ setVariable
+              >
+                <DropdownMenu.Trigger>
+                  <Button size="1" variant="soft" highContrast>
+                    {variable ? VARIABLES[variable] : "Variável medida"}
+                    <DropdownMenu.TriggerIcon />
+                  </Button>
+                </DropdownMenu.Trigger>
+
+                <DropdownMenu.Content color="gray" variant="soft" highContrast>
+                  <DropdownMenu.Item onSelect={() => setVariable("valor_da_producao")} shortcut="💵">
+                    Valor da produção
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.Item onSelect={() => setVariable("area_plantada_ou_destinada_a_colheita")} shortcut="🌱">
+                    Área plantada ou destinada a colheita
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item onSelect={() => setVariable("area_colhida")} shortcut="🥗">
+                    Área colhida
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+
+              </DropdownMenu.Root>
+
+
+              <DropdownMenu.Root
+              // ⊙ Year  ↺ setYear
+              >
+                <DropdownMenu.Trigger>
+                  <Button size="1" color="gray" variant="soft" highContrast>
+                    {year ?? "Ano"}
+                    <DropdownMenu.TriggerIcon />
+                  </Button>
+                </DropdownMenu.Trigger>
+
+                <DropdownMenu.Content color="gray" variant="soft" highContrast>
+                  {YEARS.map((y, i) => (
+                    <DropdownMenu.Item key={i} onSelect={() => setYear(y)}>{y}</DropdownMenu.Item>
+                  ))}
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+
+            </Box >
+
+
+          </Flex>
+
+        </Box>
+
+
 
 
         <div // ── ⋙── ── ── canvas-wrapper ── ── ── ──➤
@@ -475,10 +498,10 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
             md:w-[602px] md:h-[640px] md:aspect-auto
           "
         >
+
           {colorScale.legendData && // <○> GradientLegend
             <GradientLegend {...colorScale.legendData} />
           }
-
           <AnimatedTooltip {...tooltip} />
           <animated.svg //HERE  SVGCanvas // . . . props
             id="SVGCanvas"
@@ -547,8 +570,6 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
                   );
                 })
               } //. . .
-
-
               {currentLevel === 1 && ( // ⊙ currentLevel
                 <rect
                   opacity={0.98}
