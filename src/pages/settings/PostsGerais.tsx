@@ -1,5 +1,5 @@
 // src/pages/settings/GerenciamentoPostsGerais.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Heading, Button, Flex, Card, Text, Spinner, AlertDialog, AspectRatio, Box } from '@radix-ui/themes';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
 import PostEditorDashboard from './PostEditor';

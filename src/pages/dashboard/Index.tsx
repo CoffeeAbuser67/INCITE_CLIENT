@@ -2,6 +2,7 @@
 import React, {
   useState,
   useEffect,
+  useCallback,
 } from "react";
 
 import classNames from "classnames";
@@ -10,7 +11,6 @@ import {
   Card,
   Flex,
   Text,
-  Heading,
   Separator,
   Strong,
 } from "@radix-ui/themes";
@@ -33,10 +33,10 @@ import {
   Legend,
   ResponsiveContainer,
   Rectangle,
+  TooltipProps,
   Brush
 } from 'recharts';
 
-import { TooltipProps } from "recharts";
 import MapMenu from "./MapMenu2";
 import Icons from "../../assets/Icons";
 import ICON_SIZES from "../../assets/IconsSizes";
@@ -52,6 +52,49 @@ import { ChartColumnBig, ChartColumnDecreasing, LineChart as LineChartIcon } fro
 // 🧿 
 //  WARN Xique-xique | santa teresinha | Muquém de São Francisco
 // 
+
+
+
+
+
+
+
+interface CustomTickProps {
+  x: number;
+  y: number;
+  payload: {
+    value: string;
+  };
+}
+
+
+interface BarLabelProps {
+  x?: string | number;
+  y?: string | number;
+  width?: string | number;
+  index?: number;
+}
+
+
+type A_Item = { id: string; name: string; v: number };
+type A_Item2 = { id: string; name: string; qp: number, rm: number };
+type AgriculturalData = {
+  data: A_Item[];
+  percent_data: A_Item[];
+  QP_RM: A_Item2[];
+  var: string;
+};
+
+
+type DataS = {
+  [key: string]: number;
+  year: number;
+};
+
+type DataSeries = {
+  data: DataS[]
+  keys: { [key: string]: string };
+};
 
 
 const Home = () => { // ★  ⋙── ── ── ── ── ── Home ── ── ── ── ── ── ── ── ──➤ 
@@ -71,27 +114,8 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   // ✳ {variable}
   const { variable } = variableStore();
 
-  type A_Item = { id: string; name: string; v: number };
-  type A_Item2 = { id: string; name: string; qp: number, rm: number };
-  type AgriculturalData = {
-    data: A_Item[];
-    percent_data: A_Item[];
-    QP_RM: A_Item2[];
-    var: string;
-  };
-
   // ✳ [topVData, setTopVData]
   const [topVData, setTopVData] = useState<AgriculturalData | null>(null);
-
-  type DataS = {
-    [key: string]: number;
-    year: number;
-  };
-
-  type DataSeries = {
-    data: DataS[]
-    keys: { [key: string]: string };
-  };
 
   // ✳ [seriesVData, setSeriesVData]
   const [seriesVData, setSeriesVData] = useState<DataSeries | null>(null);
@@ -99,24 +123,19 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   const seriesKeys = seriesVData?.keys ? Object.keys(seriesVData?.keys) : [] // HERE seriesKeys
 
-  useEffect(() => {   // HERE useEffect
-    getSeriesValues()
-  }, [region, city, variable])
 
-  useEffect(() => {   // HERE useEffect
-    getTopValues()
-  }, [region, city, year, variable])
-  // ── ⋙── ── ── ── ── ── ── ──➤
 
-  const getSeriesValues = async () => { // {✪} getSeriesValues
+  const getSeriesValues = useCallback(async () => { // {✪} getSeriesValues
+
+
     const axios = axiosPlain;
     try {
-      const area = city.active === '' ? region.active : city.active //  ⊙ city
+      const area = city.active === '' ? region.active : city.active // ⊙ city
       const TYPE = city.active === '' ? "regiao" : "municipio"
       const url = "/getTopSeries/";
       const params = {
         area: area,
-        variable: variable, // ⊙  variable
+        variable: variable, // ⊙ variable
         type: TYPE
       };
 
@@ -128,9 +147,17 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         handleAxiosError(err);
       }
     }
-  } // ── ⋙── ── ── ── ── ── ── ──➤
 
-  const getTopValues = async () => { // (✪) getTopValues
+
+  }, [city.active, region.active, variable]);   // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+
+
+
+
+  const getTopValues = useCallback(async () => { // (✪) getTopValues
+
     const axios = axiosPlain;
     try {
 
@@ -153,7 +180,26 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         handleAxiosError(err);
       }
     }
-  }
+
+  }, [city.active, region.active, year, variable]);  // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+
+
+
+  useEffect(() => {   // HERE useEffect
+    getSeriesValues()
+  }, [getSeriesValues])
+
+
+
+  useEffect(() => {   // HERE useEffect
+    getTopValues()
+  }, [getTopValues])
+  // ── ⋙── ── ── ── ── ── ── ──➤
+
+
+
 
   const PieTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // ── ⋙── ── ── CHART AUX ── ── ── ── ──➤  
     if (active && payload && payload.length) { // <●> PieTooltip
@@ -202,10 +248,14 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
-  const SeriesTooltip = ({ active, payload }) => { // <●> SeriesTooltip
-    if (active && payload && payload.length) {
-      const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
 
+
+
+
+  const SeriesTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {   // <●> SeriesTooltip
+
+    if (active && payload && payload.length) {
+      const sortedPayload = [...payload].sort((a, b) => (b.value as number) - (a.value as number));
 
       return (
         <Card size="2" className="bg-gray-100 opacity-90">
@@ -218,11 +268,11 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
           <Flex direction="column" gap="2">
             {sortedPayload.map((item) => {
 
+              if (item.value === undefined || item.value === null) return null;
               let formattedValue = '';
-
-              // Lógica para formatar o valor baseado na variável
+              const numericValue = Number(item.value);
               if (variable === 'valor_da_producao') {
-                const finalValue = item.value * 1000;
+                const finalValue = numericValue * 1000;
                 formattedValue = new Intl.NumberFormat('pt-BR', {
                   style: 'currency',
                   currency: 'BRL',
@@ -232,12 +282,12 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                 variable === 'area_plantada_ou_destinada_a_colheita' ||
                 variable === 'area_colhida'
               ) {
-                formattedValue = `${item.value.toLocaleString('pt-BR')} hectares`;
+                formattedValue = `${numericValue.toLocaleString('pt-BR')} hectares`;
               } else {
-                formattedValue = item.value.toLocaleString('pt-BR');
+                formattedValue = numericValue.toLocaleString('pt-BR');
               }
 
-              const dataKey = item.dataKey;
+              const dataKey = item.dataKey as string;
               const SvgComponent = Icons[dataKey as keyof typeof Icons];
               const itemName = seriesVData?.keys[dataKey] || dataKey;
 
@@ -288,13 +338,13 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return null;
   }; // . . . . . . . . . . . .
 
-  const CustomXAxisTick = (props) => { // {●} CustomXAxisTick
+  const CustomXAxisTick = (props: CustomTickProps) => { // {●} CustomXAxisTick
     const { x, y, payload } = props;
     const dataKey = payload.value;
     const SvgComponent = Icons[dataKey as keyof typeof Icons];
     // Se não houver um ícone para essa chave, não renderiza nada.
     if (!SvgComponent) {
-      return null;
+      return <g />;
     }
     return (
       <g transform={`translate(${x - 15}, ${y})`}>
@@ -303,19 +353,30 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     );
   }; // . . . . . . . . . . . .
 
-  const BarTopLabels = (props) => {  // {●} BarTopLabels
+  const BarTopLabels = (props: BarLabelProps) => {  // {●} BarTopLabels
     const { x, y, width, index } = props;
-    const dataName = topVData?.data[index]?.id ?? "default"; // ⊙ topVData
+
+    if (x === undefined || y === undefined || width === undefined || index === undefined) {
+      return null;
+    }
+
+    const numX = typeof x === 'string' ? parseFloat(x) : x;
+    const numY = typeof y === 'string' ? parseFloat(y) : y;
+    const numWidth = typeof width === 'string' ? parseFloat(width) : width;
+
+    const dataName = topVData?.data[index]?.id ?? "default";
     const SvgComponent = Icons[dataName as keyof typeof Icons];
     if (!SvgComponent) return null;
+
     const { w: svgWidth, h: svgHeight } = ICON_SIZES[dataName] || { w: 30, h: 30 };
-    const centerX = x + (width / 2) - (svgWidth / 2); // Position at the middle of the bar
-    const centerY = y - svgHeight; // Position at the **exact top** of the bar
+    const centerX = numX + (numWidth / 2) - (svgWidth / 2);
+    const centerY = numY - svgHeight;
 
     return <SvgComponent x={centerX} y={centerY} />;
+
   }; // . . . . . . . . . . . .
 
-  const yAxisValueFormatter = (value) => { // (●) yAxisValueFormatter
+  const yAxisValueFormatter = (value: number) => { // (●) yAxisValueFormatter
 
     if (variable === 'valor_da_producao') {
       const finalValue = value * 1000;
@@ -344,7 +405,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   };
 
-  const yAxisTonsFormatter = (value) => {  // (●) yAxisTonsFormatter
+  const yAxisTonsFormatter = (value: number) => {  // (●) yAxisTonsFormatter
     const formattedNumber = new Intl.NumberFormat('pt-BR', {
       notation: 'compact',
       compactDisplay: 'short',
@@ -352,7 +413,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     return `${formattedNumber} t`; // Adiciona o sufixo "t" de toneladas
   };
 
-  const yAxisKgHaFormatter = (value) => {
+  const yAxisKgHaFormatter = (value: number) => {
     const formattedNumber = new Intl.NumberFormat('pt-BR', {  // (●) yAxisKgHaFormatter
       notation: 'compact',
       compactDisplay: 'short',
@@ -466,15 +527,11 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
                         dataKey="name"
                         content={BarTopLabels} />
                     </Bar>
-
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             </Box>
-
-
           </Box>
-          
         </Box>
 
 
@@ -513,7 +570,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
                     <XAxis
                       dataKey="id"
-                      tick={<CustomXAxisTick />} // {○} CustomXAxisTick
+                      tick={CustomXAxisTick} // {○} CustomXAxisTick
                       axisLine={{ stroke: '#ccc' }}
                       tickLine={false}
                       height={60}

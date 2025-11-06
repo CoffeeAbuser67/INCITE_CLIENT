@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/GerenciadorDeAba.tsx
 import React, { useState } from 'react';
 import { Heading, Button, Flex, Card, Text, Dialog, Separator, AlertDialog } from '@radix-ui/themes';
@@ -64,7 +65,7 @@ export const GerenciadorDeAba = <T extends { id: number; nome?: string }>({
             }
             setIsModalOpen(false); // Fecha a modal
             onDataChange();    // Chama a função para recarregar os dados da página
-        } catch (err) {
+        } catch (err : any ) {
             console.error(`Erro ao salvar ${nomeItem}:`, err.response?.data || err.message);
 
             // Tenta mostrar uma mensagem de erro mais útil vinda da API

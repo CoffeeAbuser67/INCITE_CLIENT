@@ -1,5 +1,5 @@
 // HERE MapMenuBBoxCalculator.tsx 
-import React, {
+import {
     useState,
     useRef,
     useEffect,
@@ -13,7 +13,7 @@ import {
     Text, 
 } from "@radix-ui/themes";
 
-import regionCityData from "../assets/BahiaCidades3.json"; // Caminho para seus dados
+import regionCityData from "../assets/BahiaCidades4.json"; // Caminho para seus dados
 // . . . . . . .
 
 interface CityDef { 

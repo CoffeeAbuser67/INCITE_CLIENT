@@ -1,4 +1,4 @@
-import { User, useUserStore } from '../store/userStore';
+import { useUserStore , User, UserAddForm} from '../store/userStore';
 import { axiosForInterceptor } from '../utils/axios';
 
 // Busca todos os usuários (só para admins)
@@ -10,10 +10,9 @@ const fetchUsers = async (): Promise<User[]> => {
 };
 
 
-// Cria um novo usuário (usando o endpoint de registro do dj-rest-auth)
-const createUser = async (userData) => {
+const createUser = async (userData : UserAddForm ): Promise<User> => {
     // Admins usam o endpoint de registro para criar novos usuários
-    const response = await axiosForInterceptor.post('/auth/registration/', userData);
+    const response: { data: User } = await axiosForInterceptor.post('/auth/registration/', userData);
     return response.data;
 };
 

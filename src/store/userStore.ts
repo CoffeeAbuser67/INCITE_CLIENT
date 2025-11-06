@@ -1,7 +1,21 @@
 // src/store/userStore.ts
 import { create } from "zustand";
-import { User } from '../utils/types';
 import { axiosForInterceptor } from '../utils/axios';
+
+
+export interface User {
+    pkid: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    user_group: number;
+    instituicoes_count: number;
+}
+
+export type UserAddForm = Omit<User, 'pkid' | 'instituicoes_count'> & {
+    password1: string;
+    password2: string;
+};
 
 
 interface UserStore {

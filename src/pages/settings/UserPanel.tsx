@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useUserStore, User } from '../../store/userStore';
 import { userService } from '../../hooks/useUserService';
 import { Card, Heading, Text, Flex, Button, Table, Dialog, AlertDialog, Badge, TextField, Select } from '@radix-ui/themes';
-import { PlusCircle, Trash2, User as UserIcon } from 'lucide-react';
+import { PlusCircle, Trash2, } from 'lucide-react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
@@ -11,7 +11,17 @@ import handleAxiosError from '../../utils/handleAxiosError';
 
 
 
-const AddUserForm = ({ onSave, onCancel }) => { // <✪> AddUserForm
+
+
+interface AddUserFormProps {
+    onSave: () => void;
+    onCancel: () => void;
+}
+
+
+
+
+const AddUserForm = ({ onSave, onCancel }: AddUserFormProps) => { // <✪> AddUserForm
     const formik = useFormik({
 
 

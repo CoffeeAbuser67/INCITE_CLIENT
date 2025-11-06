@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog, Spinner, Tooltip, AspectRatio } from '@radix-ui/themes';
@@ -15,11 +16,6 @@ import * as Yup from 'yup';
 
 
 
-
-
-
-// HERE Interfaces & types
-// --- Tipos para cada modelo ---
 export type Postagem = { id: number; title: string; content: string; resumo: string; imagem_destaque: string | null; created_at: string };
 export type Pesquisador = { id: number; nome: string; area_atuacao: string; desligado: boolean; bolsista: boolean };
 export type Pesquisa = { id: number; nome: string; info: string; ano_inicio: number; ano_fim?: number };
@@ -73,14 +69,6 @@ interface PostagensTabProps {
     instituicaoId: number;
     onDataChange: () => void;
 }
-
-
-interface FormProps {
-    initialData?: any;
-    onSaveSuccess: () => void;
-    onCancel: () => void;
-}
-
 
 
 
@@ -321,11 +309,15 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
             setMode('list');
             setPostAlvo(null);
             onDataChange(); // Pede para a página principal recarregar os dados
-        } catch (err) {
+        } catch (err : any) {
             console.error("Erro ao salvar postagem:", err.response?.data || err);
             toast.error("Erro ao salvar postagem.");
         }
     };
+
+
+
+
 
 
 
@@ -476,12 +468,6 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
 }; // ── ⋙── ── ── ── ── ── ── ──➤
 
 
-
-
-
-
-
-
 export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }: FormProps) => { // ★ InstituicaoForm
 
 
@@ -541,7 +527,7 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
                     toast.success(`Instituição "${values.nome}" criada!`);
                 }
                 onSaveSuccess();
-            } catch (err) {
+            } catch (err : any) {
                 console.error("Erro ao salvar postagem:", err.response?.data || err);
                 toast.error("Erro ao salvar postagem.");
             } finally {

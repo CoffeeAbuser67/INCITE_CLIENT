@@ -1,5 +1,5 @@
 import { axiosPlain } from "../utils/axios";
-import { User } from "../utils/types";
+import { User } from "../store/userStore";
 
 interface Credentials {
   email: string;

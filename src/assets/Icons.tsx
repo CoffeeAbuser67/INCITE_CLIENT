@@ -1,6 +1,8 @@
+import { SVGProps } from "react";
+import { JSX } from "react/jsx-runtime";
 
 
-const Algodao = (props) => (
+const Algodao = (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"
@@ -51,14 +53,11 @@ const Algodao = (props) => (
 
 const Icons = {
 
-  abacate: (props) => (
+  abacate: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
       xmlSpace="preserve"
-      style={{
-        enableBackground: "new 0 0 800 800",
-      }}
       viewBox="0 0 800 800"
       width={33}
       height={33}
@@ -113,7 +112,7 @@ const Icons = {
     </svg>
   ),
 
-  abacaxi: (props) => (
+  abacaxi: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       {...props}
@@ -231,7 +230,7 @@ const Icons = {
     </svg>
   ),
 
-  acai: (props) => (
+  acai: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -239,9 +238,6 @@ const Icons = {
       id="Layer_1"
       width={30}
       height={30}
-      style={{
-        enableBackground: "new 0 0 225 258",
-      }}
       viewBox="0 0 225 258"
     >
       <g id="acai">
@@ -317,7 +313,7 @@ const Icons = {
     </svg>
   ),
 
-  alfafa_fenada: (props) => (
+  alfafa_fenada: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       id="Layer_1"
@@ -366,7 +362,7 @@ const Icons = {
 
   algodao_herbaceo_em_caroco: Algodao,
 
-  alho: (props) => (
+  alho: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -481,7 +477,7 @@ const Icons = {
 
   ),
 
-  amendoim_em_casca: (props) => (
+  amendoim_em_casca: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -510,7 +506,7 @@ const Icons = {
     </svg>
   ),
 
-  arroz_em_casca: (props) => (
+  arroz_em_casca: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -547,7 +543,7 @@ const Icons = {
 
   ),
 
-  aveia_em_grao: (props) => (
+  aveia_em_grao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -595,7 +591,7 @@ const Icons = {
 
   ),
 
-  azeitona: (props) => (
+  azeitona: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -637,7 +633,7 @@ const Icons = {
 
   ),
 
-  banana_cacho: (props) => (
+  banana_cacho: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       {...props}
@@ -684,7 +680,7 @@ const Icons = {
 
   ),
 
-  batata_doce: (props) => (
+  batata_doce: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
 
     <svg
@@ -743,7 +739,7 @@ const Icons = {
     </svg>
   ),
 
-  batata_inglesa: (props) => (
+  batata_inglesa: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -782,7 +778,7 @@ const Icons = {
 
   ),
 
-  borracha_latex_coagulado: (props) => (
+  borracha_latex_coagulado: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -834,7 +830,7 @@ const Icons = {
 
   ),
 
-  borracha_latex_liquido: (props) => (
+  borracha_latex_liquido: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width={30}
@@ -891,7 +887,7 @@ const Icons = {
     </svg>
   ),
 
-  cacau_em_amendoa: (props) => (
+  cacau_em_amendoa: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -964,7 +960,7 @@ const Icons = {
 
   ),
 
-  cafe_em_grao_total: (props) => (
+  cafe_em_grao_total: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1066,7 +1062,7 @@ const Icons = {
 
   ),
 
-  caju: (props) => (
+  caju: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -1127,7 +1123,7 @@ const Icons = {
 
   ),
 
-  cana_de_acucar: (props) => (
+  cana_de_acucar: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1186,7 +1182,7 @@ const Icons = {
 
   ),
 
-  cana_para_forragem: (props) => (
+  cana_para_forragem: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1247,14 +1243,11 @@ const Icons = {
 
   ),
 
-  caqui: (props) => (
+  caqui: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
       xmlSpace="preserve"
-      style={{
-        enableBackground: "new 0 0 150 134",
-      }}
       width={33}
       height={33}
       viewBox="0 0 150 134"
@@ -1299,7 +1292,7 @@ const Icons = {
     </svg>
   ),
 
-  castanha_de_caju: (props) => (
+  castanha_de_caju: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1343,7 +1336,7 @@ const Icons = {
 
   ),
 
-  cebola: (props) => (
+  cebola: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width={35}
@@ -1373,7 +1366,7 @@ const Icons = {
 
   ),
 
-  centeio_em_grao: (props) => (
+  centeio_em_grao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1426,7 +1419,7 @@ const Icons = {
 
   ),
 
-  cevada_em_grao: (props) => (
+  cevada_em_grao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 610 750"
@@ -1505,7 +1498,7 @@ const Icons = {
 
   ),
 
-  cha_da_india_folha_verde: (props) => (
+  cha_da_india_folha_verde: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1531,7 +1524,7 @@ const Icons = {
 
   ),
 
-  coco_da_baia: (props) => (
+  coco_da_baia: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1572,7 +1565,7 @@ const Icons = {
 
   ),
 
-  dende_cacho_de_coco: (props) => (
+  dende_cacho_de_coco: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1624,7 +1617,7 @@ const Icons = {
 
   ),
 
-  erva_mate_folha_verde: (props) => (
+  erva_mate_folha_verde: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1661,7 +1654,7 @@ const Icons = {
     </svg>
   ),
 
-  ervilha_em_grao: (props) => (
+  ervilha_em_grao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -1712,7 +1705,7 @@ const Icons = {
     </svg>
   ),
 
-  fava_em_grao: (props) => (
+  fava_em_grao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -1747,7 +1740,7 @@ const Icons = {
     </svg>
   ),
 
-  feijao_em_grao: (props) => (
+  feijao_em_grao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -1784,16 +1777,13 @@ const Icons = {
     </svg>
   ),
 
-  figo: (props) => (
+  figo: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
       xmlSpace="preserve"
       width={35}
       height={35}
-      style={{
-        enableBackground: "new 0 0 312 271",
-      }}
       viewBox="0 0 312 271"
     >
       <style>{".st4{fill:#5b1a41}.st5{fill:#fcebf9}.st7{fill:#bc3e2c}"}</style>
@@ -1854,7 +1844,7 @@ const Icons = {
     </svg>
   ),
 
-  fumo_em_folha: (props) => (
+  fumo_em_folha: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -1890,7 +1880,7 @@ const Icons = {
     </svg>
   ),
 
-  girassol_em_grao: (props) => (
+  girassol_em_grao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       {...props}
@@ -1932,7 +1922,7 @@ const Icons = {
     </svg>
   ),
 
-  goiaba: (props) => (
+  goiaba: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -2056,7 +2046,7 @@ const Icons = {
     </svg>
   ),
 
-  guarana_semente: (props) => (
+  guarana_semente: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -2174,7 +2164,7 @@ const Icons = {
 
   ),
 
-  juta_fibra: (props) => (
+  juta_fibra: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -2209,7 +2199,7 @@ const Icons = {
 
   ),
 
-  laranja: (props) => (
+  laranja: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -2266,7 +2256,7 @@ const Icons = {
 
   ),
 
-  limao: (props) => (
+  limao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -2303,7 +2293,7 @@ const Icons = {
     </svg>
   ),
 
-  linho_semente: (props) => (
+  linho_semente: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -2331,7 +2321,7 @@ const Icons = {
     </svg>
   ),
 
-  maca: (props) => (
+  maca: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       {...props}
@@ -2340,9 +2330,6 @@ const Icons = {
       id="maca"
       width={33}
       height={33}
-      style={{
-        enableBackground: "new 0 0 800 800",
-      }}
       viewBox="0 0 800 800"
     >
       <path
@@ -2392,7 +2379,7 @@ const Icons = {
 
   ),
 
-  malva_fibra: (props) => (
+  malva_fibra: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -2476,7 +2463,7 @@ const Icons = {
 
   ),
 
-  mamao: (props) => (
+  mamao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -2545,7 +2532,7 @@ const Icons = {
 
   ),
 
-  mamona_baga: (props) => (
+  mamona_baga: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -2583,7 +2570,7 @@ const Icons = {
 
   ),
 
-  mandioca: (props) => (
+  mandioca: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -2622,7 +2609,7 @@ const Icons = {
 
   ),
 
-  manga: (props) => (
+  manga: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -2670,7 +2657,7 @@ const Icons = {
 
   ),
 
-  maracuja: (props) => (
+  maracuja: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -2798,7 +2785,7 @@ const Icons = {
 
   ),
 
-  marmelo: (props) => (
+  marmelo: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       {...props}
@@ -2835,15 +2822,12 @@ const Icons = {
 
   ),
 
-  melancia: (props) => (
+  melancia: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
       width={33}
       height={33}
-      style={{
-        enableBackground: "new 0 0 800 800",
-      }}
       viewBox="0 0 800 800"
     >
       <style>{".melan_cls{fill:#ff395a}"}</style>
@@ -2925,7 +2909,7 @@ const Icons = {
 
   ),
 
-  melao: (props) => (
+  melao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -3020,7 +3004,7 @@ const Icons = {
 
   ),
 
-  milho_em_grao: (props) => (
+  milho_em_grao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       {...props}
@@ -3028,9 +3012,6 @@ const Icons = {
       xmlSpace="preserve"
       width={40}
       height={40}
-      style={{
-        enableBackground: "new 0 0 1024 1024",
-      }}
       viewBox="0 0 1024 1024"
     >
       <style>{".mio0{fill:#fef700}.mio1{fill:#0cbd3b}"}</style>
@@ -3046,14 +3027,11 @@ const Icons = {
     </svg>
   ),
 
-  noz_fruto_seco: (props) => (
+  noz_fruto_seco: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
       xmlSpace="preserve"
-      style={{
-        enableBackground: "new 0 0 300 300",
-      }}
       width={30}
       height={30}
       viewBox="0 0 300 300"
@@ -3101,7 +3079,7 @@ const Icons = {
     </svg>
   ),
 
-  palmito: (props) => (
+  palmito: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -3147,7 +3125,7 @@ const Icons = {
 
   ),
 
-  pera: (props) => (
+  pera: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -3195,7 +3173,7 @@ const Icons = {
     </svg>
   ),
 
-  pessego: (props) => (
+  pessego: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -3256,7 +3234,7 @@ const Icons = {
     </svg>
   ),
 
-  pimenta_do_reino: (props) => (
+  pimenta_do_reino: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -3280,7 +3258,7 @@ const Icons = {
 
   ),
 
-  rami_fibra: (props) => (
+  rami_fibra: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -3322,7 +3300,7 @@ const Icons = {
 
   ),
 
-  sisal_ou_agave_fibra: (props) => (
+  sisal_ou_agave_fibra: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
 
     <svg
@@ -3401,7 +3379,7 @@ const Icons = {
 
   ),
 
-  soja_em_grao: (props) => (
+  soja_em_grao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -3456,7 +3434,7 @@ const Icons = {
     </svg>
   ),
 
-  sorgo_em_grao: (props) => (
+  sorgo_em_grao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -3695,7 +3673,7 @@ const Icons = {
     </svg>
   ),
 
-  tangerina: (props) => (
+  tangerina: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -3795,7 +3773,7 @@ const Icons = {
     </svg>
   ),
 
-  tomate: (props) => (
+  tomate: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -3837,7 +3815,7 @@ const Icons = {
 
   ),
 
-  trigo_em_grao: (props) => (
+  trigo_em_grao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"
@@ -3874,7 +3852,7 @@ const Icons = {
     </svg>
   ),
 
-  triticale_em_grao: (props) => (
+  triticale_em_grao: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 610 750"
@@ -3921,7 +3899,7 @@ const Icons = {
 
   ),
 
-  tungue_fruto_seco: (props) => (
+  tungue_fruto_seco: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -3966,7 +3944,7 @@ const Icons = {
 
   ),
 
-  urucum_semente: (props) => (
+  urucum_semente: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 630 420"
@@ -4010,7 +3988,7 @@ const Icons = {
 
   ),
 
-  uva: (props) => (
+  uva: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 
     <svg
       {...props}
@@ -4018,9 +3996,6 @@ const Icons = {
       xmlSpace="preserve"
       width={35}
       height={35}
-      style={{
-        enableBackground: "new 0 0 800 800",
-      }}
       viewBox="0 0 800 800"
     >
 
@@ -4153,7 +4128,7 @@ const Icons = {
 
   ),
 
-  outros: (props) => (
+  outros: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
     <svg
       {...props}
       xmlns="http://www.w3.org/2000/svg"

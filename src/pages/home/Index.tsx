@@ -95,9 +95,6 @@ const Home = () => { // ★ Home ⋙──────────────�
     // ✳ [currentLevel, setCurrentLevel]
     const [currentLevel, setCurrentLevel] = useState<levels>(0);
 
-    // WARN  To pegando a escala mas n to usando 
-    // ✳ [currentScale, setCurrentScale]
-    const [currentScale, setCurrentScale] = useState<number>(1);
 
     interface RegionState {
         active: string;
@@ -263,7 +260,8 @@ const Home = () => { // ★ Home ⋙──────────────�
 
     // <✪> zoomToPoint
     const zoomToPoint = (x: number, y: number) => {
-        const [originalX, originalY, originalWidth, originalHeight] = initialViewBox;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const [_originalX, _originalY, originalWidth, originalHeight] = initialViewBox;
 
         const newWidth = originalWidth / PIN_ZOOM_LEVEL;
         const newHeight = originalHeight / PIN_ZOOM_LEVEL;
@@ -334,7 +332,6 @@ const Home = () => { // ★ Home ⋙──────────────�
     // {✪} resetMap
     const resetMap = () => {
         setCurrentLevel(0);
-        setCurrentScale(1);
         handleSetRegion("bahia", "Bahia");
         api.start({ viewBox: initialViewBox });
         setSelectedInstituicao(null);

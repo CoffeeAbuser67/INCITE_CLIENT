@@ -7,8 +7,6 @@ import { axiosPlain } from '../../utils/axios';
 import { PostCard } from './PostCard';
 import { PublicPost, InstituicaoParaFiltro } from './blogTypes';
 import { Link, useLocation } from 'react-router-dom';
-import classNames from 'classnames';
-
 
 function useQuery() {
     return new URLSearchParams(useLocation().search);

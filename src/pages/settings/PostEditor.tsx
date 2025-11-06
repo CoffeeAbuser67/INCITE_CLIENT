@@ -1,16 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import UnderlineExtension from '@tiptap/extension-underline';
-
-import { Mark, mergeAttributes } from '@tiptap/core';
+import { Mark, mergeAttributes, CommandProps } from '@tiptap/core';
 import { UploadCloud, X, FileImage, LoaderCircle, Underline } from 'lucide-react';
 import { Dialog, Button, TextField, Text, Flex, TextArea, Tooltip } from '@radix-ui/themes'; // Usando componentes Radix
-
 import { axiosForInterceptor } from '../../utils/axios';
-
 import {
     Bold,
     Italic,
@@ -21,6 +19,8 @@ import {
     Image as ImageIcon
 } from 'lucide-react';
 import { IconButton, Select, Separator } from '@radix-ui/themes';
+
+
 
 interface ImageUploadModalProps {
     isOpen: boolean;
@@ -193,36 +193,64 @@ const TextClass = Mark.create({
         return ['span', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
     },
 
+
     addCommands() {
         return {
             setTextClass:
                 (className: string) =>
-                    ({ commands }: { commands: any }) => {
+                    ({ commands }: CommandProps) => {
                         if (!className) {
                             return commands.unsetMark(this.name);
                         }
                         return commands.setMark(this.name, { class: className });
                     },
-        } as Partial<Record<string, any>>;
+        } as any;
+
     },
+
+
+
+
+
+
+
+
 
 });
 
 
+
+interface ToolbarProps {
+    editor: Editor | null;
+}
+
+
+
+
+
+
 // <●> Toolbar
-const Toolbar = ({ editor }) => {
+const Toolbar = ({ editor }: ToolbarProps) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     if (!editor) return null;
-    const handleImageInsert = (url) => { if (url) { editor.chain().focus().setImage({ src: url }).run(); } };
+
+
+
+    const handleImageInsert = (url: string) => { if (url) { editor.chain().focus().setImage({ src: url }).run(); } };
+
+
+
+
     const FONT_OPTIONS = [
         { label: 'Pequeno', value: 'text-small' },
         { label: 'Grande', value: 'text-large' },
         { label: 'Subtítulo', value: 'text-subtitle' },
     ];
     const activeFontSize = FONT_OPTIONS.find(option => editor.isActive('textClass', { class: option.value }))?.value || 'normal';
-    const handleFontSizeChange = (className) => {
+    const handleFontSizeChange = (className: string) => {
         if (className === 'normal') { editor.chain().focus().unsetMark('textClass').run(); }
-        else { editor.chain().focus().setTextClass(className).run(); }
+        else { (editor.chain().focus() as any).setTextClass(className).run(); }
+
     };
 
     return (

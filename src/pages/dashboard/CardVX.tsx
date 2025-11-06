@@ -1,7 +1,7 @@
 
 import classNames from 'classnames';
 import { Box, Flex, Heading, Separator, Strong, Text } from "@radix-ui/themes";
-import { BarChart, LineChart, ChartColumnBig, ChartColumnDecreasing } from 'lucide-react';
+import { LineChart, ChartColumnBig, ChartColumnDecreasing } from 'lucide-react';
 import { mapStore, yearStore, variableStore } from "../../store/mapsStore";
 import { VARIABLES } from '../../assets/auxData';
 

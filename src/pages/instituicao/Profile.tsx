@@ -1,15 +1,41 @@
-// src/pages/InstituicaoProfilePage.tsx
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Heading, Box, Text, Flex, Spinner, Card, Avatar, Badge, Tabs, Button } from '@radix-ui/themes';
 import { axiosPlain } from '../../utils/axios';
 import { MapPin, Mail, Phone, Newspaper, User as UserIcon, ArrowRightIcon } from 'lucide-react';
-import { Instituicao } from '../settings/Instituicao';
+
+
+import {
+    Instituicao,
+    Pesquisador,
+    Pesquisa,
+    AcaoExtensionista,
+    ProdutoInovacao,
+    Postagem
+} from '../settings/Instituicao';
 
 
 
 
-const SobreTab = ({ instituicao }) => (
+interface SobreTabProps {
+    instituicao: Instituicao;
+}
+interface PesquisasListProps {
+    pesquisas: Pesquisa[];
+}
+interface AcoesExtensionistasListProps {
+    acoes: AcaoExtensionista[];
+}
+interface ProdutosListProps {
+    produtos: ProdutoInovacao[];
+}
+interface PesquisadoresListProps {
+    pesquisadores: Pesquisador[];
+}
+
+
+
+const SobreTab = ({ instituicao }: SobreTabProps) => (
     <Card>
         <Heading size="4" mb="2">Sobre a Instituição</Heading>
         <Text as="p" color="gray">{instituicao.informacoes_adicionais || 'Nenhuma informação adicional fornecida.'}</Text>
@@ -18,7 +44,7 @@ const SobreTab = ({ instituicao }) => (
 
 
 
-const PesquisasList = ({ pesquisas }) => (
+const PesquisasList = ({ pesquisas }: PesquisasListProps) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {pesquisas.map((p: Pesquisa) => (
             <Card key={p.id}>
@@ -32,7 +58,7 @@ const PesquisasList = ({ pesquisas }) => (
     </div>
 );
 
-const AcoesExtensionistasList = ({ acoes }) => (
+const AcoesExtensionistasList = ({ acoes }: AcoesExtensionistasListProps) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {acoes.map((a: AcaoExtensionista) => (
             <Card key={a.id}>
@@ -46,7 +72,7 @@ const AcoesExtensionistasList = ({ acoes }) => (
     </div>
 );
 
-const ProdutosList = ({ produtos }) => (
+const ProdutosList = ({ produtos }: ProdutosListProps) => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {produtos.map((p: ProdutoInovacao) => (
             <Card key={p.id}>
@@ -61,8 +87,7 @@ const ProdutosList = ({ produtos }) => (
 
 
 
-
-const PesquisadoresList = ({ pesquisadores }) => (
+const PesquisadoresList = ({ pesquisadores }: PesquisadoresListProps) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {pesquisadores.map(p => (
             <Card key={p.id}>

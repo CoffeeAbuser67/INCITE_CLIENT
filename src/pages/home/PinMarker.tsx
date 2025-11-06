@@ -1,6 +1,6 @@
 // src/components/PinMarker.tsx
 import React, { useState, useEffect } from 'react';
-import { Tooltip, Text } from '@radix-ui/themes';
+import { Tooltip } from '@radix-ui/themes';
 import { useSpring, animated } from 'react-spring';
 
 // Definindo a interface de props que o marcador receberá
@@ -16,8 +16,14 @@ interface PinMarkerProps {
 }
 
 
-// O componente SVG do pino, como um componente React
-const PinShape = ({ fillColor, strokeColor }) => (
+
+interface PinShapeProps {
+    fillColor: string;
+    strokeColor?: string;
+};
+
+
+const PinShape = ({ fillColor, strokeColor }: PinShapeProps) => (
     <path
         d="M26.4 6c-1.1-1.8-2.5-3.2-4.4-4.4S18.2 0 16 0s-4.2.6-6 1.6C8.1 2.7 6.7 4.2 5.6 6 4.5 7.8 4 9.8 4 12c-.1 1 .2 2 .7 3.2s1.1 2.4 1.7 3.6c.6 1.2 1.4 2.5 2.4 3.8s1.8 2.5 2.5 3.5 1.5 2 2.4 3c.9 1 1.4 1.7 1.7 2 .3.3.5.6.7.8l.7-.7c.4-.5 1-1.2 1.7-2.1.7-.9 1.5-1.8 2.3-2.9.8-1.1 1.7-2.3 2.6-3.6.9-1.3 1.7-2.5 2.3-3.8.7-1.2 1.2-2.5 1.7-3.7.4-1.1.6-2.2.6-3.1 0-2.2-.5-4.2-1.6-6z"
         fill={fillColor}
