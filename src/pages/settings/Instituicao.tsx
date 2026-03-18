@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog, Spinner, Tooltip, AspectRatio } from '@radix-ui/themes';
+import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog, Spinner, Tooltip, AspectRatio, Checkbox } from '@radix-ui/themes';
 import { PlusCircle, Pencil, Trash2, ArrowLeft, Info, Upload } from 'lucide-react';
 import PostEditorDashboard from './PostEditor';
 import { GerenciadorDeAba } from './GerenciadorDeAba'
@@ -9,6 +9,8 @@ import { axiosForInterceptor } from '../../utils/axios';
 import { toast } from 'react-toastify';
 import { CitySelect } from './CitySelect';
 import mapCity from '../../assets/BahiaCidades4.json';
+
+
 
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -18,9 +20,9 @@ import * as Yup from 'yup';
 
 export type Postagem = { id: number; title: string; content: string; resumo: string; imagem_destaque: string | null; created_at: string };
 export type Pesquisador = { id: number; nome: string; area_atuacao: string; desligado: boolean; bolsista: boolean };
-export type Pesquisa = { id: number; nome: string; info: string; ano_inicio: number; ano_fim?: number };
-export type AcaoExtensionista = { id: number; nome: string; info: string; ano_inicio: number; ano_fim?: number; tipo_comunidade: string };
-export type ProdutoInovacao = { id: number; nome: string; info: string; ano_inicio: number; ano_fim?: number };
+export type Pesquisa = { id: number; nome: string; info: string; data_inicio: string; data_fim?: string; pesquisadores?: number[] };
+export type AcaoExtensionista = { id: number; nome: string; info: string; data_inicio: string; data_fim?: string; tipo_comunidade: string };
+export type ProdutoInovacao = { id: number; nome: string; info: string; data_inicio: string; data_fim?: string };
 
 
 export interface Instituicao {
@@ -91,6 +93,8 @@ const mapaDeNomesDeCidade = new Map(todasAsCidades.map(city => [city.id, city.na
 
 // ── ⋙── ── ── FORMS ── ── ── ──➤
 
+
+
 export const PesquisadorForm: React.FC<SubFormProps<Pesquisador>> = ({ dadosIniciais, onSave, onCancel }) => {// ✪ PesquisadorForm
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [area, setArea] = useState(dadosIniciais?.area_atuacao || '');
@@ -115,16 +119,45 @@ export const PesquisadorForm: React.FC<SubFormProps<Pesquisador>> = ({ dadosInic
     );
 }; // . . .
 
-export const PesquisaForm: React.FC<SubFormProps<Pesquisa>> = ({ dadosIniciais, onSave, onCancel }) => {// ✪ PesquisaForm
+
+
+
+interface PesquisaFormProps extends SubFormProps<Pesquisa> {
+    pesquisadoresDisponiveis?: Pesquisador[];
+}
+
+
+// ✪ PesquisaForm
+export const PesquisaForm: React.FC<PesquisaFormProps> = ({ dadosIniciais, onSave, onCancel, pesquisadoresDisponiveis = [] }) => {
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [info, setInfo] = useState(dadosIniciais?.info || '');
-    const [ano, setAno] = useState(dadosIniciais?.ano_inicio || new Date().getFullYear());
-    const [ano_fim, setAnoFim] = useState(dadosIniciais?.ano_fim || '');
+    const [pesquisadoresSelecionados, setPesquisadoresSelecionados] = useState<number[]>(dadosIniciais?.pesquisadores || []);
 
+    // Controle nativo de datas (formato YYYY-MM-DD do banco)
+    const [dataInicio, setDataInicio] = useState(dadosIniciais?.data_inicio || '');
+    const [dataFim, setDataFim] = useState(dadosIniciais?.data_fim || '');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ nome, info, ano_inicio: ano, ano_fim: ano_fim ? Number(ano_fim) : undefined });
+
+        if (!dataInicio) {
+            toast.warn("A data de início da pesquisa é obrigatória.");
+            return;
+        }
+
+        onSave({
+            nome,
+            info,
+            data_inicio: dataInicio,
+            data_fim: dataFim || undefined,
+            pesquisadores: pesquisadoresSelecionados
+        });
+    };
+
+    const togglePesquisador = (id: number) => {
+        setPesquisadoresSelecionados(prev =>
+            prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
+        );
     };
 
     return (
@@ -132,12 +165,39 @@ export const PesquisaForm: React.FC<SubFormProps<Pesquisa>> = ({ dadosIniciais, 
             <Flex direction="column" gap="3">
                 <label><Text as="div" size="2" weight="bold">Nome da Pesquisa</Text><TextField.Root value={nome} onChange={e => setNome(e.target.value)} required /></label>
                 <label><Text as="div" size="2" weight="bold">Informações</Text><TextArea value={info} onChange={e => setInfo(e.target.value)} /></label>
-                <label><Text as="div" size="2" weight="bold">Ano de Início</Text><TextField.Root type="number" value={ano} onChange={e => setAno(Number(e.target.value))} /></label>
 
-                <label className="flex-1">
-                    <Text as="div" size="2" weight="bold">Ano de Conclusão (Opcional)</Text>
-                    <TextField.Root type="number" value={ano_fim} onChange={e => setAnoFim(e.target.value)} placeholder="" />
-                </label>
+                <Flex gap="3" mt="2" mb="2">
+                    <label className="flex-1">
+                        <Text as="div" size="2" weight="bold">Data de Início</Text>
+                        <TextField.Root type="date" value={dataInicio} onChange={e => setDataInicio(e.target.value)} required />
+                    </label>
+                    <label className="flex-1">
+                        <Text as="div" size="2" weight="bold">Data de Conclusão (Opcional)</Text>
+                        <TextField.Root type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} />
+                    </label>
+                </Flex>
+
+                <Box mt="2">
+                    <Text as="div" size="2" weight="bold" mb="2">Pesquisadores Vinculados</Text>
+                    {pesquisadoresDisponiveis.length > 0 ? (
+                        <Flex direction="column" gap="2" className="border border-gray-200 rounded-md p-3 max-h-48 overflow-y-auto bg-gray-50/50">
+                            {pesquisadoresDisponiveis.map(p => (
+                                <Text as="label" size="2" key={p.id}>
+                                    <Flex gap="2" align="center">
+                                        <Checkbox
+                                            checked={pesquisadoresSelecionados.includes(p.id)}
+                                            onCheckedChange={() => togglePesquisador(p.id)}
+                                        />
+                                        {p.nome} {p.area_atuacao && <Text color="gray">({p.area_atuacao})</Text>}
+                                    </Flex>
+                                </Text>
+                            ))}
+                        </Flex>
+                    ) : (
+                        <Text size="2" color="gray">Nenhum pesquisador cadastrado nesta instituição ainda.</Text>
+                    )}
+                </Box>
+
                 <Flex gap="3" mt="4" justify="end">
                     <Button variant="soft" color="gray" type="button" onClick={onCancel}>Cancelar</Button>
                     <Button type="submit">Salvar Pesquisa</Button>
@@ -145,19 +205,35 @@ export const PesquisaForm: React.FC<SubFormProps<Pesquisa>> = ({ dadosIniciais, 
             </Flex>
         </form>
     );
-} // . . .
+}
+// . . .
 
-export const AcaoExtensionistaForm: React.FC<SubFormProps<AcaoExtensionista>> = ({ dadosIniciais, onSave, onCancel }) => {// ✪ AcaoExtensionistaForm
+
+// ✪ AcaoExtensionistaForm
+export const AcaoExtensionistaForm: React.FC<SubFormProps<AcaoExtensionista>> = ({ dadosIniciais, onSave, onCancel }) => {
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [info, setInfo] = useState(dadosIniciais?.info || '');
-    const [ano_inicio, setAnoInicio] = useState(dadosIniciais?.ano_inicio || new Date().getFullYear());
     const [tipo_comunidade, setTipoComunidade] = useState(dadosIniciais?.tipo_comunidade || '');
-    const [ano_fim, setAnoFim] = useState(dadosIniciais?.ano_fim || '');
 
+    // Controle nativo de datas
+    const [dataInicio, setDataInicio] = useState(dadosIniciais?.data_inicio || '');
+    const [dataFim, setDataFim] = useState(dadosIniciais?.data_fim || '');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ nome, info, ano_inicio, tipo_comunidade, ano_fim: ano_fim ? Number(ano_fim) : undefined });
+
+        if (!dataInicio) {
+            toast.warn("A data de início da ação é obrigatória.");
+            return;
+        }
+
+        onSave({
+            nome,
+            info,
+            tipo_comunidade,
+            data_inicio: dataInicio,
+            data_fim: dataFim || undefined
+        });
     };
 
     return (
@@ -172,31 +248,32 @@ export const AcaoExtensionistaForm: React.FC<SubFormProps<AcaoExtensionista>> = 
                     <TextArea value={info} onChange={e => setInfo(e.target.value)} />
                 </label>
 
-
                 <label>
                     <Text as="div" size="2" weight="bold">Tipo de Comunidade Atendida</Text>
                     <Select.Root value={tipo_comunidade} onValueChange={setTipoComunidade}>
                         <Select.Trigger placeholder="Selecione..." />
                         <Select.Content>
-                            <Select.Item value="TR">Tradicionais</Select.Item>
-                            <Select.Item value="IN">Indígenas</Select.Item>
-                            <Select.Item value="QU">Quilombolas</Select.Item>
-                            <Select.Item value="AS">Assentamentos</Select.Item>
+                            <Select.Item value="Tradicionais">Tradicionais</Select.Item>
+                            <Select.Item value="Indígenas">Indígenas</Select.Item>
+                            <Select.Item value="Quilombolas">Quilombolas</Select.Item>
+                            <Select.Item value="Assentamentos">Assentamentos</Select.Item>
+                            <Select.Item value="Agricultores Familiares">Agricultores Familiares</Select.Item>
+                            <Select.Item value="Cooperativas">Cooperativas</Select.Item>
+                            <Select.Item value="Outros">Outros</Select.Item>
                         </Select.Content>
                     </Select.Root>
                 </label>
 
-
-                <label>
-                    <Text as="div" size="2" weight="bold">Ano de Início</Text>
-                    <TextField.Root type="number" value={ano_inicio} onChange={e => setAnoInicio(Number(e.target.value))} />
-                </label>
-
-                <label className="flex-1">
-                    <Text as="div" size="2" weight="bold">Ano de Conclusão (Opcional)</Text>
-                    <TextField.Root type="number" value={ano_fim} onChange={e => setAnoFim(e.target.value)} placeholder="Deixe em branco se atual" />
-                </label>
-
+                <Flex gap="3" mt="2" mb="2">
+                    <label className="flex-1">
+                        <Text as="div" size="2" weight="bold">Data de Início</Text>
+                        <TextField.Root type="date" value={dataInicio} onChange={e => setDataInicio(e.target.value)} required />
+                    </label>
+                    <label className="flex-1">
+                        <Text as="div" size="2" weight="bold">Data de Conclusão (Opcional)</Text>
+                        <TextField.Root type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} />
+                    </label>
+                </Flex>
 
                 <Flex gap="3" mt="4" justify="end">
                     <Button variant="soft" color="gray" type="button" onClick={onCancel}>Cancelar</Button>
@@ -205,19 +282,32 @@ export const AcaoExtensionistaForm: React.FC<SubFormProps<AcaoExtensionista>> = 
             </Flex>
         </form>
     );
+};
+// . . .
 
-}; // . . .
-
-export const ProdutoInovacaoForm: React.FC<SubFormProps<ProdutoInovacao>> = ({ dadosIniciais, onSave, onCancel }) => { // ✪ ProdutoInovacaoForm
+// ✪ ProdutoInovacaoForm
+export const ProdutoInovacaoForm: React.FC<SubFormProps<ProdutoInovacao>> = ({ dadosIniciais, onSave, onCancel }) => {
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [info, setInfo] = useState(dadosIniciais?.info || '');
-    const [ano_inicio, setAnoInicio] = useState(dadosIniciais?.ano_inicio || new Date().getFullYear());
-    const [ano_fim, setAnoFim] = useState(dadosIniciais?.ano_fim || '');
 
+    // Controle nativo de datas
+    const [dataInicio, setDataInicio] = useState(dadosIniciais?.data_inicio || '');
+    const [dataFim, setDataFim] = useState(dadosIniciais?.data_fim || '');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSave({ nome, info, ano_inicio, ano_fim: ano_fim ? Number(ano_fim) : undefined });
+
+        if (!dataInicio) {
+            toast.warn("A data de início do produto é obrigatória.");
+            return;
+        }
+
+        onSave({
+            nome,
+            info,
+            data_inicio: dataInicio,
+            data_fim: dataFim || undefined
+        });
     };
 
     return (
@@ -231,14 +321,17 @@ export const ProdutoInovacaoForm: React.FC<SubFormProps<ProdutoInovacao>> = ({ d
                     <Text as="div" size="2" weight="bold">Informações</Text>
                     <TextArea value={info} onChange={e => setInfo(e.target.value)} />
                 </label>
-                <label>
-                    <Text as="div" size="2" weight="bold">Ano de Início</Text>
-                    <TextField.Root type="number" value={ano_inicio} onChange={e => setAnoInicio(Number(e.target.value))} />
-                </label>
-                <label className="flex-1">
-                    <Text as="div" size="2" weight="bold">Ano de Conclusão (Opcional)</Text>
-                    <TextField.Root type="number" value={ano_fim} onChange={e => setAnoFim(e.target.value)} placeholder="" />
-                </label>
+
+                <Flex gap="3" mt="2" mb="2">
+                    <label className="flex-1">
+                        <Text as="div" size="2" weight="bold">Data de Início</Text>
+                        <TextField.Root type="date" value={dataInicio} onChange={e => setDataInicio(e.target.value)} required />
+                    </label>
+                    <label className="flex-1">
+                        <Text as="div" size="2" weight="bold">Data de Conclusão (Opcional)</Text>
+                        <TextField.Root type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} />
+                    </label>
+                </Flex>
 
                 <Flex gap="3" mt="4" justify="end">
                     <Button variant="soft" color="gray" type="button" onClick={onCancel}>Cancelar</Button>
@@ -247,7 +340,8 @@ export const ProdutoInovacaoForm: React.FC<SubFormProps<ProdutoInovacao>> = ({ d
             </Flex>
         </form>
     );
-}; // ── ⋙── ── ── ── ── ── ── ──➤
+};
+// ── ⋙── ── ── ── ── ── ── ──➤
 
 
 const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: PostagensTabProps) => { // {✪} PostagensTab
@@ -309,7 +403,7 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
             setMode('list');
             setPostAlvo(null);
             onDataChange(); // Pede para a página principal recarregar os dados
-        } catch (err : any) {
+        } catch (err: any) {
             console.error("Erro ao salvar postagem:", err.response?.data || err);
             toast.error("Erro ao salvar postagem.");
         }
@@ -527,7 +621,7 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
                     toast.success(`Instituição "${values.nome}" criada!`);
                 }
                 onSaveSuccess();
-            } catch (err : any) {
+            } catch (err: any) {
                 console.error("Erro ao salvar postagem:", err.response?.data || err);
                 toast.error("Erro ao salvar postagem.");
             } finally {
@@ -899,11 +993,17 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
                             endpoint="pesquisas"
                             instituicaoId={instituicao.id}
                             onDataChange={fetchInstituicaoDetails}
-                            FormularioComponent={PesquisaForm} // Passando o form "burro"
+                            // Passando o form com a prop extra injetada
+                            FormularioComponent={(props) => (
+                                <PesquisaForm
+                                    {...props}
+                                    pesquisadoresDisponiveis={instituicao.pesquisadores}
+                                />
+                            )}
                             renderItem={(item: Pesquisa) => (
                                 <div>
                                     <Text as="p" weight="bold">{item.nome}</Text>
-                                    <Text as="p" size="2" color="gray">Início: {item.ano_inicio}</Text>
+                                    <Text as="p" size="2" color="gray">Início: {item.data_inicio}</Text>
                                 </div>
                             )}
                         />
@@ -940,7 +1040,7 @@ export const InstituicaoDetailPage = ({ instituicaoId, onBackToList }: DetailPag
                             renderItem={(item: ProdutoInovacao) => (
                                 <div>
                                     <Text as="p" weight="bold">{item.nome}</Text>
-                                    <Text as="p" size="2" color="gray">Início: {item.ano_inicio}</Text>
+                                    <Text as="p" size="2" color="gray">Início: {item.data_inicio}</Text>
                                 </div>
                             )}
                         />
