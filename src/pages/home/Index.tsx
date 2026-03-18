@@ -1,6 +1,6 @@
 // HERE INCITE
 import classNames from "classnames";
-import BG from "../../assets/bg_main2.png";
+import BG from "../../assets/bg_Incite.png";
 
 import {
     Box,
@@ -475,9 +475,7 @@ const Home = () => { // ★ Home ⋙──────────────�
                             backgroundRepeat: "no-repeat",
                         }}
                     >
-                        <svg>
-                            <circle r={100} cx="50%" cy="50%" fill="#FFEB3B" />
-                        </svg>
+
 
                     </Box>
 
