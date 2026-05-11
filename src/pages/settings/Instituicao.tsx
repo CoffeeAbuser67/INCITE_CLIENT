@@ -93,8 +93,6 @@ const mapaDeNomesDeCidade = new Map(todasAsCidades.map(city => [city.id, city.na
 
 // ── ⋙── ── ── FORMS ── ── ── ──➤
 
-
-
 export const PesquisadorForm: React.FC<SubFormProps<Pesquisador>> = ({ dadosIniciais, onSave, onCancel }) => {// ✪ PesquisadorForm
     const [nome, setNome] = useState(dadosIniciais?.nome || '');
     const [area, setArea] = useState(dadosIniciais?.area_atuacao || '');
@@ -119,13 +117,9 @@ export const PesquisadorForm: React.FC<SubFormProps<Pesquisador>> = ({ dadosInic
     );
 }; // . . .
 
-
-
-
 interface PesquisaFormProps extends SubFormProps<Pesquisa> {
     pesquisadoresDisponiveis?: Pesquisador[];
 }
-
 
 // ✪ PesquisaForm
 export const PesquisaForm: React.FC<PesquisaFormProps> = ({ dadosIniciais, onSave, onCancel, pesquisadoresDisponiveis = [] }) => {
@@ -343,7 +337,6 @@ export const ProdutoInovacaoForm: React.FC<SubFormProps<ProdutoInovacao>> = ({ d
 };
 // ── ⋙── ── ── ── ── ── ── ──➤
 
-
 const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: PostagensTabProps) => { // {✪} PostagensTab
 
     const [mode, setMode] = useState<'list' | 'editor'>('list');
@@ -560,7 +553,6 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
         </div>
     );
 }; // ── ⋙── ── ── ── ── ── ── ──➤
-
 
 export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }: FormProps) => { // ★ InstituicaoForm
 

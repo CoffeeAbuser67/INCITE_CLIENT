@@ -117,7 +117,7 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
     api.set({ viewBox: initialViewBox });
   }, [initialViewBox, api]);
 
-  
+
   // ── ⋙── ── ── ── ── ── ──➤
   // (✪) getRegionValues
   const getRegionValues = useCallback(async () => {
@@ -420,19 +420,24 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
 
   return ( // ── ◯─◡◠◡◠◡◠◡◠ DOM ◡◠◡◠◡◠◡◠◡◠◡◠─⫸ 🌑
     <>
-      <Flex direction="column">
+      <Flex className = "items-center" direction="column">
 
         <Box id="ParameterCard"
           className={classNames(
-
-            "w-full flex-1 lg:flex-1 rounded-xl m-2 p-4 max-h-[200px] lg:h-auto",
+            "w-full flex-1 lg:flex-1 rounded-xl m-2 mb-8 p-4 max-h-[200px] lg:h-auto",
             'bg-black/10 backdrop-blur-xl  shadow-lg' // glassmorphismClass
           )}
         >
 
           <Flex direction="column" justify="center" height="100%">
 
-            🦀
+            {/* Dashboard Title and Description */}
+            <Text as="div" size="5" weight="bold" mb="1">
+              Panorama Agrícola Baiano
+            </Text>
+            <Text as="p" size="2" color="gray">
+              Painel analítico de culturas temporárias e permanentes baseado nos dados oficiais do IBGE. Explore métricas de produção, área colhida e rendimento médio, navegando pelas Regiões de Identidade ou municípios do estado da Bahia.
+            </Text>
 
             <Separator my="2" size="4" />
 
