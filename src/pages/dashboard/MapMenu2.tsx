@@ -26,7 +26,7 @@ import { axiosPlain } from "../../utils/axios";
 import handleAxiosError from "../../utils/handleAxiosError";
 import regionData from "../../assets/BahiaRegiao2.json";
 import cityData from "../../assets/BahiaCidades4.json";
-import { COLORSTW, COLORSTW_HEX, VARIABLES, YEARS } from "../../assets/auxData";
+import { COLORSTW, COLORSTW_HEX, VARIABLES } from "../../assets/auxData";
 import { createPortal } from "react-dom";
 import { mapStore, BoundingBox, variableStore, yearStore, regionDataStore } from "../../store/mapsStore";
 
@@ -78,7 +78,7 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
   const { variable, setVariable } = variableStore();
 
   // ✳ { year, setYear } 
-  const { year, setYear } = yearStore();
+  const { availableYears, year, setYear } = yearStore();
 
   // ✳ { region, city, setRegion, setCity, currentLevel, setCurrentLevel} 
   const {
@@ -121,6 +121,10 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
   // ── ⋙── ── ── ── ── ── ──➤
   // (✪) getRegionValues
   const getRegionValues = useCallback(async () => {
+
+    // Guard clause: Prevent API call if the year hasn't been fetched from backend yet
+    if (!year) return;
+
     const axios = axiosPlain;
     try {
 
@@ -474,7 +478,7 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
                 </DropdownMenu.Trigger>
 
                 <DropdownMenu.Content color="gray" variant="soft" highContrast>
-                  {YEARS.map((y, i) => (
+                  {availableYears.map((y, i) => (
                     <DropdownMenu.Item key={i} onSelect={() => setYear(y)}>{y}</DropdownMenu.Item>
                   ))}
                 </DropdownMenu.Content>

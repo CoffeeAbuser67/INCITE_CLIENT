@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { axiosPlain } from "../utils/axios";
+
 
 export interface BoundingBox {
   x: number;
@@ -70,14 +72,36 @@ export const regionDataStore = create<RegionDataStoreType>((set) => ({
 // [✪] yearStore
 
 interface yearStoreI {
-  year: number;
+  year: number | null; // Initialized as null to know it's not loaded yet
+  availableYears: number[];
   setYear: (year: number) => void;
+  // Action to fetch initial data from the backend
+  bootstrapYears: () => Promise<void>;
 }
 
-export const yearStore = create<yearStoreI>((set) => ({
-  year: 2023,
-  setYear: (year) => set({ year }),
-}));
 
+
+export const yearStore = create<yearStoreI>((set) => ({
+  year: null,
+  availableYears: [],
+  setYear: (year) => set({ year }),
+  
+  bootstrapYears: async () => {
+    try {
+      // Assuming you'll create this endpoint in Django
+      const response = await axiosPlain.get("/getAvailableYears/");
+      const { latest, all } = response.data;
+      
+      set({ 
+        year: latest, 
+        availableYears: all 
+      });
+    } catch (error) {
+      console.error("Failed to bootstrap years:", error);
+      // Fallback to a safe default if API fails
+      set({ year: 2023 });
+    }
+  },
+}));
 
 // ── ⋙── ── ── ── ── ── ── ──➤

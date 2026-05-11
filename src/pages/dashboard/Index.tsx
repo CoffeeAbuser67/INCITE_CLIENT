@@ -53,12 +53,6 @@ import { ChartColumnBig, ChartColumnDecreasing, LineChart as LineChartIcon } fro
 //  WARN Xique-xique | santa teresinha | Muquém de São Francisco
 // 
 
-
-
-
-
-
-
 interface CustomTickProps {
   x: number;
   y: number;
@@ -67,14 +61,12 @@ interface CustomTickProps {
   };
 }
 
-
 interface BarLabelProps {
   x?: string | number;
   y?: string | number;
   width?: string | number;
   index?: number;
 }
-
 
 type A_Item = { id: string; name: string; v: number };
 type A_Item2 = { id: string; name: string; qp: number, rm: number };
@@ -84,7 +76,6 @@ type AgriculturalData = {
   QP_RM: A_Item2[];
   var: string;
 };
-
 
 type DataS = {
   [key: string]: number;
@@ -109,7 +100,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   const { region, city } = mapStore();
 
   // ✳ {year}
-  const { year } = yearStore();
+  const { year, bootstrapYears } = yearStore();
 
   // ✳ {variable}
   const { variable } = variableStore();
@@ -122,8 +113,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   // ── ⋙── ── ── ── ── ── ── ──➤
 
   const seriesKeys = seriesVData?.keys ? Object.keys(seriesVData?.keys) : [] // HERE seriesKeys
-
-
 
   const getSeriesValues = useCallback(async () => { // {✪} getSeriesValues
 
@@ -151,12 +140,11 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
   }, [city.active, region.active, variable]);   // ── ⋙── ── ── ── ── ── ── ──➤
 
-
-
-
-
-
   const getTopValues = useCallback(async () => { // (✪) getTopValues
+
+
+    // Guard clause: Prevent API call if the year hasn't been fetched from backend yet
+    if (!year) return;
 
     const axios = axiosPlain;
     try {
@@ -184,22 +172,18 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
   }, [city.active, region.active, year, variable]);  // ── ⋙── ── ── ── ── ── ── ──➤
 
 
-
-
+  useEffect(() => { // HERE useEffect
+      bootstrapYears();
+    }, [bootstrapYears]);
 
   useEffect(() => {   // HERE useEffect
     getSeriesValues()
   }, [getSeriesValues])
 
-
-
   useEffect(() => {   // HERE useEffect
     getTopValues()
   }, [getTopValues])
   // ── ⋙── ── ── ── ── ── ── ──➤
-
-
-
 
   const PieTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {  // ── ⋙── ── ── CHART AUX ── ── ── ── ──➤  
     if (active && payload && payload.length) { // <●> PieTooltip
@@ -247,10 +231,6 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
     }
     return null;
   }; // . . . . . . . . . . . .
-
-
-
-
 
   const SeriesTooltip: React.FC<TooltipProps<number, string>> = ({ active, payload }) => {   // <●> SeriesTooltip
 
