@@ -434,16 +434,16 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
       >
         <Box className="flex flex-col items-stretch xl:flex-row xl:items-stretch gap-4 md:gap-8 p-0 md:p-4">
 
-          <div className="w-full xl:w-auto">
+          <div id="MAPWRAPPER"className="flex w-full justify-center xl:w-auto">
             <MapMenu />
-          </div>
 
+          </div>
           <Box className="flex flex-col flex-1 gap-4 md:gap-8">
 
-            <Box className="flex flex-col items-stretch xl:flex-row gap-4 md:gap-8 xl:gap-4">
+            <Box className="flex flex-col  items-center xl:flex-row gap-4 md:gap-8 xl:gap-4">
               <CardV1 // . . . CardV1
               />
-              <Box id='pie' className={classNames('w-full xl:flex-1 h-[400px] xl:h-auto rounded-xl', glassmorphismClass)}>
+              <Box id='pie' className={classNames('w-full xl:flex-1 h-[400px] xl:h-full rounded-xl', glassmorphismClass)}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
 
@@ -515,16 +515,28 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
         </Box>
 
 
-        <div className="w-full overflow-x-auto">
 
-          <Box className="flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 lg:gap-4">
+
+
+
+
+
+
+
+
+
+
+
+        <div id = 'ddd' className=" w-full overflow-x-auto ">
+
+          <Box id='ddd2' className="flex flex-col lg:flex-row items-stretch gap-4 md:gap-8 lg:gap-4">
 
             <CardVX // ── ⋙── ── ── ── ── ── ── ──➤ // ✪ CardVX 
             />
 
             <Box // ── ⋙──  ── QPRM_bars ── ──➤
               id='QPRM_bars'
-              className={classNames('flex flex-col w-full rounded-xl mb-4 p-4', glassmorphismClass)}
+              className={classNames('flex flex-col w-full  rounded-xl mb-4 p-4', glassmorphismClass)}
             >
 
               <Flex justify='center' gap="2" align="center" className="flex-shrink-0">
@@ -533,7 +545,7 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
               </Flex>
 
 
-              <div className="w-full relative h-[350px] lg:h-[420px]">
+              <div className="w-full relative h-96 md:h-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={topVData?.QP_RM} // ⊙ topVData
@@ -586,9 +598,17 @@ const Home = () => { // ★  ⋙── ── ── ── ── ── Home �
 
               </div>
             </Box>
+
           </Box>
 
         </div>
+
+
+
+
+
+
+
 
 
         <div className="w-full overflow-x-auto">

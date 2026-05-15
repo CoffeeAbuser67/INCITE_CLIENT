@@ -40,11 +40,11 @@ const CardV1 = () => {
     return ( // ── ◯─◡◠◡◠◡◠◡ DOM ◠◡◠◡◠◡◠─➤
         <Box id="p1"
             className={classNames(
-                "w-full flex-1 lg:flex-1 rounded-xl p-4 h-[350px] lg:h-auto",
+                "w-full max-w-2xl flex-1 lg:flex-1 rounded-xl p-4 h-[350px] lg:h-auto",
                 glassmorphismClass
             )}
         >
-            <Flex direction="column" justify="center" height="100%">
+            <Flex direction="column" justify="center" align="center" height="100%">
 
                 <Text size="5" weight="light">Total para</Text>
                 <Heading as="h2" size="8" highContrast>

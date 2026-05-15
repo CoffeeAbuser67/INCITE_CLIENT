@@ -29,7 +29,7 @@ import cityData from "../../assets/BahiaCidades4.json";
 import { COLORSTW, COLORSTW_HEX, VARIABLES } from "../../assets/auxData";
 import { createPortal } from "react-dom";
 import { mapStore, BoundingBox, variableStore, yearStore, regionDataStore } from "../../store/mapsStore";
-
+import { DashboardCitySelect } from './DashboardCitySelect';
 
 interface Region {
   id: string;
@@ -255,14 +255,7 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
 
 
 
-  const resetMap = () => { // {✪} resetMap
-    setCurrentLevel(0); // ↺ setCurrentLevel
-    setRegion("bahia", "Bahia"); // ↺ setRegion
-    setCity("", ""); // ↺ setCity
-    api.start({ viewBox: initialViewBox });
-  };
 
-  // ── ⋙── ── ── ── ── ── ── ──➤
 
   // (✪) runToFit
   const runToFit = (bbox: BoundingBox) => {
@@ -274,6 +267,59 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
     originalBBox.current = { x: newMinX, y: newMinY, width: newWidth, height: newHeight };
     api.start({ viewBox: [newMinX, newMinY, newWidth, newHeight] });
   };
+
+
+
+
+  const findRegionByCity = useCallback((cityId: string) => {
+    for (const [regionId, cities] of Object.entries(mapCity)) {
+      const targetCity = cities.find((c) => c.id === cityId);
+      if (targetCity) {
+        const regionInfo = mapRegion.find((r) => r.id === regionId);
+        return { regionId, regionName: regionInfo?.name || "", targetCity };
+      }
+    }
+    return null;
+  }, []);
+
+
+
+  const handleSelectChange = useCallback((selectedId: string) => {
+    if (selectedId === "bahia") {
+      resetMap();
+      return;
+    }
+
+    const found = findRegionByCity(selectedId);
+    if (found) {
+      // Step 1: Update store. If it's a new region, React will render the new paths
+      if (currentLevel === 0 || region.active !== found.regionId) {
+        setCurrentLevel(1);
+        setRegion(found.regionId, found.regionName);
+      }
+      setCity(selectedId, found.targetCity.name);
+
+      // Step 2: Wait for DOM layout to paint the SVG paths, then run the zoom animation
+      setTimeout(() => {
+        const pathElement = document.getElementById(selectedId) as SVGPathElement | null;
+        if (pathElement) {
+          runToFit(pathElement.getBBox());
+        }
+      }, 150);
+    }
+  }, [currentLevel, region.active, setCity, setRegion, setCurrentLevel, findRegionByCity, runToFit]);
+
+
+
+
+  const resetMap = () => { // {✪} resetMap
+    setCurrentLevel(0); // ↺ setCurrentLevel
+    setRegion("bahia", "Bahia"); // ↺ setRegion
+    setCity("", ""); // ↺ setCity
+    api.start({ viewBox: initialViewBox });
+  };
+
+  // ── ⋙── ── ── ── ── ── ── ──➤
 
 
   // ── ⋙── ── ── ── ── ── ──➤
@@ -420,11 +466,11 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
 
   return ( // ── ◯─◡◠◡◠◡◠◡◠ DOM ◡◠◡◠◡◠◡◠◡◠◡◠─⫸ 🌑
     <>
-      <Flex className = "items-center" direction="column">
+      <Flex className="items-center max-w-2xl" direction="column">
 
         <Box id="ParameterCard"
           className={classNames(
-            "w-full flex-1 lg:flex-1 rounded-xl m-2 mb-8 p-4 max-h-[200px] lg:h-auto",
+            "w-full flex-1 lg:flex-1 rounded-xl m-2 mb-8 p-4 max-h-[330px] lg:h-auto",
             'bg-black/10 backdrop-blur-xl  shadow-lg' // glassmorphismClass
           )}
         >
@@ -435,6 +481,7 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
             <Text as="div" size="5" weight="bold" mb="1">
               Panorama Agrícola Baiano
             </Text>
+
             <Text as="p" size="2" color="gray">
               Painel analítico de culturas temporárias e permanentes baseado nos dados oficiais do IBGE. Explore métricas de produção, área colhida e rendimento médio, navegando pelas Regiões de Identidade ou municípios do estado da Bahia.
             </Text>
@@ -443,8 +490,16 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
 
             <Box  // ── ⋙── ── ── DropDownSelector ── ── ──➤
               id="DropDownComponent"
-              className="flex justify-start gap-6 w-full z-50"
+              className="flex justify-start items-center gap-4 w-full z-50 flex-wrap"
             >
+
+              <Box className=" flex-grow max-w-sm">
+                <DashboardCitySelect
+                  // Automatically syncs value with map clicks
+                  value={city.active || "bahia"}
+                  onChange={handleSelectChange}
+                />
+              </Box>
 
               <DropdownMenu.Root
               // ⊙  Variable ↺ setVariable
@@ -471,7 +526,6 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
 
               </DropdownMenu.Root>
 
-
               <DropdownMenu.Root
               // ⊙ Year  ↺ setYear
               >
@@ -490,14 +544,8 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
               </DropdownMenu.Root>
 
             </Box >
-
-
           </Flex>
-
         </Box>
-
-
-
 
         <div // ── ⋙── ── ── canvas-wrapper ── ── ── ──➤
           id="canvas-wrapper"
