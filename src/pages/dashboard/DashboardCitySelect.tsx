@@ -36,8 +36,9 @@ interface GroupedCityOption {
     readonly options: readonly CityOption[];
 }
 
+
 interface DashboardCitySelectProps {
-    value: string; 
+    value: string;
     onChange: (selectedId: string) => void;
 }
 
@@ -49,7 +50,7 @@ const customSelectStyles: StylesConfig<CityOption, false, GroupedCityOption> = {
         minHeight: '26px', // Altura exata do Radix size="1"
         height: '26px',
         minWidth: '200px', // Levemente mais estreito
-        backgroundColor: 'var(--gray-a3, rgba(0, 0, 0, 0.05))', 
+        backgroundColor: 'var(--gray-a3, rgba(0, 0, 0, 0.05))',
         border: 'none',
         borderRadius: 'var(--radius-2, 6px)',
         boxShadow: state.isFocused ? '0 0 0 2px var(--gray-a8, rgba(0,0,0,0.2))' : 'none',
@@ -58,7 +59,7 @@ const customSelectStyles: StylesConfig<CityOption, false, GroupedCityOption> = {
             backgroundColor: 'var(--gray-a4, rgba(0, 0, 0, 0.08))',
         },
     }),
-    
+
     // Espremendo o padding interno para caber na altura de 26px
     valueContainer: (base) => ({
         ...base,
@@ -69,9 +70,9 @@ const customSelectStyles: StylesConfig<CityOption, false, GroupedCityOption> = {
         margin: '0',
         padding: '0',
     }),
-    
-    menuPortal: base => ({ ...base, zIndex: 9999 }), 
-    
+
+    menuPortal: base => ({ ...base, zIndex: 9999 }),
+
     menu: (baseStyles) => ({
         ...baseStyles,
         backgroundColor: 'var(--color-panel-solid, #ffffff)',
@@ -81,8 +82,8 @@ const customSelectStyles: StylesConfig<CityOption, false, GroupedCityOption> = {
     }),
     option: (baseStyles, { isFocused, isSelected }) => ({
         ...baseStyles,
-        backgroundColor: isSelected 
-            ? 'var(--gray-12, #111)' 
+        backgroundColor: isSelected
+            ? 'var(--gray-12, #111)'
             : isFocused ? 'var(--gray-a3, rgba(0, 0, 0, 0.05))' : 'transparent',
         color: isSelected ? '#fff' : 'var(--gray-12, #111)',
         cursor: 'pointer',
@@ -95,7 +96,7 @@ const customSelectStyles: StylesConfig<CityOption, false, GroupedCityOption> = {
     }),
     singleValue: (baseStyles) => ({
         ...baseStyles,
-        color: 'var(--gray-12, #111)', 
+        color: 'var(--gray-12, #111)',
         fontWeight: 500, // Menos bold para não borrar em tamanhos pequenos
         fontSize: '12px', // Fonte size="1"
     }),
@@ -104,9 +105,9 @@ const customSelectStyles: StylesConfig<CityOption, false, GroupedCityOption> = {
         color: 'var(--gray-11, #666)',
         fontSize: '12px', // Fonte size="1"
     }),
-    indicatorSeparator: () => ({ 
+    indicatorSeparator: () => ({
         display: 'none'
-    }), 
+    }),
     dropdownIndicator: (baseStyles) => ({
         ...baseStyles,
         color: 'var(--gray-11, #666)',
@@ -134,11 +135,11 @@ const formatGroupLabel = (data: GroupedCityOption) => (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px' }}>
         <span style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--gray-11, #666)' }}>{data.label}</span>
         <span style={{
-            backgroundColor: 'var(--gray-a3, rgba(0,0,0,0.08))', 
-            borderRadius: '12px', 
-            color: 'var(--gray-12, #111)', 
-            fontSize: '11px', 
-            padding: '2px 8px', 
+            backgroundColor: 'var(--gray-a3, rgba(0,0,0,0.08))',
+            borderRadius: '12px',
+            color: 'var(--gray-12, #111)',
+            fontSize: '11px',
+            padding: '2px 8px',
             fontWeight: 'bold'
         }}>
             {data.options.length}
@@ -155,14 +156,19 @@ export const DashboardCitySelect: React.FC<DashboardCitySelectProps> = ({ value,
                 const citiesInRegion = mapCity[region.id] || [];
                 return {
                     label: region.name,
-                    options: citiesInRegion
-                        .map((city: CityData) => ({ value: city.id, label: city.name }))
-                        .sort((a, b) => a.label.localeCompare(b.label)),
+                    options: [
+                        // INJEÇÃO: Adicionando a própria região como uma opção clicável
+                        { value: region.id, label: `Região: ${region.name}` },
+                        // Mantendo as cidades logo abaixo
+                        ...citiesInRegion
+                            .map((city: CityData) => ({ value: city.id, label: city.name }))
+                            .sort((a, b) => a.label.localeCompare(b.label))
+                    ],
                 };
             })
             .sort((a, b) => a.label.localeCompare(b.label));
 
-        // Inject Bahia (Reset option) as the first independent group
+        // Inject Bahia (Reset option)
         const stateGroup: GroupedCityOption = {
             label: "Visão Geral",
             options: [{ value: "bahia", label: "Bahia" }]

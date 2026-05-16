@@ -284,24 +284,42 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
 
 
 
+
+
   const handleSelectChange = useCallback((selectedId: string) => {
     if (selectedId === "bahia") {
       resetMap();
       return;
     }
 
+    const isRegion = mapRegion.some(r => r.id === selectedId);
+
+    if (isRegion) {
+      const regionInfo = mapRegion.find(r => r.id === selectedId);
+      setCurrentLevel(1);
+      setRegion(selectedId, regionInfo?.name || "");
+      setCity("", ""); // Limpa a cidade, afinal selecionamos a região inteira
+
+      setTimeout(() => {
+        const pathElement = document.getElementById(selectedId) as SVGPathElement | null;
+        if (pathElement) {
+          runToFit(pathElement.getBBox());
+        }
+      }, 150);
+      return; // Interrompe aqui para não executar a lógica de cidade abaixo
+    }
+
+    // LÓGICA ANTIGA: Se não for região, é uma Cidade
     const found = findRegionByCity(selectedId);
     if (found) {
-      // Step 1: Update store. If it's a new region, React will render the new paths
       if (currentLevel === 0 || region.active !== found.regionId) {
         setCurrentLevel(1);
         setRegion(found.regionId, found.regionName);
       }
       setCity(selectedId, found.targetCity.name);
 
-      // Step 2: Wait for DOM layout to paint the SVG paths, then run the zoom animation
       setTimeout(() => {
-        const pathElement = document.getElementById(selectedId) as SVGPathElement | null;
+        const pathElement = document.getElementById(found.regionId) as SVGPathElement | null;
         if (pathElement) {
           runToFit(pathElement.getBBox());
         }
@@ -493,13 +511,26 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
               className="flex justify-start items-center gap-4 w-full z-50 flex-wrap"
             >
 
-              <Box className=" flex-grow max-w-sm">
+
+
+              <Box className="ml-auto flex-grow max-w-sm z-50">
                 <DashboardCitySelect
-                  // Automatically syncs value with map clicks
-                  value={city.active || "bahia"}
+                  // O pulo do gato: Se tiver cidade, mostra a cidade. 
+                  // Se não tiver cidade mas estiver no nivel 1, mostra a Região. 
+                  // Se estiver no nivel 0, mostra Bahia.
+                  value={city.active || (currentLevel === 1 ? region.active : "bahia")}
                   onChange={handleSelectChange}
                 />
               </Box>
+
+
+
+
+
+
+
+
+
 
               <DropdownMenu.Root
               // ⊙  Variable ↺ setVariable
