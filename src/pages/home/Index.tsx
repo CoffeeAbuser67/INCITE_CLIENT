@@ -8,7 +8,6 @@ import {
     Card,
     Heading,
     Text,
-    Select,
     Flex,
     Separator
 } from "@radix-ui/themes";
@@ -20,9 +19,8 @@ import cityData from "../../assets/BahiaCidades4.json";
 import { axiosPlain } from "../../utils/axios";
 import { Link } from 'react-router-dom';
 import { PinMarker } from './PinMarker';
-import { ArrowRightIcon, Mail, MapPin, Phone, UserIcon } from "lucide-react";
+import { ArrowRightIcon, Mail, MapPin, Phone, UserIcon, ArrowLeft } from "lucide-react";
 import { createPortal } from "react-dom";
-
 
 // . . . . . . .
 
@@ -42,7 +40,6 @@ interface InstituicaoMarker {
     marcador_logo: string | null
 }
 
-
 interface BoundingBox {
     x: number;
     y: number;
@@ -57,14 +54,12 @@ interface Region {
     name: string;
 }
 
-
 interface TooltipState {
     visible: boolean;
     content: string;
     x: number;
     y: number;
 }
-
 
 // Tipagem para cidades
 interface City {
@@ -349,19 +344,6 @@ const Home = () => { // ★ Home ⋙──────────────�
     // Recalcula apenas quando a lista ou a seleção mudar
 
 
-    const handleSelectChange = (instituicaoId: string) => { // (✪) handleSelectChange
-        if (!instituicaoId) {
-            resetMap(); // Se o usuário limpar o select, reseta o mapa
-            return;
-        }
-        // Encontra o objeto completo da instituição baseado no ID recebido do select
-        const instituicaoSelecionada = instituicoes.find(inst => inst.id === Number(instituicaoId));
-        if (instituicaoSelecionada) {
-            // REUTILIZAMOS NOSSA FUNÇÃO EXISTENTE!
-            // Ela já sabe como selecionar a instituição e dar zoom na região.
-            handleMarkerClick(instituicaoSelecionada);
-        }
-    };
 
     // ── ⋙── ── ── ── ToolTip  ── ── ── ──➤
     // <✪> AnimatedTooltip
@@ -438,30 +420,6 @@ const Home = () => { // ★ Home ⋙──────────────�
                         <Text className="pt-10 px-4">
                             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
                         </Text>
-
-                        <Card
-                            variant="ghost"
-                            id="Intituicao-Text-Selector">
-                            <Heading as="h3" size="4" mb="2">Navegar por Instituição</Heading>
-                            <Select.Root
-                                // ⊙ selectedInstituicao
-                                value={selectedInstituicao ? selectedInstituicao.id.toString() : ""}
-                                // (○) handleSelectChange
-                                onValueChange={handleSelectChange}
-                            >
-                                <Select.Trigger placeholder="Escolha uma instituição na lista..." className="w-full" />
-                                <Select.Content position="popper">
-                                    <Select.Group>
-                                        <Select.Label>Instituições</Select.Label>
-                                        {instituicoes.map(inst => (
-                                            <Select.Item key={inst.id} value={inst.id.toString()}>
-                                                {inst.nome}
-                                            </Select.Item>
-                                        ))}
-                                    </Select.Group>
-                                </Select.Content>
-                            </Select.Root>
-                        </Card>
 
                     </Box>
 
@@ -642,8 +600,6 @@ const Home = () => { // ★ Home ⋙──────────────�
                             shadow-inner"
                     />
 
-
-
                     <Card // HERE info-panel
                         id="info-panel"
                         variant="ghost"
@@ -655,57 +611,98 @@ const Home = () => { // ★ Home ⋙──────────────�
                     >
                         {selectedInstituicao ? (
                             <>
+                                {/* BOTÃO DE VOLTAR */}
+                                <Button
+                                    variant="ghost"
+                                    size="2"
+                                    onClick={resetMap}
+                                    className="mb-6 cursor-pointer text-gray-500 hover:text-gray-900"
+                                >
+                                    <ArrowLeft size={16} className="mr-2" /> Voltar para a lista
+                                </Button>
+
                                 <Flex gap="5" align="center">
                                     {selectedInstituicao.marcador_logo && (
                                         <img
                                             src={selectedInstituicao.marcador_logo}
                                             alt={`${selectedInstituicao.nome} logo`}
                                             className=" w-[100px] h-auto rounded"
-
                                         />
                                     )}
 
                                     <Box>
                                         <Heading as="h2" size="6" mb="4">{selectedInstituicao.nome}</Heading>
 
-                                        <Flex align="center" gap="2"><MapPin size={16} className="mb-2" /><Text size="2">{selectedInstituicao.cidade_nome.toLocaleUpperCase()}</Text></Flex>
-                                        <Flex align="center" gap="2"><UserIcon size={16} className="mb-2" /><Text size="2">{selectedInstituicao.coordenador_responsavel}</Text></Flex>
-                                        <Flex align="center" gap="2"><Mail size={16} className="mb-2" /><Text size="2">{selectedInstituicao.email}</Text></Flex>
-                                        <Flex align="center" gap="2"><Phone size={16} className="mb-2" /><Text size="2">{selectedInstituicao.telefone}</Text></Flex>
+                                        <Flex align="center" gap="2"><MapPin size={16} className="mb-2 text-green-700" /><Text size="2">{selectedInstituicao.cidade_nome.toLocaleUpperCase()}</Text></Flex>
+                                        <Flex align="center" gap="2"><UserIcon size={16} className="mb-2 text-green-700" /><Text size="2">{selectedInstituicao.coordenador_responsavel}</Text></Flex>
+                                        <Flex align="center" gap="2"><Mail size={16} className="mb-2 text-green-700" /><Text size="2">{selectedInstituicao.email}</Text></Flex>
+                                        <Flex align="center" gap="2"><Phone size={16} className="mb-2 text-green-700" /><Text size="2">{selectedInstituicao.telefone}</Text></Flex>
                                     </Box>
-
                                 </Flex>
 
-                                <Separator my="2" size="4" />
+                                <Separator my="4" size="4" />
 
                                 {/* Informações Adicionais */}
-                                <Box className="flex-grow">
-
+                                <Box className="flex-grow mb-6">
                                     <Heading as="h3" size="3" mb="2" color="gray">Sobre</Heading>
-                                    <Text as="p" size="2" mb="2">
-                                        {selectedInstituicao.informacoes_adicionais ?? ''}
+                                    <Text as="p" size="2" mb="2" color="gray">
+                                        {selectedInstituicao.informacoes_adicionais ?? 'Nenhuma informação adicional cadastrada.'}
                                     </Text>
-
-                                    {/* TODO: Adicionar os contatos (coordenador, email, telefone) aqui se desejar */}
                                 </Box>
 
                                 {/* Botão de Ação */}
-
-                                <Button variant="soft" asChild size="1" mt="auto">
+                                <Button variant="soft" color="green" asChild size="2" mt="auto" className="w-full justify-center">
                                     <Link to={`/instituicao/${selectedInstituicao.id}`}>
-                                        <ArrowRightIcon size="18" className="mr-1" /> Perfil
+                                        <ArrowRightIcon size={18} className="mr-2" /> Acessar Perfil Completo
                                     </Link>
                                 </Button>
-
                             </>
                         ) : (
-                            <>
-                                <Heading size="5" mb="2">Bem-vindo ao Incite</Heading>
-                                <Text size="2">
-                                    Explore as instituições que promovem a Agricultura Familiar Sustentável na Bahia.
-                                    Clique em um marcador para saber mais.
-                                </Text>
-                            </>
+                            <Flex direction="column" className="h-full">
+                                <Box mb="5">
+                                    <Heading size="6" mb="2">Instituições Parceiras</Heading>
+                                    <Text size="2" color="gray">
+                                        Selecione uma instituição na lista abaixo ou clique em um marcador no mapa para visualizar os detalhes.
+                                    </Text>
+                                </Box>
+
+                                <Separator mb="4" size="4" />
+
+                                {/* LISTA DE MINI-CARDS INTERATIVOS */}
+                                <Flex direction="column" gap="3" className="overflow-y-auto pr-2 pb-4">
+                                    {instituicoes.map(inst => (
+                                        <Card
+                                            key={inst.id}
+                                            asChild
+                                            variant="surface"
+                                            className="cursor-pointer transition-all hover:bg-gray-50 hover:shadow-sm"
+                                        >
+                                            <button
+                                                className="w-full text-left p-3 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-[inherit]"
+                                                onClick={() => handleMarkerClick(inst)}
+                                            >
+                                                <Flex gap="4" align="center">
+                                                    {inst.marcador_logo ? (
+                                                        <img
+                                                            src={inst.marcador_logo}
+                                                            alt={inst.nome}
+                                                            className="w-12 h-12 object-contain rounded-md bg-white border border-gray-100"
+                                                        />
+                                                    ) : (
+                                                        <Box className="w-12 h-12 bg-green-50 border border-green-100 rounded-md flex items-center justify-center flex-shrink-0">
+                                                            <MapPin size={24} className="text-green-700" />
+                                                        </Box>
+                                                    )}
+                                                    <Box>
+                                                        <Text as="div" size="3" weight="bold" className="line-clamp-1">{inst.nome}</Text>
+                                                        <Text as="div" size="2" color="gray" className="mt-1">{inst.cidade_nome.toUpperCase()}</Text>
+                                                    </Box>
+                                                </Flex>
+                                            </button>
+                                        </Card>
+                                    ))}
+                                </Flex>
+                            </Flex>
                         )}
                     </Card>
 

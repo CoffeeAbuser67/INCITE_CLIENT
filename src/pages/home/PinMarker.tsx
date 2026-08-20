@@ -66,10 +66,6 @@ export const PinMarker: React.FC<PinMarkerProps> = ({
         });
     }, [level, isHovered, isActive, isAnyPinActive, api]);
 
-
-
-
-
     const handleMouseEnter = () => setIsHovered(true);
     const handleMouseLeave = () => setIsHovered(false);
 
