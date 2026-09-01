@@ -14,9 +14,14 @@ const CardV1 = () => {
     const { regionValues } = regionDataStore();
 
     const locationName = city.name || region.name || "Bahia";
-    const locationTarget = city.active || region.active || 'bahia';
 
-    const totalValue = regionValues[locationTarget] || 0;
+    // Se há cidade selecionada, o valor vem dos FILHOS.
+    // Caso contrário, vem do próprio nó ativo (bahia ou a região).
+    // Antes, `regionValues[locationTarget]` não distinguia a região
+    // Irecê do município Irecê — ambos batiam na mesma chave.
+    const totalValue = city.active
+        ? (regionValues.children[city.active] ?? 0)
+        : (regionValues.self.total ?? 0);
 
     // ================== LÓGICA DE FORMATAÇÃO ==================
     let formattedTotal = '';

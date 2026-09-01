@@ -54,19 +54,23 @@ export const variableStore = create<variableStoreI>((set) => ({
 
 
 // [✪] regionDataStore
+export interface RegionValues {
+    self: { id: string; total: number | null };
+    children: { [key: string]: number };
+}
+
 interface RegionDataState {
-    regionValues: { [key: string]: number };
+    regionValues: RegionValues;
 }
 interface RegionDataActions {
-    setRegionValues: (data: { [key: string]: number }) => void;
+    setRegionValues: (data: RegionValues) => void;
 }
 
 type RegionDataStoreType = RegionDataState & RegionDataActions;
 export const regionDataStore = create<RegionDataStoreType>((set) => ({
-  regionValues: {},
+  regionValues: { self: { id: "bahia", total: null }, children: {} },
   setRegionValues: (data) => set({ regionValues: data }),
 }));  // ── ⋙── ── ── ── ── ── ── ──➤
-
 
 
 // [✪] yearStore

@@ -162,15 +162,18 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
   }, [getRegionValues]);   // ── ⋙── ── ── ── ── ── ──➤
 
 
+
+
+
   // (✪) colorScale 
   const colorScale = useMemo(() => {
-    const activeRegionKey = region.active;
 
-    const values = Object.entries(regionValues)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .filter(([key, _]) => key !== activeRegionKey) // 1. Filtra os pares, mantendo apenas aqueles cuja chave NÃO é a ativa.
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .map(([_, value]) => value);                     // 2. Do resultado filtrado, extrai apenas o valor de cada par.
+    // Agora opera exclusivamente sobre os FILHOS. O nó ativo nunca
+    // precisa de cor: no nível 0 a Bahia é só contorno (cls-22,
+    // fill:none) e no nível 1 a região fica coberta pelo <rect>.
+    // Por isso o antigo `.filter(key !== activeRegionKey)` sumiu —
+    // ele existia para compensar o nó ativo vir misturado.
+    const values = Object.values(regionValues.children);
 
     console.log('%c values 🩸', 'color: red; font-size: 16px; font-weight: bold;');
     console.log(values)
@@ -178,15 +181,12 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
     // CASO 1: Não há dados ou os dados ainda não carregaram.
     if (values.length === 0) {
       return {
-        // Retorna uma função padrão
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         getColor: (_id: string) => "fill-gray-200",
-        // E dados nulos para a legenda, para que ela não seja renderizada
         legendData: null
       };
     }
 
-    // A lógica para encontrar min, max e a paleta continua a mesma
     const colorPalette = COLORSTW[variable as keyof typeof COLORSTW] || COLORSTW.valor_da_producao;
     const numColors = colorPalette.length;
     const minVal = Math.max(Math.min(...values), 1);
@@ -195,11 +195,8 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
     // CASO 2: Todos os valores são iguais.
     if (minVal === maxVal) {
       return {
-
-        // A função getColor retorna a cor do meio da paleta
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         getColor: (_id: string) => colorPalette[Math.floor(numColors / 2)],
-        // E os dados da legenda são populados normalmente
         legendData: {
           min: minVal,
           max: maxVal,
@@ -214,9 +211,8 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
     const scale = (logMax - logMin) / (numColors - 1);
 
     return {
-      // 1. A função que a cor de um item
       getColor: (itemId: string): string => {
-        const value = regionValues[itemId];
+        const value = regionValues.children[itemId];
         if (typeof value !== 'number' || !isFinite(value) || value <= 0) {
           return "fill-gray-200";
         }
@@ -227,7 +223,6 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
         const index = Math.floor((logValue - logMin) / scale);
         return colorPalette[index];
       },
-      // 2. Os dados para a legenda
       legendData: {
         min: minVal,
         max: maxVal,
