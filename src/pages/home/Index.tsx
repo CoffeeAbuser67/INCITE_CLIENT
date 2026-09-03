@@ -554,7 +554,7 @@ const Home = () => { // ★ Home ⋙──────────────�
                                         })} //. . .
 
 
-                                        {marcadoresOrdenados.map(instituicao => {
+                                        { marcadoresOrdenados && marcadoresOrdenados.length > 0 && marcadoresOrdenados.map(instituicao => {
                                             const coords = mapaDeCoordenadas.get(instituicao.cidade_id_mapa);
                                             if (coords) {
                                                 return (
@@ -670,7 +670,7 @@ const Home = () => { // ★ Home ⋙──────────────�
 
                                 {/* LISTA DE MINI-CARDS INTERATIVOS */}
                                 <Flex direction="column" gap="3" className="overflow-y-auto pr-2 pb-4">
-                                    {instituicoes.map(inst => (
+                                    {instituicoes && instituicoes.length > 0 && instituicoes.map(inst => (
                                         <Card
                                             key={inst.id}
                                             asChild

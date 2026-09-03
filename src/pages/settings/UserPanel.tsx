@@ -157,7 +157,7 @@ const AddUserForm = ({ onSave, onCancel }: AddUserFormProps) => { // <✪> AddUs
 
                 {/* Grupo */}
                 <label>
-                    <Text className = "mr-4">Tipo</Text>
+                    <Text className="mr-4">Tipo</Text>
                     <Select.Root
                         name="user_group"
                         value={formik.values.user_group.toString()}
@@ -250,7 +250,7 @@ export const UserPanel = () => { // ★ UserPanel
                     {isLoading ? (
                         <Table.Row><Table.Cell colSpan={4}>Carregando...</Table.Cell></Table.Row>
                     ) : (
-                        userList.map(user => (
+                        userList && userList.length > 0 && userList.map(user => (
                             <Table.Row align="center" key={user.pkid}>
                                 <Table.Cell >{user.first_name} {user.last_name}</Table.Cell>
                                 <Table.Cell>{user.email}</Table.Cell>

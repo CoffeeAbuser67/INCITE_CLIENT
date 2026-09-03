@@ -1,9 +1,8 @@
 import React from 'react';
 import { Card, AspectRatio, Text, Heading, Flex, Box } from '@radix-ui/themes';
 import { Link } from 'react-router-dom';
-import { PublicPost } from './blogTypes'; // Importando nosso tipo
+import { PublicPostListItem } from './blogTypes';
 
-// Função utilitária para formatar a data
 const formatarData = (timestamp: string): string => {
     if (!timestamp) return 'Data indisponível';
     return new Intl.DateTimeFormat('pt-BR', {
@@ -12,13 +11,12 @@ const formatarData = (timestamp: string): string => {
 };
 
 interface PostCardProps {
-    post: PublicPost;
+    post: PublicPostListItem;
 }
 
 export const PostCard: React.FC<PostCardProps> = ({ post }) => {
-    // O link envolve todo o card, tornando-o clicável
     return (
-        <Link to={`/blog/${post.id}`} className="no-underline text-current hover:text-current h-full">
+        <Link to={`/blog/${post.slug}`} className="no-underline text-current hover:text-current h-full">
             <Card className="h-full transform hover:-translate-y-1 transition-transform duration-300 flex flex-col">
                 <Box>
                     <AspectRatio ratio={16 / 9}>
@@ -37,7 +35,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
                         </Text>
                     )}
                     <Flex align="center" gap="2" mt="3">
-                        <Text size="2" weight="bold" color="jade">{post.instituicao_nome || 'INCITE AF'}</Text>
+                        <Text size="2" weight="bold" color="jade">{post.instituicao_nome}</Text>
                         <Text color="gray" size="2">· {formatarData(post.created_at)}</Text>
                     </Flex>
                 </Box>

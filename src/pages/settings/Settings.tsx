@@ -5,7 +5,6 @@ import { InstituicaoListPage, InstituicaoDetailPage, InstituicaoForm } from './I
 import { useUserStore } from '../../store/userStore';
 import { UserPanel } from './UserPanel';
 import { ChangePasswordForm } from './ChangePasswordForm';
-import { GerenciamentoPostsGerais } from './PostsGerais';
 
 
 const Settings = () => {
@@ -64,7 +63,6 @@ const Settings = () => {
 
           {isAdmin && (
             <>
-              <Tabs.Trigger value="postsGerais">Posts Gerais</Tabs.Trigger>
               <Tabs.Trigger value="usuarios">Usuários</Tabs.Trigger>
               
             </>
@@ -82,10 +80,6 @@ const Settings = () => {
 
           {isAdmin && (
             <>
-              <Tabs.Content value="postsGerais">
-                <GerenciamentoPostsGerais />
-              </Tabs.Content>
-
               <Tabs.Content value="usuarios">
                 <UserPanel />
               </Tabs.Content>

@@ -47,3 +47,10 @@
 .text-subtitle {
   @apply text-2xl font-semibold; /* ~24px e com peso de fonte maior */
 }
+
+/* Classes usadas no HTML de postagens (vem do banco, o scanner do
+   Tailwind não enxerga — por isso declaradas manualmente). */
+.prose .text-left    { text-align: left; }
+.prose .text-center  { text-align: center; }
+.prose .text-right   { text-align: right; }
+.prose .text-justify { text-align: justify; }

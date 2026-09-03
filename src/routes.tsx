@@ -49,7 +49,7 @@ const routes = [
       },
 
       {
-        path: 'blog/:id', // [ROUTE]  /blog/:id
+        path: 'blog/:slug', // [ROUTE]  /blog/:id
         element: <PostDetailPage />,
       },
 

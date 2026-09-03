@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog, Spinner, Tooltip, AspectRatio, Checkbox } from '@radix-ui/themes';
+import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog, Spinner, Tooltip, AspectRatio, Checkbox, Badge } from '@radix-ui/themes';
 import { PlusCircle, Pencil, Trash2, ArrowLeft, Info, Upload } from 'lucide-react';
-import PostEditorDashboard from './PostEditor';
+import PostEditorDashboard, { PostSaveData, AnexoExistente } from './PostEditor';
 import { GerenciadorDeAba } from './GerenciadorDeAba'
 import { axiosForInterceptor } from '../../utils/axios';
 import { toast } from 'react-toastify';
@@ -17,8 +17,17 @@ import * as Yup from 'yup';
 
 
 
-
-export type Postagem = { id: number; title: string; content: string; resumo: string; imagem_destaque: string | null; created_at: string };
+export type Postagem = {
+    id: number;
+    slug: string;
+    title: string;
+    content: string;
+    resumo: string;
+    imagem_destaque: string | null;
+    publicado: boolean;
+    anexos: AnexoExistente[];
+    created_at: string;
+};
 export type Pesquisador = { id: number; nome: string; area_atuacao: string; desligado: boolean; bolsista: boolean };
 export type Pesquisa = { id: number; nome: string; info: string; data_inicio: string; data_fim?: string; pesquisadores?: number[] };
 export type AcaoExtensionista = { id: number; nome: string; info: string; data_inicio: string; data_fim?: string; tipo_comunidade: string };
@@ -337,15 +346,16 @@ export const ProdutoInovacaoForm: React.FC<SubFormProps<ProdutoInovacao>> = ({ d
 };
 // ── ⋙── ── ── ── ── ── ── ──➤
 
+
 const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: PostagensTabProps) => { // {✪} PostagensTab
 
     const [mode, setMode] = useState<'list' | 'editor'>('list');
     const [postAlvo, setPostAlvo] = useState<Partial<Postagem> | null>(null);
-
     const [postParaExcluir, setPostParaExcluir] = useState<Postagem | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const mostrarFormCriacao = () => {
-        setPostAlvo({ title: '', resumo: '', content: '', imagem_destaque: null });
+        setPostAlvo({ title: '', resumo: '', content: '', imagem_destaque: null, publicado: false, anexos: [] });
         setMode('editor');
     };
 
@@ -354,59 +364,61 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
         setMode('editor');
     };
 
-    const handleSalvar = async (dados: { title: string, resumo: string, imagem_destaque: File | null, content: string }) => {
-
+    const handleSalvar = async (dados: PostSaveData) => {
+        setIsSaving(true);
 
         const formData = new FormData();
         formData.append('title', dados.title);
         formData.append('content', dados.content);
         formData.append('resumo', dados.resumo || '');
+        formData.append('publicado', String(dados.publicado));
+        formData.append('instituicao', instituicaoId.toString());
 
-        // Adiciona o ID da instituição (se não for um post geral)
-
-        if (instituicaoId) {
-            formData.append('instituicao', instituicaoId.toString());
-        }
-
-        // Se houver um novo arquivo de imagem, adiciona
         if (dados.imagem_destaque) {
             formData.append('imagem_destaque', dados.imagem_destaque);
         }
 
-        console.log("⋙── ── ── ── ── ── ── ──➤  ")
-        console.log("Estou no crud de postagemTAb, e o id: ", instituicaoId) // [LOG] 
-        console.log("formData : ", formData) // [LOG] 
-        console.log("⋙── ── ── ── ── ── ── ──➤  ")
-
-
         try {
-            if (postAlvo && 'id' in postAlvo) {
-                await axiosForInterceptor.put(`/postagens/${postAlvo.id}/`, formData, {
+            // 1. Salva o post e obtém o id (necessário para anexar PDFs).
+            let postId: number;
+            if (postAlvo && 'id' in postAlvo && postAlvo.id) {
+                const resp = await axiosForInterceptor.put(`/postagens/${postAlvo.id}/`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
-                toast.success('Postagem atualizada com sucesso!');
+                postId = resp.data.id;
             } else {
-
-                await axiosForInterceptor.post('/postagens/', formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
+                const resp = await axiosForInterceptor.post('/postagens/', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
                 });
-                toast.success('Postagem criada!');
-
+                postId = resp.data.id;
             }
+
+            // 2. Remove anexos marcados.
+            for (const anexoId of dados.anexosRemovidos) {
+                await axiosForInterceptor.delete(`/post-anexos/${anexoId}/`);
+            }
+
+            // 3. Sobe os novos PDFs, agora que existe um postId.
+            for (const arquivo of dados.novosAnexos) {
+                const fd = new FormData();
+                fd.append('postagem', postId.toString());
+                fd.append('arquivo', arquivo);
+                await axiosForInterceptor.post('/post-anexos/', fd, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+            }
+
+            toast.success(postAlvo && 'id' in postAlvo ? 'Postagem atualizada!' : 'Postagem criada!');
             setMode('list');
             setPostAlvo(null);
-            onDataChange(); // Pede para a página principal recarregar os dados
+            onDataChange();
         } catch (err: any) {
             console.error("Erro ao salvar postagem:", err.response?.data || err);
             toast.error("Erro ao salvar postagem.");
+        } finally {
+            setIsSaving(false);
         }
     };
-
-
-
-
-
-
 
     const handleConfirmarExclusaoPost = async () => {
         if (!postParaExcluir) return;
@@ -414,33 +426,30 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
         try {
             await axiosForInterceptor.delete(`/postagens/${postParaExcluir.id}/`);
             toast.success(`Postagem "${postParaExcluir.title}" excluída com sucesso!`);
-
-            // Chama a função do pai para recarregar todos os dados da instituição
             onDataChange();
         } catch (err) {
             console.error("Erro ao excluir postagem:", err);
             toast.warn("Ocorreu um erro ao excluir a postagem.");
         } finally {
-            // Fecha a modal
             setPostParaExcluir(null);
         }
     };
 
-
     if (mode === 'editor') {
-
         return (
             <PostEditorDashboard
                 initialTitle={postAlvo?.title}
                 initialResumo={postAlvo?.resumo || ''}
                 initialContent={postAlvo?.content || ''}
                 initialImagem={postAlvo?.imagem_destaque || ''}
+                initialPublicado={postAlvo?.publicado ?? false}
+                anexosExistentes={postAlvo?.anexos || []}
+                isSaving={isSaving}
                 onSave={handleSalvar}
                 onCancel={() => setMode('list')}
             />
         );
     }
-
 
     return (
         <div>
@@ -455,10 +464,7 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {postagensIniciais.length > 0 ? (
                     postagensIniciais.map((post: Postagem) => (
-                        <Card
-                            key={post.id}
-                            className="h-full flex flex-col"
-                        >
+                        <Card key={post.id} className="h-full flex flex-col">
                             <Box>
                                 <AspectRatio ratio={16 / 9}>
                                     <img
@@ -473,19 +479,24 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
                             </Box>
 
                             <Box p="3" className="flex-grow flex flex-col justify-between">
-                                <Heading as="h3" size="4" mt="2" truncate>
-                                    {post.title}
-                                </Heading>
+                                <Flex align="center" gap="2" mt="2">
+                                    <Heading as="h3" size="4" truncate>
+                                        {post.title}
+                                    </Heading>
+                                    {!post.publicado && (
+                                        <Badge color="orange" size="1">Rascunho</Badge>
+                                    )}
+                                </Flex>
 
                                 {post.resumo && (
-                                    <Text
-                                        as="p"
-                                        size="2"
-                                        color="gray"
-                                        mt="1"
-                                        className="line-clamp-3 flex-grow"
-                                    >
+                                    <Text as="p" size="2" color="gray" mt="1" className="line-clamp-3 flex-grow">
                                         {post.resumo}
+                                    </Text>
+                                )}
+
+                                {post.anexos && post.anexos.length > 0 && (
+                                    <Text size="1" color="gray" mt="2">
+                                        {post.anexos.length} anexo(s)
                                     </Text>
                                 )}
 
@@ -495,21 +506,12 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
                                     </Text>
 
                                     <Flex gap="2">
-                                        <Button
-                                            className="cursor-pointer"
-                                            size="1"
-                                            variant="soft"
-                                            onClick={() => mostrarFormEdicao(post)}
-                                        >
+                                        <Button className="cursor-pointer" size="1" variant="soft"
+                                            onClick={() => mostrarFormEdicao(post)}>
                                             <Pencil className="h-4 w-4" />
                                         </Button>
-                                        <Button
-                                            className="cursor-pointer"
-                                            size="1"
-                                            color="red"
-                                            variant="soft"
-                                            onClick={() => setPostParaExcluir(post)}
-                                        >
+                                        <Button className="cursor-pointer" size="1" color="red" variant="soft"
+                                            onClick={() => setPostParaExcluir(post)}>
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </Flex>
@@ -522,10 +524,7 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
                 )}
             </div>
 
-            <AlertDialog.Root
-                open={!!postParaExcluir}
-                onOpenChange={() => setPostParaExcluir(null)}
-            >
+            <AlertDialog.Root open={!!postParaExcluir} onOpenChange={() => setPostParaExcluir(null)}>
                 <AlertDialog.Content style={{ maxWidth: 450 }}>
                     <AlertDialog.Title>Confirmar Exclusão</AlertDialog.Title>
                     <AlertDialog.Description size="2">
@@ -534,16 +533,10 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
                     </AlertDialog.Description>
                     <Flex gap="3" mt="4" justify="end">
                         <AlertDialog.Cancel>
-                            <Button variant="soft" color="gray">
-                                Cancelar
-                            </Button>
+                            <Button variant="soft" color="gray">Cancelar</Button>
                         </AlertDialog.Cancel>
                         <AlertDialog.Action>
-                            <Button
-                                variant="solid"
-                                color="red"
-                                onClick={handleConfirmarExclusaoPost}
-                            >
+                            <Button variant="solid" color="red" onClick={handleConfirmarExclusaoPost}>
                                 Sim, Excluir Postagem
                             </Button>
                         </AlertDialog.Action>
@@ -553,6 +546,7 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
         </div>
     );
 }; // ── ⋙── ── ── ── ── ── ── ──➤
+
 
 export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }: FormProps) => { // ★ InstituicaoForm
 
@@ -830,7 +824,7 @@ export const InstituicaoListPage = ({ onSelectInstituicao, onShowCreateForm }: L
 
 
             <div className="grid gap-6">
-                {instituicoes.map(inst => (
+                {instituicoes && instituicoes.length > 0 && instituicoes.map(inst => (
                     <Card key={inst.id}>
                         <Flex justify="between" align="center">
                             <div>

@@ -2,13 +2,11 @@
 import React, { useEffect, useState } from 'react';
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import UnderlineExtension from '@tiptap/extension-underline';
 import { Mark, mergeAttributes, CommandProps } from '@tiptap/core';
-import { UploadCloud, X, FileImage, LoaderCircle, Underline } from 'lucide-react';
-import { Dialog, Button, TextField, Text, Flex, TextArea, Tooltip } from '@radix-ui/themes'; // Usando componentes Radix
-import { axiosForInterceptor } from '../../utils/axios';
+import { UploadCloud, X, FileText, LoaderCircle, Underline } from 'lucide-react';
+import { Button, TextField, Text, Flex, TextArea, Tooltip, Switch, Separator as RadixSeparator } from '@radix-ui/themes';
 import {
     Bold,
     Italic,
@@ -16,156 +14,10 @@ import {
     AlignCenter,
     AlignRight,
     AlignJustify,
-    Image as ImageIcon
 } from 'lucide-react';
 import { IconButton, Select, Separator } from '@radix-ui/themes';
 
-
-
-interface ImageUploadModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onImageUploaded: (url: string) => void;
-}
-
-// <●> ImageUploadModal
-const ImageUploadModal = ({ isOpen, onClose, onImageUploaded }: ImageUploadModalProps) => {
-    const [file, setFile] = useState<File | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [dragActive, setDragActive] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
-
-    // --- Funções de Validação e Manipulação de Arquivo ---
-    const validateFile = (selectedFile: File): boolean => {
-        const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        if (!validTypes.includes(selectedFile.type)) {
-            setError('Tipo de arquivo inválido. Use JPEG, PNG ou WEBP.');
-            return false;
-        }
-        const maxSizeInBytes = 2 * 1024 * 1024; // 2MB
-        if (selectedFile.size > maxSizeInBytes) {
-            setError(`A imagem é muito grande. O máximo é 2MB.`);
-            return false;
-        }
-        setError(null);
-        return true;
-    };
-
-    const handleFileSelected = (files: FileList | null) => {
-        if (files && files[0]) {
-            if (validateFile(files[0])) {
-                setFile(files[0]);
-            }
-        }
-    };
-
-    // --- Handlers de Drag and Drop ---
-    const handleDragEvent = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.type === "dragenter" || e.type === "dragover") {
-            setDragActive(true);
-        } else if (e.type === "dragleave") {
-            setDragActive(false);
-        }
-    };
-
-    const handleDropEvent = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setDragActive(false);
-        handleFileSelected(e.dataTransfer.files);
-    };
-
-    // HERE --- Lógica de Upload de Imagem para o content ---
-    const handleUpload = async () => {
-
-        if (!file) return;
-        setIsUploading(true);
-
-        const formData = new FormData();
-        formData.append('imagem', file); // 'imagem' deve ser o mesmo nome do campo no seu modelo Django
-
-        try {
-            const response = await axiosForInterceptor.post('/postagens-content/upload-image/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            const imageUrl = response.data.imagem;
-            console.log('Upload concluído. URL:', imageUrl);
-
-            // Enviar a URL real de volta para o editor
-            onImageUploaded(imageUrl);
-            closeAndReset(); // Fecha e reseta a modal
-
-        } catch (err) {
-            console.error('Falha no upload da imagem:', err);
-            // Idealmente, extraia a mensagem de erro da resposta da API
-            setError('Ocorreu um erro ao enviar a imagem. Tente novamente.');
-        } finally {
-            setIsUploading(false);
-        }
-
-    };  // . . . 
-
-    // --- Função para fechar e limpar o estado da modal ---
-    const closeAndReset = () => {
-        setFile(null);
-        setError(null);
-        setIsUploading(false);
-        setDragActive(false);
-        onClose();
-    };
-
-    return (
-        <Dialog.Root open={isOpen} onOpenChange={closeAndReset}>
-            <Dialog.Content style={{ maxWidth: 450 }}>
-                <Dialog.Title>Adicionar Imagem</Dialog.Title>
-                <Dialog.Description size="2" mb="4">
-                    Arraste um arquivo ou selecione no seu computador.
-                </Dialog.Description>
-
-                <div
-                    className={`relative border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition-colors ${dragActive ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300 hover:border-gray-400'}`}
-                    onDragEnter={handleDragEvent} onDragLeave={handleDragEvent} onDragOver={handleDragEvent} onDrop={handleDropEvent}
-                    onClick={() => document.getElementById('file-upload-input')?.click()}
-                >
-                    <input id="file-upload-input" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => handleFileSelected(e.target.files)} />
-                    <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">Arraste e solte ou clique para selecionar</p>
-                </div>
-
-                {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-
-                {file && !error && (
-                    <div className="mt-4 flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                        <div className="flex items-center gap-2 truncate">
-                            <FileImage className="h-5 w-5 text-gray-500 flex-shrink-0" />
-                            <span className="text-sm font-medium text-gray-700 truncate">{file.name}</span>
-                        </div>
-                        <button onClick={() => setFile(null)}><X className="h-4 w-4 text-gray-500 hover:text-red-600" /></button>
-                    </div>
-                )}
-
-                <div className="mt-5 flex justify-end gap-3">
-                    <Dialog.Close>
-                        <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50">Cancelar</button>
-                    </Dialog.Close>
-                    <button
-                        onClick={handleUpload}
-                        disabled={!file || !!error || isUploading}
-                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed"
-                    >
-                        {isUploading && <LoaderCircle className="animate-spin -ml-1 mr-2 h-5 w-5" />}
-                        {isUploading ? 'Enviando...' : 'Adicionar'}
-                    </button>
-                </div>
-            </Dialog.Content>
-        </Dialog.Root>
-    );
-};
+export type AnexoExistente = { id: number; arquivo: string; nome_original: string };
 
 // <●> TextClass
 const TextClass = Mark.create({
@@ -193,7 +45,6 @@ const TextClass = Mark.create({
         return ['span', mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
     },
 
-
     addCommands() {
         return {
             setTextClass:
@@ -205,41 +56,16 @@ const TextClass = Mark.create({
                         return commands.setMark(this.name, { class: className });
                     },
         } as any;
-
     },
-
-
-
-
-
-
-
-
-
 });
-
-
 
 interface ToolbarProps {
     editor: Editor | null;
 }
 
-
-
-
-
-
 // <●> Toolbar
 const Toolbar = ({ editor }: ToolbarProps) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
     if (!editor) return null;
-
-
-
-    const handleImageInsert = (url: string) => { if (url) { editor.chain().focus().setImage({ src: url }).run(); } };
-
-
-
 
     const FONT_OPTIONS = [
         { label: 'Pequeno', value: 'text-small' },
@@ -250,98 +76,110 @@ const Toolbar = ({ editor }: ToolbarProps) => {
     const handleFontSizeChange = (className: string) => {
         if (className === 'normal') { editor.chain().focus().unsetMark('textClass').run(); }
         else { (editor.chain().focus() as any).setTextClass(className).run(); }
-
     };
 
     return (
-        <>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 p-2 bg-gray-50 border-b border-gray-200">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 p-2 bg-gray-50 border-b border-gray-200">
 
-                <Tooltip content="Negrito">
-                    <IconButton variant={editor.isActive('bold') ? 'soft' : 'ghost'} aria-label="Negrito" onClick={() => editor.chain().focus().toggleBold().run()}>
-                        <Bold size={18} />
-                    </IconButton>
+            <Tooltip content="Negrito">
+                <IconButton variant={editor.isActive('bold') ? 'soft' : 'ghost'} aria-label="Negrito" onClick={() => editor.chain().focus().toggleBold().run()}>
+                    <Bold size={18} />
+                </IconButton>
+            </Tooltip>
+            <Tooltip content="Itálico">
+                <IconButton variant={editor.isActive('italic') ? 'soft' : 'ghost'} aria-label="Itálico" onClick={() => editor.chain().focus().toggleItalic().run()}>
+                    <Italic size={18} />
+                </IconButton>
+            </Tooltip>
+            <Tooltip content="Sublinhado">
+                <IconButton variant={editor.isActive('underline') ? 'soft' : 'ghost'} aria-label="Sublinhado" onClick={() => editor.chain().focus().toggleUnderline().run()}>
+                    <Underline size={18} />
+                </IconButton>
+            </Tooltip>
+
+            <Separator orientation="vertical" />
+
+            <Select.Root value={activeFontSize} onValueChange={handleFontSizeChange}>
+                <Tooltip content="Tamanho do Texto">
+                    <Select.Trigger variant="soft" placeholder="Tamanho do Texto" />
                 </Tooltip>
-                <Tooltip content="Itálico">
-                    <IconButton variant={editor.isActive('italic') ? 'soft' : 'ghost'} aria-label="Itálico" onClick={() => editor.chain().focus().toggleItalic().run()}>
-                        <Italic size={18} />
-                    </IconButton>
-                </Tooltip>
-                {/* --- NOVO: Botão de Sublinhado --- */}
-                <Tooltip content="Sublinhado">
-                    <IconButton variant={editor.isActive('underline') ? 'soft' : 'ghost'} aria-label="Sublinhado" onClick={() => editor.chain().focus().toggleUnderline().run()}>
-                        <Underline size={18} />
-                    </IconButton>
-                </Tooltip>
+                <Select.Content>
+                    <Select.Group>
+                        <Select.Label>Tamanho</Select.Label>
+                        <Select.Item value="normal">Normal</Select.Item>
+                        {FONT_OPTIONS.map(option => (<Select.Item key={option.value} value={option.value}>{option.label}</Select.Item>))}
+                    </Select.Group>
+                </Select.Content>
+            </Select.Root>
 
-                <Separator orientation="vertical" />
+            <Separator orientation="vertical" />
 
-                <Select.Root value={activeFontSize} onValueChange={handleFontSizeChange}>
-                    <Tooltip content="Tamanho do Texto">
-                        <Select.Trigger variant="soft" placeholder="Tamanho do Texto" />
-                    </Tooltip>
-                    <Select.Content>
-                        <Select.Group>
-                            <Select.Label>Tamanho</Select.Label>
-                            <Select.Item value="normal">Normal</Select.Item>
-                            {FONT_OPTIONS.map(option => (<Select.Item key={option.value} value={option.value}>{option.label}</Select.Item>))}
-                        </Select.Group>
-                    </Select.Content>
-                </Select.Root>
-
-                <Separator orientation="vertical" />
-
-                <Tooltip content="Alinhar à Esquerda"><IconButton variant={editor.isActive({ textAlign: 'left' }) ? 'soft' : 'ghost'} aria-label="Alinhar à Esquerda" onClick={() => editor.chain().focus().setTextAlign('left').run()}><AlignLeft size={18} /></IconButton></Tooltip>
-                <Tooltip content="Centralizar"><IconButton variant={editor.isActive({ textAlign: 'center' }) ? 'soft' : 'ghost'} aria-label="Centralizar" onClick={() => editor.chain().focus().setTextAlign('center').run()}><AlignCenter size={18} /></IconButton></Tooltip>
-                <Tooltip content="Alinhar à Direita"><IconButton variant={editor.isActive({ textAlign: 'right' }) ? 'soft' : 'ghost'} aria-label="Alinhar à Direita" onClick={() => editor.chain().focus().setTextAlign('right').run()}><AlignRight size={18} /></IconButton></Tooltip>
-                <Tooltip content="Justificar"><IconButton variant={editor.isActive({ textAlign: 'justify' }) ? 'soft' : 'ghost'} aria-label="Justificar" onClick={() => editor.chain().focus().setTextAlign('justify').run()}><AlignJustify size={18} /></IconButton></Tooltip>
-
-                <Separator orientation="vertical" />
-
-                <Tooltip content="Adicionar Imagem ao Conteúdo">
-                    <IconButton variant="ghost" color="gray" aria-label="Adicionar Imagem" onClick={() => setIsModalOpen(true)}>
-                        <ImageIcon size={18} />
-                    </IconButton>
-                </Tooltip>
-            </div>
-            <ImageUploadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onImageUploaded={handleImageInsert} />
-        </>
+            <Tooltip content="Alinhar à Esquerda"><IconButton variant={editor.isActive({ textAlign: 'left' }) ? 'soft' : 'ghost'} aria-label="Alinhar à Esquerda" onClick={() => editor.chain().focus().setTextAlign('left').run()}><AlignLeft size={18} /></IconButton></Tooltip>
+            <Tooltip content="Centralizar"><IconButton variant={editor.isActive({ textAlign: 'center' }) ? 'soft' : 'ghost'} aria-label="Centralizar" onClick={() => editor.chain().focus().setTextAlign('center').run()}><AlignCenter size={18} /></IconButton></Tooltip>
+            <Tooltip content="Alinhar à Direita"><IconButton variant={editor.isActive({ textAlign: 'right' }) ? 'soft' : 'ghost'} aria-label="Alinhar à Direita" onClick={() => editor.chain().focus().setTextAlign('right').run()}><AlignRight size={18} /></IconButton></Tooltip>
+            <Tooltip content="Justificar"><IconButton variant={editor.isActive({ textAlign: 'justify' }) ? 'soft' : 'ghost'} aria-label="Justificar" onClick={() => editor.chain().focus().setTextAlign('justify').run()}><AlignJustify size={18} /></IconButton></Tooltip>
+        </div>
     );
 };
+
+export interface PostSaveData {
+    title: string;
+    content: string;
+    resumo: string;
+    publicado: boolean;
+    imagem_destaque: File | null;
+    novosAnexos: File[];
+    anexosRemovidos: number[];
+}
 
 interface PostEditorDashboardProps {
     initialTitle?: string;
     initialContent?: string;
     initialResumo?: string;
     initialImagem?: string | null;
-    onSave: (data: { title: string; content: string; resumo: string; imagem_destaque: File | null }) => void;
+    initialPublicado?: boolean;
+    anexosExistentes?: AnexoExistente[];
+    isSaving?: boolean;
+    onSave: (data: PostSaveData) => void;
     onCancel: () => void;
 }
 
+const MAX_PDF_MB = 10;
+
 const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
-    initialTitle = '', initialResumo = '', initialContent = '', initialImagem = null, onSave, onCancel
+    initialTitle = '', initialResumo = '', initialContent = '', initialImagem = null,
+    initialPublicado = false, anexosExistentes = [], isSaving = false, onSave, onCancel
 }: PostEditorDashboardProps) => {
 
     const [postTitle, setPostTitle] = useState(initialTitle);
     const [postContent, setPostContent] = useState(initialContent);
     const [resumo, setResumo] = useState(initialResumo);
+    const [publicado, setPublicado] = useState(initialPublicado);
 
     const [imagemFile, setImagemFile] = useState<File | null>(null);
     const [imagemPreview, setImagemPreview] = useState<string | null>(initialImagem);
 
-    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [novosAnexos, setNovosAnexos] = useState<File[]>([]);
+    const [anexosRemovidos, setAnexosRemovidos] = useState<number[]>([]);
+    const [anexoErro, setAnexoErro] = useState<string | null>(null);
 
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const pdfInputRef = React.useRef<HTMLInputElement>(null);
 
     const editor = useEditor({
         extensions: [
             StarterKit.configure({ heading: { levels: [2, 3] } }),
-            Image,
-            TextAlign.configure({ types: ['heading', 'paragraph'] }),
+            // Extensão Image removida: imagem inline não é mais suportada.
+            TextAlign.configure({
+                types: ['heading', 'paragraph'],
+                // Emite class="text-center" em vez de style="text-align:center".
+                // O backend sanitiza com bleach e não permite `style`.
+                alignments: ['left', 'center', 'right', 'justify'],
+            }),
             TextClass,
-            UnderlineExtension, // <--- NOVO: Ativando a extensão de sublinhado
-
+            UnderlineExtension,
         ],
-        content: initialContent, // Inicia com o conteúdo passado via prop
+        content: initialContent,
         editorProps: {
             attributes: {
                 class: 'prose prose-sm sm:prose-base focus:outline-none p-4 min-h-[300px] w-full bg-white',
@@ -352,7 +190,6 @@ const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘
         },
     });
 
-
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
@@ -361,31 +198,53 @@ const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘
         }
     };
 
-
-
     const handleFeaturedImageClick = () => {
         fileInputRef.current?.click();
     };
 
-
+    const handlePdfSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(event.target.files || []);
+        const validos: File[] = [];
+        for (const f of files) {
+            if (f.type !== 'application/pdf') {
+                setAnexoErro(`"${f.name}" não é um PDF.`);
+                continue;
+            }
+            if (f.size > MAX_PDF_MB * 1024 * 1024) {
+                setAnexoErro(`"${f.name}" passa de ${MAX_PDF_MB}MB.`);
+                continue;
+            }
+            validos.push(f);
+        }
+        if (validos.length) {
+            setAnexoErro(null);
+            setNovosAnexos(prev => [...prev, ...validos]);
+        }
+        event.target.value = '';
+    };
 
     useEffect(() => {
         if (editor && initialContent !== editor.getHTML()) {
             editor.commands.setContent(initialContent, false);
-            setPostTitle(initialTitle); // Sincroniza o título também
+            setPostTitle(initialTitle);
         }
     }, [initialContent, initialTitle, editor]);
 
-
-
     const handleSaveClick = () => {
-        onSave({ title: postTitle, content: postContent, resumo: resumo, imagem_destaque: imagemFile });
+        onSave({
+            title: postTitle,
+            content: postContent,
+            resumo,
+            publicado,
+            imagem_destaque: imagemFile,
+            novosAnexos,
+            anexosRemovidos,
+        });
     };
 
-
+    const anexosVisiveis = anexosExistentes.filter(a => !anexosRemovidos.includes(a.id));
 
     return ( // ── ◯─◡◠◡◠◡◠ DOM ◡◠◡◠◡◠◡◠─➤
-
         <div className="border border-gray-300 rounded-lg shadow-sm">
             <div className="p-4 bg-gray-50">
 
@@ -406,23 +265,22 @@ const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘
                         <TextArea value={resumo} onChange={(e) => setResumo(e.target.value)} placeholder="Uma ou duas frases que aparecerão nos cards do blog." />
                     </label>
 
-
                     <div>
                         <Text as="div" size="2" mb="1" weight="bold">Imagem de Destaque</Text>
 
                         <Button
                             variant="soft"
                             color="gray"
-                            onClick={handleFeaturedImageClick} // Chama a função que dispara o clique
+                            onClick={handleFeaturedImageClick}
                         >
                             <UploadCloud size={16} style={{ marginRight: '8px' }} />
                             {imagemFile ? 'Trocar Imagem' : 'Selecionar Imagem'}
                         </Button>
 
                         <input
-                            ref={fileInputRef} // Anexa a referência
+                            ref={fileInputRef}
                             type="file"
-                            className="hidden" // Mantém o input original escondido
+                            className="hidden"
                             accept="image/png, image/jpeg"
                             onChange={handleFileSelect}
                         />
@@ -430,49 +288,87 @@ const PostEditorDashboard = ({ // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘
                         {imagemPreview && <img src={imagemPreview} alt="Preview" className="mt-2 w-48 h-auto rounded" />}
                     </div>
 
+                    <RadixSeparator my="2" size="4" />
+
+                    <div>
+                        <Text as="div" size="2" mb="1" weight="bold">Anexos (PDF)</Text>
+
+                        <Button variant="soft" color="gray" onClick={() => pdfInputRef.current?.click()}>
+                            <UploadCloud size={16} style={{ marginRight: '8px' }} />
+                            Adicionar PDF
+                        </Button>
+
+                        <input
+                            ref={pdfInputRef}
+                            type="file"
+                            className="hidden"
+                            accept="application/pdf"
+                            multiple
+                            onChange={handlePdfSelect}
+                        />
+
+                        {anexoErro && <Text as="p" size="1" color="red" mt="1">{anexoErro}</Text>}
+
+                        <Flex direction="column" gap="1" mt="2">
+                            {anexosVisiveis.map(a => (
+                                <Flex key={a.id} align="center" justify="between" className="p-2 bg-gray-100 rounded">
+                                    <Flex align="center" gap="2" className="truncate">
+                                        <FileText size={16} />
+                                        <Text size="2" className="truncate">{a.nome_original}</Text>
+                                    </Flex>
+                                    <IconButton size="1" variant="ghost" color="red"
+                                        onClick={() => setAnexosRemovidos(prev => [...prev, a.id])}>
+                                        <X size={14} />
+                                    </IconButton>
+                                </Flex>
+                            ))}
+                            {novosAnexos.map((f, i) => (
+                                <Flex key={`novo-${i}`} align="center" justify="between" className="p-2 bg-blue-50 rounded">
+                                    <Flex align="center" gap="2" className="truncate">
+                                        <FileText size={16} />
+                                        <Text size="2" className="truncate">{f.name}</Text>
+                                        <Text size="1" color="gray">(novo)</Text>
+                                    </Flex>
+                                    <IconButton size="1" variant="ghost" color="red"
+                                        onClick={() => setNovosAnexos(prev => prev.filter((_, idx) => idx !== i))}>
+                                        <X size={14} />
+                                    </IconButton>
+                                </Flex>
+                            ))}
+                        </Flex>
+                    </div>
+
+                    <RadixSeparator my="2" size="4" />
+
+                    <Text as="label" size="2">
+                        <Flex gap="2" align="center">
+                            <Switch checked={publicado} onCheckedChange={setPublicado} />
+                            Publicar no blog
+                        </Flex>
+                    </Text>
+                    <Text as="p" size="1" color="gray">
+                        Posts não publicados ficam salvos como rascunho e não aparecem no blog público.
+                    </Text>
 
                 </Flex>
 
             </div>
             <div className='border-y border-gray-200'>
 
-                <Toolbar // <○> Toolbar
-                    editor={editor} />
+                <Toolbar editor={editor} />
 
-                <EditorContent // <○> EditorContent
-                    editor={editor} />
+                <EditorContent editor={editor} />
             </div>
 
             <div className="flex justify-end gap-3 p-4 bg-gray-50">
-                <Button variant="soft" color="gray" onClick={onCancel}>Cancelar</Button>
-                <Button onClick={handleSaveClick}>Salvar Postagem</Button>
+                <Button variant="soft" color="gray" onClick={onCancel} disabled={isSaving}>Cancelar</Button>
+                <Button onClick={handleSaveClick} disabled={isSaving}>
+                    {isSaving && <LoaderCircle className="animate-spin mr-2 h-4 w-4" />}
+                    {isSaving ? 'Salvando...' : 'Salvar Postagem'}
+                </Button>
             </div>
         </div>
     );
 }; // ★ PostEditorDashboard ── ◯⫘⫘⫘⫘⫘⫘⫘⫘⫘⫸
 
 export default PostEditorDashboard;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
