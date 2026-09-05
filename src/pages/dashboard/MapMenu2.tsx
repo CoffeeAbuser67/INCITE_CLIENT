@@ -24,8 +24,8 @@ import {
 import classNames from "classnames";
 import { axiosPlain } from "../../utils/axios";
 import handleAxiosError from "../../utils/handleAxiosError";
-import regionData from "../../assets/BahiaRegiao2.json";
-import cityData from "../../assets/BahiaCidades4.json";
+import regionData from "../../assets/BahiaRegiao3.json";
+import cityData from "../../assets/BahiaCidades5.json";
 import { COLORSTW, COLORSTW_HEX, VARIABLES } from "../../assets/auxData";
 import { createPortal } from "react-dom";
 import { mapStore, BoundingBox, variableStore, yearStore, regionDataStore } from "../../store/mapsStore";
@@ -35,14 +35,16 @@ interface Region {
   id: string;
   d: string;
   name: string;
+  bbox: BoundingBox;   
 }
-// Tipagem para cidades
+
 interface City {
   id: string;
   d: string;
   name: string;
   x: number;
   y: number;
+  bbox: BoundingBox;   
 }
 
 interface TooltipState {
@@ -278,9 +280,6 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
   }, []);
 
 
-
-
-
   const handleSelectChange = useCallback((selectedId: string) => {
     if (selectedId === "bahia") {
       resetMap();
@@ -295,16 +294,13 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
       setRegion(selectedId, regionInfo?.name || "");
       setCity("", ""); // Limpa a cidade, afinal selecionamos a região inteira
 
-      setTimeout(() => {
-        const pathElement = document.getElementById(selectedId) as SVGPathElement | null;
-        if (pathElement) {
-          runToFit(pathElement.getBBox());
-        }
-      }, 150);
-      return; // Interrompe aqui para não executar a lógica de cidade abaixo
+      // O bbox vem do JSON — não precisa mais esperar o path existir
+      // no DOM para chamar getBBox().
+      if (regionInfo?.bbox) runToFit(regionInfo.bbox);
+      return;
     }
 
-    // LÓGICA ANTIGA: Se não for região, é uma Cidade
+    // Se não for região, é uma Cidade
     const found = findRegionByCity(selectedId);
     if (found) {
       if (currentLevel === 0 || region.active !== found.regionId) {
@@ -313,16 +309,10 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
       }
       setCity(selectedId, found.targetCity.name);
 
-      setTimeout(() => {
-        const pathElement = document.getElementById(found.regionId) as SVGPathElement | null;
-        if (pathElement) {
-          runToFit(pathElement.getBBox());
-        }
-      }, 150);
+      const regionInfo = mapRegion.find(r => r.id === found.regionId);
+      if (regionInfo?.bbox) runToFit(regionInfo.bbox);
     }
   }, [currentLevel, region.active, setCity, setRegion, setCurrentLevel, findRegionByCity, runToFit]);
-
-
 
 
   const resetMap = () => { // {✪} resetMap
@@ -335,7 +325,6 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
   // ── ⋙── ── ── ── ── ── ── ──➤
 
 
-  // ── ⋙── ── ── ── ── ── ──➤
   const handleClick = (event: React.MouseEvent<SVGElement>) => { // (✪) handleClick
     const target = event.target as SVGPathElement;
     const target_id = target?.id;
@@ -348,7 +337,9 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
       if (target_type === "region" && target_id !== "bahia_stroke") {
         setCurrentLevel(1);
         setRegion(target_id, target_name || "");
-        runToFit(target.getBBox());
+
+        const regionInfo = mapRegion.find(r => r.id === target_id);
+        if (regionInfo?.bbox) runToFit(regionInfo.bbox);
       }
     }
 

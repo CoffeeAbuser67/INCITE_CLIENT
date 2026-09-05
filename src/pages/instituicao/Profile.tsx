@@ -14,6 +14,7 @@ import {
     Postagem
 } from '../settings/Instituicao';
 
+
 interface SobreTabProps {
     instituicao: Instituicao;
 }
@@ -307,7 +308,7 @@ const InstituicaoProfilePage = () => {
                                     {/* 1. Pegamos apenas os 3 primeiros posts e os mapeamos */}
                                     {instituicao.postagens.slice(0, 3).map((post: Postagem) => (
                                         // 2. Cada item da lista é um link para o post completo
-                                        <Link to={`/blog/${post.id}`} key={post.id} className="no-underline text-current">
+                                        <Link to={`/blog/${post.slug}`} key={post.id} className="no-underline text-current">
                                             <Card className="hover:bg-gray-50 transition-colors">
                                                 <Flex align="center" gap="3">
                                                     <Newspaper size={24} className="text-gray-600 flex-shrink-0" />
@@ -331,7 +332,7 @@ const InstituicaoProfilePage = () => {
                             {/* Ele só aparece se houver posts para mostrar */}
                             {instituicao.postagens && instituicao.postagens.length > 0 && (
                                 <Button variant="soft" asChild mt="3" className='my-4 text-black' style={{ width: 'fit-content' }}>
-                                    <Link to={`/blog?instituicao=${encodeURIComponent(instituicao.nome)}`}>
+                                    <Link to={`/blog?instituicao=${instituicao.id}`}>
                                         Ver notícias ({instituicao.postagens.length})
                                         <ArrowRightIcon className="ml-2" />
                                     </Link>

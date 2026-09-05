@@ -1,8 +1,8 @@
 
 import React, { useMemo } from 'react';
 import Select, { StylesConfig } from 'react-select';
-import mapCityRaw from '../../assets/BahiaCidades4.json';
-import mapRegionRaw from '../../assets/BahiaRegiao2.json';
+import mapCityRaw from '../../assets/BahiaCidades5.json';
+import mapRegionRaw from '../../assets/BahiaRegiao3.json';
 
 // Interfaces
 interface CityData {

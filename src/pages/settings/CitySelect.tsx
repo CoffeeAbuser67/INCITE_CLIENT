@@ -4,8 +4,8 @@ import Select, { StylesConfig } from 'react-select';
 
 
 // Importe os dados do mapa de sua localização central
-import mapCityRaw from '../../assets/BahiaCidades4.json';
-import mapRegionRaw from '../../assets/BahiaRegiao2.json';
+import mapCityRaw from '../../assets/BahiaCidades5.json';
+import mapRegionRaw from '../../assets/BahiaRegiao3.json';
 
 
 interface CityData {

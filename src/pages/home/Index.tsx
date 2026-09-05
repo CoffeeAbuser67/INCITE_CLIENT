@@ -13,8 +13,8 @@ import {
 } from "@radix-ui/themes";
 import { animated, useSpring, useTransition } from "react-spring";
 import { useRef, useState, useEffect, useMemo } from "react";
-import regionData from "../../assets/BahiaRegiao2.json";
-import cityData from "../../assets/BahiaCidades4.json";
+import regionData from "../../assets/BahiaRegiao3.json";
+import cityData from "../../assets/BahiaCidades5.json";
 
 import { axiosPlain } from "../../utils/axios";
 import { Link } from 'react-router-dom';
@@ -47,12 +47,6 @@ interface BoundingBox {
     height: number;
 }
 
-// Tipagem para regiões
-interface Region {
-    id: string;
-    d: string;
-    name: string;
-}
 
 interface TooltipState {
     visible: boolean;
@@ -61,13 +55,21 @@ interface TooltipState {
     y: number;
 }
 
-// Tipagem para cidades
+
+interface Region {
+    id: string;
+    d: string;
+    name: string;
+    bbox: BoundingBox;   // HERE MODIFY
+}
+
 interface City {
     id: string;
     d: string;
     name: string;
     x: number;
     y: number;
+    bbox: BoundingBox;   // HERE MODIFY
 }
 
 interface CityData {
@@ -83,8 +85,6 @@ const mapRegion: Region[] = regionData;
 
 const Home = () => { // ★ Home ⋙─────────────────────────────────────────➤ 
     const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
-    const originalBBoxRef = useRef<BoundingBox | null>(null); // HERE originalBBoxRef
-    // ── ⋙── ── ── ── ── ── ──➤
 
     type levels = 0 | 1;
     // ✳ [currentLevel, setCurrentLevel]
@@ -141,21 +141,11 @@ const Home = () => { // ★ Home ⋙──────────────�
 
 
     useEffect(() => { //HERE uE
-        // Cache da BBox 
-        if (svgRef.current && !originalBBoxRef.current) {
-
-            const bbox = svgRef.current.getBBox();
-            originalBBoxRef.current = bbox;
-            console.log("BBox Original CAPTURADO:", bbox);
-
-        }
-
 
         const fetchInstituicoes = async () => {
             try {
                 const response = await axiosPlain.get('/map-markers/');
                 setInstituicoes(response.data);
-                // console.log("Instituições carregadas na API:", response.data);
             } catch (error) {
                 console.error("Falha ao buscar instituições:", error);
             }
@@ -296,7 +286,9 @@ const Home = () => { // ★ Home ⋙──────────────�
                 setCurrentLevel(1);
                 handleSetRegion(target_id, target_name || "");
 
-                runToFit(target.getBBox());
+                // HERE MODIFY  ⬇ era: runToFit(target.getBBox())
+                const regionInfo = mapRegion.find(r => r.id === target_id);
+                if (regionInfo?.bbox) runToFit(regionInfo.bbox);
             }
         }
 
@@ -554,7 +546,7 @@ const Home = () => { // ★ Home ⋙──────────────�
                                         })} //. . .
 
 
-                                        { marcadoresOrdenados && marcadoresOrdenados.length > 0 && marcadoresOrdenados.map(instituicao => {
+                                        {marcadoresOrdenados && marcadoresOrdenados.length > 0 && marcadoresOrdenados.map(instituicao => {
                                             const coords = mapaDeCoordenadas.get(instituicao.cidade_id_mapa);
                                             if (coords) {
                                                 return (

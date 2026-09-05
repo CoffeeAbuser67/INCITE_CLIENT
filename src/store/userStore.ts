@@ -3,6 +3,11 @@ import { create } from "zustand";
 import { axiosForInterceptor } from '../utils/axios';
 
 
+export interface InstituicaoResumo {
+    id: number;
+    nome: string;
+}
+
 export interface User {
     pkid: number;
     first_name: string;
@@ -10,9 +15,10 @@ export interface User {
     email: string;
     user_group: number;
     instituicoes_count: number;
+    instituicoes: InstituicaoResumo[];   // HERE MODIFY
 }
 
-export type UserAddForm = Omit<User, 'pkid' | 'instituicoes_count'> & {
+export type UserAddForm = Omit<User, 'pkid' | 'instituicoes_count' | 'instituicoes'> & {
     password1: string;
     password2: string;
 };

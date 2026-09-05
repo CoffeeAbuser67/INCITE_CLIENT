@@ -8,7 +8,7 @@ import { GerenciadorDeAba } from './GerenciadorDeAba'
 import { axiosForInterceptor } from '../../utils/axios';
 import { toast } from 'react-toastify';
 import { CitySelect } from './CitySelect';
-import mapCity from '../../assets/BahiaCidades4.json';
+import mapCity from '../../assets/BahiaCidades5.json';
 
 
 

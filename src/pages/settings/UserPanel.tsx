@@ -242,7 +242,7 @@ export const UserPanel = () => { // ★ UserPanel
                         <Table.ColumnHeaderCell>Nome</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell>Email</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell>Permissão</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell justify="center" >Instituições Criadas</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>Instituições Criadas</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell />
                     </Table.Row>
                 </Table.Header>
@@ -260,7 +260,19 @@ export const UserPanel = () => { // ★ UserPanel
                                     </Badge>
                                 </Table.Cell>
 
-                                <Table.Cell justify="center" >{user.instituicoes_count}</Table.Cell>
+                                <Table.Cell>
+                                    {user.instituicoes.length > 0 ? (
+                                        <Flex direction="column" gap="1" align="start">
+                                            {user.instituicoes.map(inst => (
+                                                <Badge key={inst.id} color="brown" variant="soft">
+                                                    {inst.nome}
+                                                </Badge>
+                                            ))}
+                                        </Flex>
+                                    ) : (
+                                        <Text size="2" color="gray">—</Text>
+                                    )}
+                                </Table.Cell>
 
                                 <Table.Cell justify="end">
                                     <Button color="red" variant="soft" onClick={() => setUserToDelete(user)}>
@@ -289,7 +301,13 @@ export const UserPanel = () => { // ★ UserPanel
                 <AlertDialog.Content>
                     <AlertDialog.Title>Confirmar Exclusão</AlertDialog.Title>
                     <AlertDialog.Description>
-                        Tem certeza que deseja excluir o usuário {userToDelete?.first_name}? Esta ação é irreversível.
+                        Tem certeza que deseja excluir o usuário {userToDelete?.first_name}?
+                        {!!userToDelete?.instituicoes_count && (
+                            <Text as="div" color="red" weight="bold" mt="2">
+                                Atenção: isso apagará {userToDelete.instituicoes_count} instituição(ões)
+                                criada(s) por ele, junto com todas as postagens, anexos e pesquisas.
+                            </Text>
+                        )}
                     </AlertDialog.Description>
                     <Flex gap="3" mt="4" justify="end">
                         <AlertDialog.Cancel><Button variant="soft">Cancelar</Button></AlertDialog.Cancel>
