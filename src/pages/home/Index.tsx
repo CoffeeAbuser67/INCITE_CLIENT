@@ -26,8 +26,6 @@ import { createPortal } from "react-dom";
 
 // . . . . . . .
 
-const PIN_ZOOM_LEVEL = 6;
-
 interface InstituicaoMarker {
     id: number;
     nome: string;
@@ -109,20 +107,6 @@ const Home = () => { // ★ Home ⋙──────────────�
     };
 
 
-    //     interface CityState {
-    //     active: string;
-    //     name: string;
-    // }
-
-    // const [city, setCity] = useState<CityState>({
-    //     active: '',
-    //     name: '',
-    // });
-
-
-    // const handleSetCity = (active: string, name: string) => {
-    //     setCity({ active, name });
-    // };
 
 
     // ✳ [tooltip, setTooltip] 
@@ -139,6 +123,12 @@ const Home = () => { // ★ Home ⋙──────────────�
 
     // ✳  [instituicoes, setInstituicoes]
     const [instituicoes, setInstituicoes] = useState<InstituicaoMarker[]>([]);
+
+
+
+    // ✳  [viewBoxWidth, setViewBoxWidth]
+    const [viewBoxWidth, setViewBoxWidth] = useState(601);
+
     // ── ⋙── ── ── ── ── ── ──➤
 
 
@@ -181,40 +171,27 @@ const Home = () => { // ★ Home ⋙──────────────�
 
     // (✪) handleMarkerClick
     const handleMarkerClick = (instituicao: InstituicaoMarker) => {
-        console.log("Marcador clicado:", instituicao.nome);
-
-        // 1. Mostra as informações da instituição no painel lateral
         setSelectedInstituicao(instituicao);
 
-        // 2. Encontra o ID da região a que esta cidade/instituição pertence
         const regionId = cityToRegionMap[instituicao.cidade_id_mapa];
-        if (!regionId) {
-            console.error("Não foi possível encontrar a região para o marcador:", instituicao.cidade_id_mapa);
+        const cidade = mapaDeCidades.get(instituicao.cidade_id_mapa);
+
+        if (!regionId || !cidade) {
+            console.error("Cidade não encontrada no mapa:", instituicao.cidade_id_mapa);
             return;
         }
 
-        // 3. Encontra os dados da região (como o nome)
         const regionObject = mapRegion.find(r => r.id === regionId);
-        if (!regionObject) {
-            console.error("Dados da região não encontrados:", regionId);
-            return;
-        }
+        if (!regionObject) return;
 
-        // 4. Encontra as coordenadas exatas do pin/cidade
-        const coords = mapaDeCoordenadas.get(instituicao.cidade_id_mapa);
-        if (!coords) {
-            console.error("Coordenadas da cidade não encontradas para o marcador:", instituicao.cidade_id_mapa);
-            return;
-        }
-
-        // 5. Executa a mágica!
         setCurrentLevel(1);
         handleSetRegion(regionId, regionObject.name);
-        const pinX = coords.x + (instituicao.offset_x || 0);
-        const pinY = coords.y + (instituicao.offset_y || 0);
-        zoomToPoint(pinX, pinY);
-    }; // ── ⋙── ── ── ── ── ── ── ──➤
 
+        // HERE MODIFY  ⬇ enquadra o bbox do MUNICÍPIO (antes: zoomToPoint
+        // com fator fixo 6 centrado na coordenada do pino).
+        // minSize evita zoom exagerado em municípios muito pequenos.
+        runToFit(cidade.bbox, 0.9, 45);
+    };
 
     // (●) mapaDeCoordenadas
     const mapaDeCoordenadas = useMemo(() => {
@@ -227,6 +204,29 @@ const Home = () => { // ★ Home ⋙──────────────�
         return mapa;
     }, []); // ── ⋙── ── ── ── ── ── ── ──➤
 
+
+    // (●) mapaDeCidades 
+    const mapaDeCidades = useMemo(() => {
+        const mapa = new Map<string, City>();
+        for (const citiesInRegion of Object.values(mapCity)) {
+            for (const city of citiesInRegion) {
+                mapa.set(city.id, city);
+            }
+        }
+        return mapa;
+    }, []);
+
+
+    // (●) cidadesOrdenadas 
+    const cidadesOrdenadas = useMemo(() => {
+        const lista = mapCity[region.active] || [];
+        if (!selectedInstituicao) return lista;
+        const ativa = selectedInstituicao.cidade_id_mapa;
+        return [...lista.filter(c => c.id !== ativa), ...lista.filter(c => c.id === ativa)];
+    }, [region.active, selectedInstituicao]);
+
+
+
     // ✪ bahiaStrokeStyle
     const bahiaStrokeStyle = useSpring({
         opacity: currentLevel === 1 ? 0 : 1,
@@ -234,45 +234,38 @@ const Home = () => { // ★ Home ⋙──────────────�
     });
 
     // [✪] transition mapCity
-    const transition = useTransition(mapCity[region.active] || [], {
+    const transition = useTransition(cidadesOrdenadas, {
         trail: 600 / mapCity[region.active].length || 1,
         from: { opacity: 0, transform: "scale(0)" },
         enter: { opacity: 1, transform: "scale(1)" },
         leave: { opacity: 0, transform: "scale(0)" },
         config: { mass: 10, tension: 63, friction: 16, clamp: true },
-        keys: (mapCity[region.active] || []).map((el) => el.id),
+        keys: cidadesOrdenadas.map((el) => el.id),
     });// ── ⋙── ── ── ── ── ── ── ──➤
 
 
+    // <✪> runToFit 
+    const runToFit = (bbox: BoundingBox, paddingRatio = 0.15, minSize = 0) => {
+        const ratio = 601 / 640; // proporção original do viewBox
 
-    // <✪> zoomToPoint
-    const zoomToPoint = (x: number, y: number) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [_originalX, _originalY, originalWidth, originalHeight] = initialViewBox;
+        let w = Math.max(bbox.width, minSize);
+        let h = Math.max(bbox.height, minSize / ratio);
 
-        const newWidth = originalWidth / PIN_ZOOM_LEVEL;
-        const newHeight = originalHeight / PIN_ZOOM_LEVEL;
+        const pad = Math.max(w, h) * paddingRatio;
+        w += pad * 2;
+        h += pad * 2;
 
-        // Centraliza a nova view no ponto clicado
-        const newMinX = x - newWidth / 2;
-        const newMinY = y - newHeight / 2;
+        // Ajusta para não distorcer: expande a dimensão que ficou curta.
+        if (w / h > ratio) h = w / ratio;
+        else w = h * ratio;
 
-        api.start({ viewBox: [newMinX, newMinY, newWidth, newHeight] });
+        const cx = bbox.x + bbox.width / 2;
+        const cy = bbox.y + bbox.height / 2;
+
+        const newViewBox = [cx - w / 2, cy - h / 2, w, h];
+        setViewBoxWidth(w);            // alimenta a compensação dos pinos
+        api.start({ viewBox: newViewBox });
     };
-
-    // <✪> runToFit
-    const runToFit = (bbox: BoundingBox) => {
-        // Para simular o 'SCALE_ADJUSTMENT', adicionamos um padding.
-        const padding = 30; // Ajuste este valor se quiser mais ou menos "respiro"
-
-        const newWidth = bbox.width + padding * 2;
-        const newHeight = bbox.height + padding * 2;
-        const newMinX = bbox.x - padding;
-        const newMinY = bbox.y - padding;
-
-        api.start({ viewBox: [newMinX, newMinY, newWidth, newHeight] });
-    }; // ── ⋙── ── ── ── ── ── ── ──➤
-
 
     // <✪> handleClick
     const handleClick = (event: React.MouseEvent<SVGElement>) => {
@@ -283,12 +276,9 @@ const Home = () => { // ★ Home ⋙──────────────�
 
         // ⊙ currentLevel 0
         if (currentLevel === 0) {
-            // Verifica se o clique foi em uma região e não no contorno geral
             if (target_type === "region" && target_id !== "bahia_stroke") {
                 setCurrentLevel(1);
                 handleSetRegion(target_id, target_name || "");
-
-                // HERE MODIFY  ⬇ era: runToFit(target.getBBox())
                 const regionInfo = mapRegion.find(r => r.id === target_id);
                 if (regionInfo?.bbox) runToFit(regionInfo.bbox);
             }
@@ -322,6 +312,7 @@ const Home = () => { // ★ Home ⋙──────────────�
     const resetMap = () => {
         setCurrentLevel(0);
         handleSetRegion("bahia", "Bahia");
+        setViewBoxWidth(601);
         api.start({ viewBox: initialViewBox });
         setSelectedInstituicao(null);
     }; // ── ⋙── ── ── ── ── ── ── ──➤
@@ -530,7 +521,11 @@ const Home = () => { // ★ Home ⋙──────────────�
                                         )}
 
 
-                                        {transition((style, cityItem) => { // [○] transition mapCity
+                                        {transition((style, cityItem) => {
+                                            const isCidadeAtiva =
+                                                selectedInstituicao?.cidade_id_mapa === cityItem.id;
+                                            const esmaecido = !!selectedInstituicao && !isCidadeAtiva;
+
                                             return (
                                                 <animated.g {...style}>
                                                     <animated.path
@@ -538,16 +533,31 @@ const Home = () => { // ★ Home ⋙──────────────�
                                                         d={cityItem.d}
                                                         data-name={cityItem.name}
                                                         data-type="city"
+
                                                         className={classNames(
                                                             "path-hover2",
-                                                            "cls-1",
+                                                            !esmaecido && !isCidadeAtiva && "cls-1",
                                                         )}
+
+                                                        fill={
+                                                            esmaecido ? "#f0f0f0"
+                                                                : isCidadeAtiva ? "#dcfce7"
+                                                                    : undefined
+                                                        }
+                                                        stroke={
+                                                            esmaecido ? "#e8e8e8"
+                                                                : isCidadeAtiva ? "#15803d"
+                                                                    : undefined
+                                                        }
+                                                        strokeWidth={isCidadeAtiva ? 1.4 : undefined}
+                                                        style={{
+                                                            transition: 'fill 300ms ease, stroke 300ms ease',
+                                                        }}
                                                         onMouseEnter={handleMouseEnterPath}
                                                     />
                                                 </animated.g>
                                             );
-                                        })} //. . .
-
+                                        })}
 
                                         {marcadoresOrdenados && marcadoresOrdenados.length > 0 && marcadoresOrdenados.map(instituicao => {
                                             const coords = mapaDeCoordenadas.get(instituicao.cidade_id_mapa);
@@ -559,8 +569,8 @@ const Home = () => { // ★ Home ⋙──────────────�
                                                         y={coords.y + (instituicao.offset_y || 0)}
                                                         imageUrl={instituicao.marcador_logo}
                                                         tooltipContent={<Text size="2" weight="bold">{instituicao.nome}</Text>}
-                                                        label={instituicao.nome}  
-                                                        level={currentLevel}
+                                                        label={instituicao.nome}
+                                                        viewScale={viewBoxWidth / 601}
                                                         isActive={selectedInstituicao?.id === instituicao.id}
                                                         isAnyPinActive={selectedInstituicao !== null}
                                                         onClick={(e) => {

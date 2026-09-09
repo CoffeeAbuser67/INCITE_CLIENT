@@ -1,10 +1,7 @@
-// PinMarker.tsx
+// src/components/PinMarker.tsx
 import React, { useState, useEffect } from 'react';
 import { Tooltip } from '@radix-ui/themes';
 import { useSpring, animated } from 'react-spring';
-
-
-
 
 interface PinMarkerProps {
     x: number;
@@ -12,16 +9,18 @@ interface PinMarkerProps {
     imageUrl?: string | null;
     tooltipContent: React.ReactNode;
     label: string;
-    level: 0 | 1;
+    /** Largura atual do viewBox dividida pela inicial. Compensa o zoom
+     *  do SVG para o pino manter tamanho visual constante. */
+    viewScale: number;
     isActive: boolean;
     isAnyPinActive: boolean;
     onClick: (event: React.MouseEvent) => void;
 }
+
 interface PinShapeProps {
     fillColor: string;
     strokeColor?: string;
-};
-
+}
 
 const PinShape = ({ fillColor, strokeColor }: PinShapeProps) => (
     <path
@@ -33,43 +32,40 @@ const PinShape = ({ fillColor, strokeColor }: PinShapeProps) => (
     />
 );
 
+// Escala base no nível 0 — era 0.8, agora maior conforme pedido.
+const PIN_BASE_SCALE = 1.15;
+// Leve reforço quando há zoom, para o pino não sumir na tela cheia.
+const ZOOMED_BOOST = 3.2;
+// Destaque no hover/ativo — era 1.2, reduzido porque agora não
+// acumula com o fator de zoom do viewBox.
+const ACTIVE_BOOST = 1.5;
+
 export const PinMarker: React.FC<PinMarkerProps> = ({
-    x, y, imageUrl, tooltipContent, label, level, isActive, isAnyPinActive, onClick
+    x, y, imageUrl, tooltipContent, label, viewScale, isActive, isAnyPinActive, onClick
 }) => {
     const [isHovered, setIsHovered] = useState(false);
 
-    // Definimos a escala base para cada nível. No pino, a escala funciona melhor que o raio.
-    const scaleLevel0 = 0.8;
-    const scaleLevel1 = 1.2;
-
     const [springProps, api] = useSpring(() => ({
-        scale: scaleLevel0,
-        yOffset: 0,
-        opacity: 1, // Começa com opacidade total
-        config: { tension: 300, friction: 15 },
+        scale: PIN_BASE_SCALE,
+        opacity: 1,
+        config: { tension: 210, friction: 24 },
     }));
 
-
     useEffect(() => {
-        const baseScale = level === 0 ? scaleLevel0 : scaleLevel1;
-        const targetScale = isHovered || isActive ? baseScale * 1.2 : baseScale;
-        const yOffset = isHovered || isActive ? -5 : 0;
-
-
-        const targetOpacity = isAnyPinActive && !isActive ? 0.5 : 1;
+        const zoomed = viewScale < 0.9;
+        let scale = PIN_BASE_SCALE * viewScale;
+        if (zoomed) scale *= ZOOMED_BOOST;
+        if (isHovered || isActive) scale *= ACTIVE_BOOST;
 
         api.start({
-            scale: targetScale,
-            yOffset: yOffset,
-            opacity: targetOpacity,
-
+            scale,
+            opacity: isAnyPinActive && !isActive ? 0 : 1,
         });
-    }, [level, isHovered, isActive, isAnyPinActive, api]);
+    }, [viewScale, isHovered, isActive, isAnyPinActive, api]);
 
     const handleMouseEnter = () => setIsHovered(true);
     const handleMouseLeave = () => setIsHovered(false);
 
-    // Dimensões para o logo caber dentro do círculo do pino
     const logoDiameter = 18;
 
     return (
@@ -80,7 +76,8 @@ export const PinMarker: React.FC<PinMarkerProps> = ({
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             role="button"
-            tabIndex={0}
+            tabIndex={isAnyPinActive && !isActive ? -1 : 0}
+            aria-hidden={isAnyPinActive && !isActive}
             aria-label={`Instituição ${label}`}
             aria-pressed={isActive}
             onFocus={handleMouseEnter}
@@ -91,12 +88,16 @@ export const PinMarker: React.FC<PinMarkerProps> = ({
                     onClick(e as unknown as React.MouseEvent);
                 }
             }}
-            style={{ cursor: 'pointer', willChange: 'transform', outline: 'none' }}
+            style={{
+                cursor: 'pointer',
+                willChange: 'transform',
+                outline: 'none',
+                pointerEvents: isAnyPinActive && !isActive ? 'none' : 'auto',
+            }}
         >
-            <g transform="translate(-16, -32)"> {/* Centraliza o pino pela ponta inferior */}
+            <g transform="translate(-16, -32)">
                 <Tooltip content={tooltipContent}>
                     <g>
-
                         <PinShape fillColor={isActive ? "#facc15" : "#FFFFFF"} strokeColor="#333" />
 
                         {imageUrl ? (
@@ -109,15 +110,7 @@ export const PinMarker: React.FC<PinMarkerProps> = ({
                                 clipPath="circle(50% at center)"
                             />
                         ) : (
-                            // Sem logo o pino ficava oco. Círculo verde como
-                            // fallback, espelhando o ícone do painel lateral.
-                            <circle
-                                cx={16}
-                                cy={12}
-                                r={logoDiameter / 2}
-                                fill="#15803d"
-                                opacity={0.85}
-                            />
+                            <circle cx={16} cy={12} r={logoDiameter / 2} fill="#15803d" opacity={0.85} />
                         )}
                     </g>
                 </Tooltip>
