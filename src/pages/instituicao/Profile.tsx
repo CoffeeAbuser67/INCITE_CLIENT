@@ -1,22 +1,48 @@
-import { useState, useEffect } from 'react';
+// Profile.tsx
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Heading, Box, Text, Flex, Spinner, Card, Avatar, Badge, Tabs, Button, Tooltip } from '@radix-ui/themes';
 import { axiosPlain } from '../../utils/axios';
 import { MapPin, Mail, Phone, Newspaper, User as UserIcon, ArrowRightIcon } from 'lucide-react';
-
+import { Helmet } from 'react-helmet-async';
 
 import {
-    Instituicao,
     Pesquisador,
     Pesquisa,
     AcaoExtensionista,
     ProdutoInovacao,
-    Postagem
 } from '../settings/Instituicao';
+
+import { PublicPostListItem } from '../blog/blogTypes';
+
+import { formatarDataBR, formatarDataLonga } from '../../utils/formatters';
+
+
+interface InstituicaoPublica {
+    id: number;
+    nome: string;
+    cidade_id_mapa: string;
+    cidade_nome: string;
+    coordenador_responsavel: string;
+    email: string;
+    telefone: string;
+    informacoes_adicionais?: string;
+    postagens: PublicPostListItem[];
+    pesquisadores: Pesquisador[];
+    pesquisas: Pesquisa[];
+    acoes_extensionistas: AcaoExtensionista[];
+    produtos: ProdutoInovacao[];
+    offset_x: number;
+    offset_y: number;
+    marcador_logo: string | null;
+}
+
+
+
 
 
 interface SobreTabProps {
-    instituicao: Instituicao;
+    instituicao: InstituicaoPublica;
 }
 interface PesquisasListProps {
     pesquisas: Pesquisa[];
@@ -72,12 +98,6 @@ const ExpandableText = ({ text }: { text: string }) => {
 };
 
 
-const formatarDataBR = (dataString?: string) => {
-    if (!dataString) return '';
-    // Divide a string e inverte a ordem
-    const [ano, mes, dia] = dataString.split('-');
-    return `${dia}/${mes}/${ano}`;
-};
 
 
 const PesquisasList = ({ pesquisas, todosPesquisadores }: PesquisasListProps) => (
@@ -212,32 +232,50 @@ const PesquisadoresList = ({ pesquisadores }: PesquisadoresListProps) => (
 
 const InstituicaoProfilePage = () => {
     const { id } = useParams<{ id: string }>();
-    const [instituicao, setInstituicao] = useState<Instituicao | null>(null);
+    const [instituicao, setInstituicao] = useState<InstituicaoPublica | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [erro, setErro] = useState(false);
+
+
+
+    const fetchInstituicao = useCallback(async () => {
+        setIsLoading(true);
+        setErro(false);
+        try {
+            const response = await axiosPlain.get<InstituicaoPublica>(`/profile/instituicoes/${id}/`);
+            setInstituicao(response.data);
+        } catch (error) {
+            console.error("Falha ao carregar instituição:", error);
+            setErro(true);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [id]);
 
 
 
     useEffect(() => {
-        const fetchInstituicao = async () => {
-            setIsLoading(true);
-            try {
-                const response = await axiosPlain.get(`/profile/instituicoes/${id}/`);
-                setInstituicao(response.data);
-                console.log('%c ── ⋙⇌⇌⇌⇌ instituicao ⇌⇌⇌⇌⇌⇌⫸ 🏢', 'color: black; font-size: 16px; font-weight: bold;');
-                console.log(response.data);
-
-            } catch (error) {
-                console.error("Falha ao carregar instituição:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchInstituicao();
-    }, [id]);
+    }, [fetchInstituicao]);
+
 
     if (isLoading) {
         return <Flex justify="center" align="center" className="h-96"><Spinner size="3" /></Flex>;
     }
+
+
+
+    if (erro) {
+        return (
+            <Flex direction="column" align="center" gap="4" className="p-16">
+                <Text size="4" color="gray">Não foi possível carregar esta instituição.</Text>
+                <Button variant="soft" onClick={fetchInstituicao}>Tentar novamente</Button>
+            </Flex>
+        );
+    }
+
+
+
 
     if (!instituicao) {
         return <div className="text-center p-8">Instituição não encontrada.</div>;
@@ -245,106 +283,133 @@ const InstituicaoProfilePage = () => {
 
     return (
 
-        <div className="max-w-5xl mx-auto p-4 sm:p-8">
-            <Flex gap="5" align="center" mb="6">
-                <Avatar
-                    src={instituicao.marcador_logo ?? undefined}
-                    fallback={instituicao.nome.charAt(0)}
-                    size="8"
-                    radius="full"
+        <>
+            <Helmet>
+                <title>{instituicao.nome} | INCITE AF</title>
+                <meta
+                    name="description"
+                    content={instituicao.informacoes_adicionais?.slice(0, 160) || instituicao.nome}
                 />
+            </Helmet>
 
-                <Box>
-                    <Heading size={{ initial: '7', md: '8' }}>{instituicao.nome}</Heading>
-                    <Flex align="center" gap="4" mt="2" wrap="wrap">
-                        <Flex align="center" gap="2"><MapPin size={16} /><Text size="2">{instituicao.cidade_nome.toLocaleUpperCase()}</Text></Flex>
-                        <Flex align="center" gap="2"><UserIcon size={16} /><Text size="2">{instituicao.coordenador_responsavel}</Text></Flex>
-                        <Flex align="center" gap="2"><Mail size={16} /><Text size="2">{instituicao.email}</Text></Flex>
-                        <Flex align="center" gap="2"><Phone size={16} /><Text size="2">{instituicao.telefone}</Text></Flex>
-                    </Flex>
-                </Box>
-            </Flex>
+            <div className="max-w-5xl mx-auto p-4 sm:p-8">
 
 
-            <Tabs.Root defaultValue="sobre">
-                <Tabs.List>
-                    <Tabs.Trigger value="sobre">Sobre</Tabs.Trigger>
-                    <Tabs.Trigger value="pesquisadores">Pesquisadores ({instituicao.pesquisadores.length})</Tabs.Trigger>
-                    <Tabs.Trigger value="pesquisas">Pesquisas ({instituicao.pesquisas.length})</Tabs.Trigger>
-                    <Tabs.Trigger value="acoes">Ações ({instituicao.acoes_extensionistas.length})</Tabs.Trigger>
-                    <Tabs.Trigger value="produtos">Produtos ({instituicao.produtos.length})</Tabs.Trigger>
-                    <Tabs.Trigger value="noticias">Notícias ({instituicao.postagens.length})</Tabs.Trigger>
-                </Tabs.List>
+                <Helmet>
+                    <title>{instituicao.nome} | INCITE AF</title>
+                    <meta name="description" content={instituicao.informacoes_adicionais?.slice(0, 160) || instituicao.nome} />
+                </Helmet>
 
-                <Box pt="6">
-                    <Tabs.Content value="sobre">
-                        <SobreTab instituicao={instituicao} />
-                    </Tabs.Content>
-                    <Tabs.Content value="pesquisadores">
-                        <PesquisadoresList pesquisadores={instituicao.pesquisadores || []} />
-                    </Tabs.Content>
 
-                    <Tabs.Content value="pesquisas">
-                        <PesquisasList
-                            pesquisas={instituicao.pesquisas || []}
-                            todosPesquisadores={instituicao.pesquisadores || []}
-                        />
-                    </Tabs.Content>
 
-                    <Tabs.Content value="acoes">
-                        <AcoesExtensionistasList acoes={instituicao.acoes_extensionistas || []} />
-                    </Tabs.Content>
-                    <Tabs.Content value="produtos">
-                        <ProdutosList produtos={instituicao.produtos || []} />
-                    </Tabs.Content>
 
-                    <Tabs.Content value="noticias">
-                        <Flex direction="column" gap="4">
-                            <Heading size="4">Notícias e Atualizações Recentes</Heading>
 
-                            {/* Verificamos se a instituição tem postagens */}
-                            {instituicao.postagens && instituicao.postagens.length > 0 ? (
-                                <Flex direction="column" gap="3">
-                                    {/* 1. Pegamos apenas os 3 primeiros posts e os mapeamos */}
-                                    {instituicao.postagens.slice(0, 3).map((post: Postagem) => (
-                                        // 2. Cada item da lista é um link para o post completo
-                                        <Link to={`/blog/${post.slug}`} key={post.id} className="no-underline text-current">
-                                            <Card className="hover:bg-gray-50 transition-colors">
-                                                <Flex align="center" gap="3">
-                                                    <Newspaper size={24} className="text-gray-600 flex-shrink-0" />
-                                                    <Box>
-                                                        <Text as="p" weight="bold" className="text-gray-800">{post.title}</Text>
-                                                        <Text as="p" size="2" color="gray">
-                                                            {new Date(post.created_at).toLocaleDateString('pt-BR', { dateStyle: 'long' })}
-                                                        </Text>
-                                                    </Box>
-                                                </Flex>
-                                            </Card>
-                                        </Link>
-                                    ))}
-                                </Flex>
-                            ) : (
-                                // 3. Mensagem para quando não há posts
-                                <Text color="gray">Nenhuma notícia publicada por esta instituição.</Text>
-                            )}
 
-                            {/* 4. O botão "Ver mais" que leva para a página de blog filtrada */}
-                            {/* Ele só aparece se houver posts para mostrar */}
-                            {instituicao.postagens && instituicao.postagens.length > 0 && (
-                                <Button variant="soft" asChild mt="3" className='my-4 text-black' style={{ width: 'fit-content' }}>
-                                    <Link to={`/blog?instituicao=${instituicao.id}`}>
-                                        Ver notícias ({instituicao.postagens.length})
-                                        <ArrowRightIcon className="ml-2" />
-                                    </Link>
-                                </Button>
-                            )}
+                <Flex gap="5" align="center" mb="6">
+                    <Avatar
+                        src={instituicao.marcador_logo ?? undefined}
+                        fallback={instituicao.nome.charAt(0)}
+                        size="8"
+                        radius="full"
+                        loading="lazy"
+                    />
+
+                    <Box>
+                        <Heading size={{ initial: '7', md: '8' }}>{instituicao.nome}</Heading>
+                        <Flex align="center" gap="4" mt="2" wrap="wrap">
+                            <Flex align="center" gap="2"><MapPin size={16} /><Text size="2">{instituicao.cidade_nome.toLocaleUpperCase()}</Text></Flex>
+                            <Flex align="center" gap="2"><UserIcon size={16} /><Text size="2">{instituicao.coordenador_responsavel}</Text></Flex>
+                            <Flex align="center" gap="2"><Mail size={16} /><Text size="2">{instituicao.email}</Text></Flex>
+                            <Flex align="center" gap="2"><Phone size={16} /><Text size="2">{instituicao.telefone}</Text></Flex>
                         </Flex>
-                    </Tabs.Content>
-                </Box>
-            </Tabs.Root>
+                    </Box>
+                </Flex>
 
 
-        </div>
+                <Tabs.Root defaultValue="sobre">
+                    <Tabs.List>
+                        <Tabs.Trigger value="sobre">Sobre</Tabs.Trigger>
+                        <Tabs.Trigger value="pesquisadores">Pesquisadores ({instituicao.pesquisadores.length})</Tabs.Trigger>
+                        <Tabs.Trigger value="pesquisas">Pesquisas ({instituicao.pesquisas.length})</Tabs.Trigger>
+                        <Tabs.Trigger value="acoes">Ações ({instituicao.acoes_extensionistas.length})</Tabs.Trigger>
+                        <Tabs.Trigger value="produtos">Produtos ({instituicao.produtos.length})</Tabs.Trigger>
+                        <Tabs.Trigger value="noticias">Notícias ({instituicao.postagens.length})</Tabs.Trigger>
+                    </Tabs.List>
+
+                    <Box pt="6">
+                        <Tabs.Content value="sobre">
+                            <SobreTab instituicao={instituicao} />
+                        </Tabs.Content>
+                        <Tabs.Content value="pesquisadores">
+                            <PesquisadoresList pesquisadores={instituicao.pesquisadores || []} />
+                        </Tabs.Content>
+
+                        <Tabs.Content value="pesquisas">
+                            <PesquisasList
+                                pesquisas={instituicao.pesquisas || []}
+                                todosPesquisadores={instituicao.pesquisadores || []}
+                            />
+                        </Tabs.Content>
+
+                        <Tabs.Content value="acoes">
+                            <AcoesExtensionistasList acoes={instituicao.acoes_extensionistas || []} />
+                        </Tabs.Content>
+                        <Tabs.Content value="produtos">
+                            <ProdutosList produtos={instituicao.produtos || []} />
+                        </Tabs.Content>
+
+                        <Tabs.Content value="noticias">
+                            <Flex direction="column" gap="4">
+                                <Flex align="baseline" gap="3" wrap="wrap">
+                                    <Heading size="4">Notícias e Atualizações Recentes</Heading>
+                                    {instituicao.postagens.length > 3 && (
+                                        <Text size="2" color="gray">
+                                            mostrando 3 de {instituicao.postagens.length}
+                                        </Text>
+                                    )}
+                                </Flex>
+
+                                {instituicao.postagens && instituicao.postagens.length > 0 ? (
+                                    <Flex direction="column" gap="3">
+                                        {instituicao.postagens.slice(0, 3).map((post: PublicPostListItem) => (
+                                            <Link to={`/blog/${post.slug}`} key={post.id} className="no-underline text-current">
+                                                <Card className="hover:bg-gray-50 transition-colors">
+                                                    <Flex align="center" gap="3">
+                                                        <Newspaper size={24} className="text-gray-600 flex-shrink-0" />
+                                                        <Box>
+                                                            <Text as="p" weight="bold" className="text-gray-800">{post.title}</Text>
+                                                            <Text as="p" size="2" color="gray">
+                                                                {formatarDataLonga(post.created_at)}
+                                                            </Text>
+                                                        </Box>
+                                                    </Flex>
+                                                </Card>
+                                            </Link>
+                                        ))}
+                                    </Flex>
+                                ) : (
+                                    <Text color="gray">Nenhuma notícia publicada por esta instituição.</Text>
+                                )}
+
+                                {instituicao.postagens.length > 3 && (
+                                    <Button variant="soft" asChild mt="3" className='my-4 text-black' style={{ width: 'fit-content' }}>
+                                        <Link to={`/blog?instituicao=${instituicao.id}`}>
+                                            Ver todas as notícias ({instituicao.postagens.length})
+                                            <ArrowRightIcon className="ml-2" />
+                                        </Link>
+                                    </Button>
+                                )}
+                            </Flex>
+                        </Tabs.Content>
+                    </Box>
+                </Tabs.Root>
+
+
+            </div>
+
+        </>
+
+
     );
 };
 

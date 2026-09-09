@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+
+// Instituicao.tsx
 import React, { useCallback, useEffect, useState } from 'react';
 import { Card, Heading, Text, Button, Flex, Tabs, Box, TextField, Switch, Separator, TextArea, Select, AlertDialog, Spinner, Tooltip, AspectRatio, Checkbox, Badge } from '@radix-ui/themes';
 import { PlusCircle, Pencil, Trash2, ArrowLeft, Info, Upload } from 'lucide-react';
@@ -9,7 +11,7 @@ import { axiosForInterceptor } from '../../utils/axios';
 import { toast } from 'react-toastify';
 import { CitySelect } from './CitySelect';
 import mapCity from '../../assets/BahiaCidades5.json';
-
+import { formatarDataCurta } from '../../utils/formatters';
 
 
 import { useFormik } from 'formik';
@@ -473,6 +475,7 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
                                             'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800'
                                         }
                                         alt={`Imagem para ${post.title}`}
+                                        loading="lazy"
                                         className="w-full h-full object-cover rounded-md"
                                     />
                                 </AspectRatio>
@@ -501,9 +504,7 @@ const PostagensTab = ({ postagensIniciais, instituicaoId, onDataChange }: Postag
                                 )}
 
                                 <Flex align="center" justify="between" mt="5">
-                                    <Text color="gray" size="2">
-                                        {formatarData(post.created_at)}
-                                    </Text>
+                                    <Text color="gray" size="2">{formatarDataCurta(post.created_at)}</Text>
 
                                     <Flex gap="2">
                                         <Button className="cursor-pointer" size="1" variant="soft"
@@ -565,6 +566,7 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(initialData?.marcador_logo || null);
+    const [removerLogo, setRemoverLogo] = useState(false);
 
     const formik = useFormik({
         initialValues: {
@@ -596,6 +598,10 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
 
             if (logoFile) {
                 formData.append('marcador_logo', logoFile);
+            } else if (removerLogo) {
+                // String vazia sinaliza limpeza do ImageField.
+                // Omitir o campo faria o DRF manter o valor atual.
+                formData.append('marcador_logo', '');
             }
 
             try {
@@ -621,6 +627,7 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
         if (file) {
             setLogoFile(file);
             setLogoPreview(URL.createObjectURL(file));
+            setRemoverLogo(false);
         }
     };
 
@@ -725,9 +732,16 @@ export const InstituicaoForm = ({ initialData = null, onSaveSuccess, onCancel }:
                         {logoPreview && (
                             <Flex align="center" gap="3">
                                 <img src={logoPreview} alt="Preview do logo" className="w-14 h-14 object-cover rounded-full border" />
-                                <Button type="button" size="1" variant="ghost" color="red" onClick={() => { setLogoFile(null); setLogoPreview(null); }}>
+
+                                <Button type="button" size="1" variant="ghost" color="red"
+                                    onClick={() => {
+                                        setLogoFile(null);
+                                        setLogoPreview(null);
+                                        setRemoverLogo(true);
+                                    }}>
                                     Remover
                                 </Button>
+
                             </Flex>
                         )}
                     </Flex>

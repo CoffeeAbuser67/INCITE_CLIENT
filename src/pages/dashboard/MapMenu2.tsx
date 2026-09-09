@@ -27,9 +27,10 @@ import handleAxiosError from "../../utils/handleAxiosError";
 import regionData from "../../assets/BahiaRegiao3.json";
 import cityData from "../../assets/BahiaCidades5.json";
 import { COLORSTW, COLORSTW_HEX, VARIABLES } from "../../assets/auxData";
-import { createPortal } from "react-dom";
 import { mapStore, BoundingBox, variableStore, yearStore, regionDataStore } from "../../store/mapsStore";
 import { DashboardCitySelect } from './DashboardCitySelect';
+
+import { MapTooltip, TooltipState } from '../../components/MapTooltip';
 
 interface Region {
   id: string;
@@ -47,12 +48,6 @@ interface City {
   bbox: BoundingBox;   
 }
 
-interface TooltipState {
-  visible: boolean;
-  content: string;
-  x: number;
-  y: number;
-}
 
 interface GradientLegendProps {
   min: number;
@@ -365,33 +360,6 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
   }
 
   // ── ⋙── ── ── ── ToolTip  ── ── ── ──➤
-  // <✪> AnimatedTooltip
-  const AnimatedTooltip = ({ visible, content, x, y }: TooltipState) => {
-    const springProps = useSpring({
-      opacity: visible ? 1 : 0,
-      transform: visible ? `translate3d(0,0,0)` : `translate3d(0,10px,0)`,
-      config: { tension: 300, friction: 20 },
-    });
-
-    return createPortal(
-
-      <animated.div
-        style={{
-          position: 'absolute',
-          top: y,
-          left: x,
-          pointerEvents: 'none',
-          zIndex: 1000,
-          ...springProps,
-        }}
-        className="bg-gray-800 text-white text-sm px-3 py-1 rounded-md shadow-lg"
-      >
-        {content}
-      </animated.div>,
-
-      document.body // O destino do portal
-    )
-  };
 
   const handleMouseEnterPath = (event: React.MouseEvent<SVGPathElement>) => {   // <●> handleMouseEnterPath
     const content = event.currentTarget.getAttribute("data-name");
@@ -509,15 +477,6 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
                 />
               </Box>
 
-
-
-
-
-
-
-
-
-
               <DropdownMenu.Root
               // ⊙  Variable ↺ setVariable
               >
@@ -576,7 +535,7 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
           {colorScale.legendData && // <○> GradientLegend
             <GradientLegend {...colorScale.legendData} />
           }
-          <AnimatedTooltip {...tooltip} />
+          <MapTooltip  {...tooltip} />
           <animated.svg //HERE  SVGCanvas // . . . props
             id="SVGCanvas"
             ref={svgRef}

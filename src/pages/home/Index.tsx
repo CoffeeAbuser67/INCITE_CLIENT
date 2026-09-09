@@ -1,4 +1,6 @@
-// HERE INCITE
+
+// Home/Index.tsx
+
 import classNames from "classnames";
 import BG from "../../assets/bg_Incite.png";
 
@@ -459,7 +461,8 @@ const Home = () => { // ★ Home ⋙──────────────�
                                 <animated.svg //HERE  SVGCanvas // . . . props
                                     id="SVGCanvas"
                                     ref={svgRef}
-                                    // O viewBox agora é controlado pela react-spring
+                                    role="img"
+                                    aria-label="Mapa das regiões de identidade da Bahia"
                                     viewBox={viewBox.to((...v) => v.join(" "))}
                                     overflow={"visible"}
                                     style={{
@@ -556,8 +559,8 @@ const Home = () => { // ★ Home ⋙──────────────�
                                                         y={coords.y + (instituicao.offset_y || 0)}
                                                         imageUrl={instituicao.marcador_logo}
                                                         tooltipContent={<Text size="2" weight="bold">{instituicao.nome}</Text>}
+                                                        label={instituicao.nome}  
                                                         level={currentLevel}
-                                                        // O marcador é 'ativo' se seu ID for o mesmo da instituição selecionada
                                                         isActive={selectedInstituicao?.id === instituicao.id}
                                                         isAnyPinActive={selectedInstituicao !== null}
                                                         onClick={(e) => {
@@ -678,6 +681,7 @@ const Home = () => { // ★ Home ⋙──────────────�
                                                         <img
                                                             src={inst.marcador_logo}
                                                             alt={inst.nome}
+                                                            loading="lazy"
                                                             className="w-12 h-12 object-contain rounded-md bg-white border border-gray-100"
                                                         />
                                                     ) : (

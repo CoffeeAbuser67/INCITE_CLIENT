@@ -5,6 +5,7 @@ import { axiosPlain } from '../../utils/axios';
 import { PostCard } from './PostCard';
 import { PublicPostListItem, InstituicaoParaFiltro, Paginated } from './blogTypes';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 function useQuery() {
     return new URLSearchParams(useLocation().search);
@@ -16,6 +17,7 @@ const BlogPage = () => {
     const [count, setCount] = useState(0);
     const [page, setPage] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
+    const [erro, setErro] = useState(false);
 
     const navigate = useNavigate();
     const query = useQuery();
@@ -30,10 +32,10 @@ const BlogPage = () => {
             .catch(err => console.error("Falha ao carregar instituições:", err));
     }, []);
 
-    // O filtro agora é feito no servidor. Filtrar em memória quebraria
-    // com paginação: só filtraria a página atualmente carregada.
+
     const fetchPosts = useCallback(async () => {
         setIsLoading(true);
+        setErro(false);
         try {
             const params: Record<string, string | number> = { page };
             if (filtroInstituicao) params.instituicao = filtroInstituicao;
@@ -43,6 +45,7 @@ const BlogPage = () => {
             setCount(resp.data.count);
         } catch (error) {
             console.error("Falha ao carregar dados do blog:", error);
+            setErro(true);
         } finally {
             setIsLoading(false);
         }
@@ -73,10 +76,28 @@ const BlogPage = () => {
 
     return (
         <div className="p-4 sm:p-8 max-w-7xl mx-auto">
+
+
+
+            <Helmet>
+                <title>Notícias | INCITE AF</title>
+                <meta name="description" content="Notícias e publicações das instituições parceiras do INCITE Agricultura Familiar." />
+            </Helmet>
+
+
+
+
+
+
             <Heading size="9" mt="4" mb="8" align="center" className="text-gray-800">Notícias</Heading>
 
             {isLoading ? (
                 <Flex justify="center" align="center" className="h-96"><Spinner size="3" /></Flex>
+            ) : erro ? (
+                <Flex direction="column" align="center" gap="4" className="py-20">
+                    <Text size="4" color="gray">Não foi possível carregar as publicações.</Text>
+                    <Button variant="soft" onClick={fetchPosts}>Tentar novamente</Button>
+                </Flex>
             ) : posts.length === 0 ? (
                 <Text as="p" align="center" color="gray" size="4" className="py-20">
                     Nenhuma postagem encontrada.
@@ -106,57 +127,59 @@ const BlogPage = () => {
                         </Link>
                     )}
 
-                    <Flex gap={{ initial: '6', md: '8' }} direction={{ initial: 'column-reverse', md: 'row' }}>
-                        <Box className="flex-1">
-                            <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="6">
-                                {outrosPosts.map(post => (
-                                    <PostCard key={post.id} post={post} />
-                                ))}
-                            </Grid>
 
-                            {totalPaginas > 1 && (
-                                <Flex justify="center" align="center" gap="3" mt="8">
-                                    <Button variant="soft" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
-                                        Anterior
-                                    </Button>
-                                    <Text size="2" color="gray">Página {page} de {totalPaginas}</Text>
-                                    <Button variant="soft" disabled={page >= totalPaginas} onClick={() => setPage(p => p + 1)}>
-                                        Próxima
-                                    </Button>
-                                </Flex>
-                            )}
-                        </Box>
-
-                        <Box width={{ initial: '100%', md: 'w-1/3' }} className="sticky top-24 self-start">
-                            <Heading size="4" mb="4">Explorar por Instituição</Heading>
-                            <Select.Root size="3" value={filtroInstituicao || 'all'} onValueChange={handleFiltroChange}>
-                                <Select.Trigger variant="soft" placeholder="Selecione uma instituição..." />
-                                <Select.Content variant="soft" position="popper">
-                                    <Select.Group>
-                                        <Select.Label>Instituições</Select.Label>
-                                        <Select.Item value="all">Todas as Postagens</Select.Item>
-                                        {instituicoes.map(inst => (
-                                            <Select.Item key={inst.id} value={String(inst.id)}>
-                                                <Text size="2">{inst.nome}</Text>
-                                            </Select.Item>
-                                        ))}
-                                    </Select.Group>
-                                </Select.Content>
-                            </Select.Root>
-
+                    <Flex align="center" justify="between" gap="4" mb="6" wrap="wrap">
+                        <Flex align="center" gap="3">
                             {instituicaoSelecionada?.marcador_logo && (
-                                <Card variant="ghost" mt="5">
-                                    <Link to={`/instituicao/${instituicaoSelecionada.id}`}>
-                                        <img
-                                            src={instituicaoSelecionada.marcador_logo}
-                                            alt={`${instituicaoSelecionada.nome} logo`}
-                                            className="w-[130px] h-auto rounded cursor-pointer transition-transform duration-200 hover:scale-105"
-                                        />
-                                    </Link>
-                                </Card>
+                                <Link to={`/instituicao/${instituicaoSelecionada.id}`}>
+                                    <img
+                                        src={instituicaoSelecionada.marcador_logo}
+                                        alt={`${instituicaoSelecionada.nome} logo`}
+                                        className="w-10 h-10 object-contain rounded bg-white border border-gray-100"
+                                    />
+                                </Link>
                             )}
-                        </Box>
+                            <Text size="2" color="gray">
+                                {count} {count === 1 ? 'publicação' : 'publicações'}
+                                {instituicaoSelecionada && ` · ${instituicaoSelecionada.nome}`}
+                            </Text>
+                        </Flex>
+
+                        <Select.Root size="2" value={filtroInstituicao || 'all'} onValueChange={handleFiltroChange}>
+                            <Select.Trigger variant="soft" placeholder="Filtrar por instituição" />
+                            <Select.Content variant="soft" position="popper">
+                                <Select.Group>
+                                    <Select.Label>Instituições</Select.Label>
+                                    <Select.Item value="all">Todas as Postagens</Select.Item>
+                                    {instituicoes.map(inst => (
+                                        <Select.Item key={inst.id} value={String(inst.id)}>
+                                            <Text size="2">{inst.nome}</Text>
+                                        </Select.Item>
+                                    ))}
+                                </Select.Group>
+                            </Select.Content>
+                        </Select.Root>
                     </Flex>
+
+                    <Grid columns={{ initial: '1', sm: '2', md: '3' }} gap="6">
+                        {outrosPosts.map(post => (
+                            <PostCard key={post.id} post={post} />
+                        ))}
+                    </Grid>
+
+                    {totalPaginas > 1 && (
+                        <Flex justify="center" align="center" gap="3" mt="8">
+                            <Button variant="soft" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>
+                                Anterior
+                            </Button>
+                            <Text size="2" color="gray">Página {page} de {totalPaginas}</Text>
+                            <Button variant="soft" disabled={page >= totalPaginas} onClick={() => setPage(p => p + 1)}>
+                                Próxima
+                            </Button>
+                        </Flex>
+                    )}
+
+
                 </>
             )}
         </div>

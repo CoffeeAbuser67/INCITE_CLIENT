@@ -2,13 +2,11 @@ import React from 'react';
 import { Card, AspectRatio, Text, Heading, Flex, Box } from '@radix-ui/themes';
 import { Link } from 'react-router-dom';
 import { PublicPostListItem } from './blogTypes';
+import { FALLBACK_POST_IMG } from '../../assets/constants';
 
-const formatarData = (timestamp: string): string => {
-    if (!timestamp) return 'Data indisponível';
-    return new Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit', month: 'long', year: 'numeric'
-    }).format(new Date(timestamp));
-};
+import { formatarDataLonga } from '../../utils/formatters';
+
+
 
 interface PostCardProps {
     post: PublicPostListItem;
@@ -21,8 +19,9 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
                 <Box>
                     <AspectRatio ratio={16 / 9}>
                         <img
-                            src={post.imagem_destaque || `https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800`}
+                            src={post.imagem_destaque || FALLBACK_POST_IMG}
                             alt={`Imagem para ${post.title}`}
+                            loading="lazy"
                             className="w-full h-full object-cover rounded-md"
                         />
                     </AspectRatio>
@@ -36,7 +35,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
                     )}
                     <Flex align="center" gap="2" mt="3">
                         <Text size="2" weight="bold" color="jade">{post.instituicao_nome}</Text>
-                        <Text color="gray" size="2">· {formatarData(post.created_at)}</Text>
+                        <Text color="gray" size="2">· {formatarDataLonga(post.created_at)}</Text>
                     </Flex>
                 </Box>
             </Card>

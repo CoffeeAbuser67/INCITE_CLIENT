@@ -1,22 +1,22 @@
-// src/components/PinMarker.tsx
+// PinMarker.tsx
 import React, { useState, useEffect } from 'react';
 import { Tooltip } from '@radix-ui/themes';
 import { useSpring, animated } from 'react-spring';
 
-// Definindo a interface de props que o marcador receberá
+
+
+
 interface PinMarkerProps {
     x: number;
     y: number;
     imageUrl?: string | null;
     tooltipContent: React.ReactNode;
+    label: string;
     level: 0 | 1;
-    isActive: boolean; // Nova prop para saber se este é o marcador ativo
+    isActive: boolean;
     isAnyPinActive: boolean;
     onClick: (event: React.MouseEvent) => void;
 }
-
-
-
 interface PinShapeProps {
     fillColor: string;
     strokeColor?: string;
@@ -34,7 +34,7 @@ const PinShape = ({ fillColor, strokeColor }: PinShapeProps) => (
 );
 
 export const PinMarker: React.FC<PinMarkerProps> = ({
-    x, y, imageUrl, tooltipContent, level, isActive, isAnyPinActive, onClick
+    x, y, imageUrl, tooltipContent, label, level, isActive, isAnyPinActive, onClick
 }) => {
     const [isHovered, setIsHovered] = useState(false);
 
@@ -79,23 +79,44 @@ export const PinMarker: React.FC<PinMarkerProps> = ({
             onClick={onClick}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            style={{ cursor: 'pointer', willChange: 'transform' }}
+            role="button"
+            tabIndex={0}
+            aria-label={`Instituição ${label}`}
+            aria-pressed={isActive}
+            onFocus={handleMouseEnter}
+            onBlur={handleMouseLeave}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onClick(e as unknown as React.MouseEvent);
+                }
+            }}
+            style={{ cursor: 'pointer', willChange: 'transform', outline: 'none' }}
         >
             <g transform="translate(-16, -32)"> {/* Centraliza o pino pela ponta inferior */}
                 <Tooltip content={tooltipContent}>
                     <g>
 
-
                         <PinShape fillColor={isActive ? "#facc15" : "#FFFFFF"} strokeColor="#333" />
 
-                        {imageUrl && (
+                        {imageUrl ? (
                             <image
                                 href={imageUrl}
-                                x={16 - (logoDiameter / 2)} // Centraliza o logo no meio do pino
+                                x={16 - (logoDiameter / 2)}
                                 y={12 - (logoDiameter / 2)}
                                 height={logoDiameter}
                                 width={logoDiameter}
                                 clipPath="circle(50% at center)"
+                            />
+                        ) : (
+                            // Sem logo o pino ficava oco. Círculo verde como
+                            // fallback, espelhando o ícone do painel lateral.
+                            <circle
+                                cx={16}
+                                cy={12}
+                                r={logoDiameter / 2}
+                                fill="#15803d"
+                                opacity={0.85}
                             />
                         )}
                     </g>
