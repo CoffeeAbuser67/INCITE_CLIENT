@@ -3,13 +3,19 @@ import classNames from "classnames";
 import { Avatar, Box, DropdownMenu, Text, Tooltip } from "@radix-ui/themes";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthService } from "../../hooks/useAuthService";
-import { LayoutDashboard, LogIn, LogOut, BookOpen, ChartColumnBig } from "lucide-react";
+import { LayoutDashboard, LogIn, LogOut, BookOpen } from "lucide-react";
 import { useUserStore } from "../../store/userStore";
+
+
+import BahiaStroke from "../../assets/bahiaStroke";
+import InciteLogo from "../../assets/InciteLogo";
+
+
 
 const navItems = [ // [✪] navItems
 
-    { icon: BookOpen, href: "/blog", label: "Blog" },
-    { icon: ChartColumnBig, href: "/dashboard", label: "Dashboard" },
+    { icon: BookOpen, href: "/postagens", label: "Posts" },
+    { icon: BahiaStroke, href: "/bahia", label: "Bahia" },
 
 ];
 
@@ -54,34 +60,13 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                 <Box
                     id="logoContainer"
                     className={classNames(
-                        "cursor-pointer flex justify-center items-center gap-2",
+                        "cursor-pointer flex justify-center items-center",
                         "transition-all duration-300 ease-in-out",
-                        "group" // ← Para habilitar group-hover nos filhos
+                        "text-black group"
                     )}
                     onClick={() => navigate('/')}
                 >
-                    <Text
-                        className="text-black"
-                        size={scrolled ? "7" : "8"}
-                        highContrast
-                        weight="bold"
-                        style={{ textShadow: "0 2px 6px rgba(0,0,0,0.2)" }}
-                    >
-                        Incite
-                    </Text>
-
-                    <Text
-                        className={classNames(
-                            "text-green-700 transition duration-300",
-                            "group-hover:drop-shadow-lg group-hover:-translate-y-0.5",
-                            scrolled ? "text-[1.75rem]" : "text-[2rem]"
-                        )}
-                        highContrast
-                        weight="bold"
-                        style={{ textShadow: "0 2px 6px rgba(0,0,0,0.2)" }}
-                    >
-                        AF
-                    </Text>
+                    <InciteLogo height={40} />
                 </Box>
 
 

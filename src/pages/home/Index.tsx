@@ -1,6 +1,3 @@
-
-// Home/Index.tsx
-
 import classNames from "classnames";
 import BG from "../../assets/bg_Incite.png";
 
@@ -21,8 +18,8 @@ import cityData from "../../assets/BahiaCidades5.json";
 import { axiosPlain } from "../../utils/axios";
 import { Link } from 'react-router-dom';
 import { PinMarker } from './PinMarker';
+import { MapTooltip, TooltipState } from '../../components/MapTooltip';
 import { ArrowRightIcon, Mail, MapPin, Phone, UserIcon, ArrowLeft } from "lucide-react";
-import { createPortal } from "react-dom";
 
 // . . . . . . .
 
@@ -35,9 +32,9 @@ interface InstituicaoMarker {
     email: string;
     telefone: string;
     informacoes_adicionais?: string;
-    offset_x: number; // <-- Adicionado
-    offset_y: number; // <-- Adicionado
-    marcador_logo: string | null
+    offset_x: number;
+    offset_y: number;
+    marcador_logo: string | null;
 }
 
 interface BoundingBox {
@@ -47,20 +44,11 @@ interface BoundingBox {
     height: number;
 }
 
-
-interface TooltipState {
-    visible: boolean;
-    content: string;
-    x: number;
-    y: number;
-}
-
-
 interface Region {
     id: string;
     d: string;
     name: string;
-    bbox: BoundingBox;   // HERE MODIFY
+    bbox: BoundingBox;
 }
 
 interface City {
@@ -69,7 +57,7 @@ interface City {
     name: string;
     x: number;
     y: number;
-    bbox: BoundingBox;   // HERE MODIFY
+    bbox: BoundingBox;
 }
 
 interface CityData {
@@ -83,13 +71,44 @@ const mapCity: CityData = cityData;
 const mapRegion: Region[] = regionData;
 
 
+
+
+
+// [●] IlustracaoPlaceholder
+const IlustracaoPlaceholder = () => (
+    <svg
+        viewBox="0 0 480 360"
+        role="img"
+        aria-label="Espaço reservado para a ilustração de apoio"
+        className="w-full max-w-[480px] h-auto"
+    >
+        <rect
+            x="1" y="1" width="478" height="358" rx="12"
+            fill="#f8faf8" stroke="#cbd5cd" strokeWidth="2" strokeDasharray="10 8"
+        />
+        <path d="M150 230 C 200 214, 280 214, 330 230" fill="none" stroke="#cbd5cd" strokeWidth="3" strokeLinecap="round" />
+        <circle cx="240" cy="150" r="34" fill="none" stroke="#cbd5cd" strokeWidth="3" />
+        <path d="M240 184 L240 214" stroke="#cbd5cd" strokeWidth="3" strokeLinecap="round" />
+        <text x="240" y="272" textAnchor="middle" fill="#94a3a0" fontSize="15" fontFamily="ui-sans-serif, system-ui, sans-serif">
+            ilustração de apoio
+        </text>
+        <text x="240" y="294" textAnchor="middle" fill="#b0bcb8" fontSize="13" fontFamily="ui-sans-serif, system-ui, sans-serif">
+            480 × 360
+        </text>
+    </svg>
+);
+
+
+
+
+
 const Home = () => { // ★ Home ⋙─────────────────────────────────────────➤ 
-    const svgRef = useRef<SVGSVGElement | null>(null); // HERE svgRef
+
+    // Referência do painel, para rolar até ele quando a seleção vem do mapa
+    const painelRef = useRef<HTMLDivElement | null>(null);
 
     type levels = 0 | 1;
-    // ✳ [currentLevel, setCurrentLevel]
     const [currentLevel, setCurrentLevel] = useState<levels>(0);
-
 
     interface RegionState {
         active: string;
@@ -106,9 +125,6 @@ const Home = () => { // ★ Home ⋙──────────────�
         setRegion({ active, name });
     };
 
-
-
-
     // ✳ [tooltip, setTooltip] 
     const [tooltip, setTooltip] = useState<TooltipState>({
         visible: false,
@@ -117,29 +133,39 @@ const Home = () => { // ★ Home ⋙──────────────�
         y: 0,
     });
 
-
     // ✳  [selectedInstituicao, setSelectedInstituicao]
     const [selectedInstituicao, setSelectedInstituicao] = useState<InstituicaoMarker | null>(null);
 
     // ✳  [instituicoes, setInstituicoes]
     const [instituicoes, setInstituicoes] = useState<InstituicaoMarker[]>([]);
 
+    // ✳  [erroInst, setErroInst]
+    const [erroInst, setErroInst] = useState(false);
 
+    // ✳  [sobreExpandido, setSobreExpandido]
+    const [sobreExpandido, setSobreExpandido] = useState(false);
 
     // ✳  [viewBoxWidth, setViewBoxWidth]
     const [viewBoxWidth, setViewBoxWidth] = useState(601);
 
+
+    // ✳  [mostrarTodas, setMostrarTodas]
+    const [mostrarTodas, setMostrarTodas] = useState(false);
+
+    const LIMITE_INICIAL = 6;
+
+
     // ── ⋙── ── ── ── ── ── ──➤
 
-
     useEffect(() => { //HERE uE
-
         const fetchInstituicoes = async () => {
             try {
                 const response = await axiosPlain.get('/map-markers/');
                 setInstituicoes(response.data);
+                setErroInst(false);
             } catch (error) {
                 console.error("Falha ao buscar instituições:", error);
+                setErroInst(true);
             }
         };
 
@@ -148,8 +174,6 @@ const Home = () => { // ★ Home ⋙──────────────�
 
 
     const initialViewBox = [0, 0, 601, 640];
-    // Maior precisão! 
-    //  const initialViewBox = [0.47, 0.87, 600.62, 638.08];
 
     // HERE [{ viewBox }, api] 
     const [{ viewBox }, api] = useSpring(() => ({
@@ -169,9 +193,49 @@ const Home = () => { // ★ Home ⋙──────────────�
         return map;
     }, []);
 
+
+    // (●) mapaDeCidades — substitui o antigo mapaDeCoordenadas,
+    // que era redundante (City já carrega x, y e bbox)
+    const mapaDeCidades = useMemo(() => {
+        const mapa = new Map<string, City>();
+        for (const citiesInRegion of Object.values(mapCity)) {
+            for (const city of citiesInRegion) {
+                mapa.set(city.id, city);
+            }
+        }
+        return mapa;
+    }, []);
+
+
+    // <✪> runToFit 
+    const runToFit = (bbox: BoundingBox, paddingRatio = 0.15, minSize = 0) => {
+        const ratio = 601 / 640;
+
+        let w = Math.max(bbox.width, minSize);
+        let h = Math.max(bbox.height, minSize / ratio);
+
+        const pad = Math.max(w, h) * paddingRatio;
+        w += pad * 2;
+        h += pad * 2;
+
+        if (w / h > ratio) h = w / ratio;
+        else w = h * ratio;
+
+        const cx = bbox.x + bbox.width / 2;
+        const cy = bbox.y + bbox.height / 2;
+
+        const newViewBox = [cx - w / 2, cy - h / 2, w, h];
+        setViewBoxWidth(w);
+        api.start({ viewBox: newViewBox });
+    };
+
+
     // (✪) handleMarkerClick
-    const handleMarkerClick = (instituicao: InstituicaoMarker) => {
+    // fromMap: quando o clique vem de um pino, o painel pode estar fora
+    // da tela (ele fica ACIMA do mapa), então rolamos até ele.
+    const handleMarkerClick = (instituicao: InstituicaoMarker, fromMap = false) => {
         setSelectedInstituicao(instituicao);
+        setSobreExpandido(false);
 
         const regionId = cityToRegionMap[instituicao.cidade_id_mapa];
         const cidade = mapaDeCidades.get(instituicao.cidade_id_mapa);
@@ -186,35 +250,12 @@ const Home = () => { // ★ Home ⋙──────────────�
 
         setCurrentLevel(1);
         handleSetRegion(regionId, regionObject.name);
-
-        // HERE MODIFY  ⬇ enquadra o bbox do MUNICÍPIO (antes: zoomToPoint
-        // com fator fixo 6 centrado na coordenada do pino).
-        // minSize evita zoom exagerado em municípios muito pequenos.
         runToFit(cidade.bbox, 0.9, 45);
+
+        if (fromMap) {
+            painelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     };
-
-    // (●) mapaDeCoordenadas
-    const mapaDeCoordenadas = useMemo(() => {
-        const mapa = new Map<string, { x: number, y: number }>();
-        for (const citiesInRegion of Object.values(mapCity)) {
-            for (const city of citiesInRegion) {
-                mapa.set(city.id, { x: city.x, y: city.y });
-            }
-        }
-        return mapa;
-    }, []); // ── ⋙── ── ── ── ── ── ── ──➤
-
-
-    // (●) mapaDeCidades 
-    const mapaDeCidades = useMemo(() => {
-        const mapa = new Map<string, City>();
-        for (const citiesInRegion of Object.values(mapCity)) {
-            for (const city of citiesInRegion) {
-                mapa.set(city.id, city);
-            }
-        }
-        return mapa;
-    }, []);
 
 
     // (●) cidadesOrdenadas 
@@ -226,11 +267,10 @@ const Home = () => { // ★ Home ⋙──────────────�
     }, [region.active, selectedInstituicao]);
 
 
-
     // ✪ bahiaStrokeStyle
     const bahiaStrokeStyle = useSpring({
         opacity: currentLevel === 1 ? 0 : 1,
-        config: { duration: 300 } // Ajuste a duração conforme necessário
+        config: { duration: 300 }
     });
 
     // [✪] transition mapCity
@@ -241,31 +281,8 @@ const Home = () => { // ★ Home ⋙──────────────�
         leave: { opacity: 0, transform: "scale(0)" },
         config: { mass: 10, tension: 63, friction: 16, clamp: true },
         keys: cidadesOrdenadas.map((el) => el.id),
-    });// ── ⋙── ── ── ── ── ── ── ──➤
+    });
 
-
-    // <✪> runToFit 
-    const runToFit = (bbox: BoundingBox, paddingRatio = 0.15, minSize = 0) => {
-        const ratio = 601 / 640; // proporção original do viewBox
-
-        let w = Math.max(bbox.width, minSize);
-        let h = Math.max(bbox.height, minSize / ratio);
-
-        const pad = Math.max(w, h) * paddingRatio;
-        w += pad * 2;
-        h += pad * 2;
-
-        // Ajusta para não distorcer: expande a dimensão que ficou curta.
-        if (w / h > ratio) h = w / ratio;
-        else w = h * ratio;
-
-        const cx = bbox.x + bbox.width / 2;
-        const cy = bbox.y + bbox.height / 2;
-
-        const newViewBox = [cx - w / 2, cy - h / 2, w, h];
-        setViewBoxWidth(w);            // alimenta a compensação dos pinos
-        api.start({ viewBox: newViewBox });
-    };
 
     // <✪> handleClick
     const handleClick = (event: React.MouseEvent<SVGElement>) => {
@@ -274,7 +291,6 @@ const Home = () => { // ★ Home ⋙──────────────�
         const target_type = target?.getAttribute("data-type");
         const target_name = target?.getAttribute("data-name");
 
-        // ⊙ currentLevel 0
         if (currentLevel === 0) {
             if (target_type === "region" && target_id !== "bahia_stroke") {
                 setCurrentLevel(1);
@@ -284,29 +300,13 @@ const Home = () => { // ★ Home ⋙──────────────�
             }
         }
 
-        // [LOG] target
-        // console.log("target:", target);
-        console.log("target id:", target_id);
-        console.log("target type:", target_type);
-        console.log("level:", currentLevel);
-        console.log("✦────────────────────────────➤");
-
-        // . . .
-
-        // ⊙ currentLevel 1
         if (currentLevel === 1) {
-            if (target_type === "city") {
-                console.log("Cidade clicada:", target_id,); // [LOG] 
-                // Aqui posso adicionar lógica futura para o clique na cidade,
-                // como exibir dados específicos dela.
-            } else {
-                // Se clicar em qualquer outra coisa que não seja uma cidade no nível 1
-                // (como o fundo ou a própria região), o mapa reseta.
+            if (target_type !== "city") {
                 resetMap();
             }
         }
+    }
 
-    }  // ── ⋙── ── ── ── ── ── ── ──➤
 
     // {✪} resetMap
     const resetMap = () => {
@@ -315,367 +315,166 @@ const Home = () => { // ★ Home ⋙──────────────�
         setViewBoxWidth(601);
         api.start({ viewBox: initialViewBox });
         setSelectedInstituicao(null);
-    }; // ── ⋙── ── ── ── ── ── ── ──➤
-
-    const marcadoresOrdenados = useMemo(() => { // {✪} marcadoresOrdenados
-        // Se nenhuma instituição estiver selecionada, retorna a lista original
-        if (!selectedInstituicao) {
-            return instituicoes; // ⊙  instituicoes
-        }
-        const outrosMarcadores = instituicoes.filter(inst => inst.id !== selectedInstituicao.id);
-        //  Retorna um novo array com os outros marcadores primeiro, e o selecionado por último.
-        return [...outrosMarcadores, selectedInstituicao];
-    }, [instituicoes, selectedInstituicao]); // ── ⋙── ── ── ── ── ── ── ──➤
-    // Recalcula apenas quando a lista ou a seleção mudar
-
-
-
-    // ── ⋙── ── ── ── ToolTip  ── ── ── ──➤
-    // <✪> AnimatedTooltip
-    const AnimatedTooltip = ({ visible, content, x, y }: TooltipState) => {
-        const springProps = useSpring({
-            opacity: visible ? 1 : 0,
-            transform: visible ? `translate3d(0,0,0)` : `translate3d(0,10px,0)`,
-            config: { tension: 300, friction: 20 },
-        });
-
-        return createPortal(
-
-            <animated.div
-                style={{
-                    position: 'absolute',
-                    top: y,
-                    left: x,
-                    pointerEvents: 'none',
-                    zIndex: 1000,
-                    ...springProps,
-                }}
-                className="bg-gray-800 text-white text-sm px-3 py-1 rounded-md shadow-lg"
-            >
-                {content}
-            </animated.div>,
-            document.body // O destino do portal
-        )
+        setSobreExpandido(false);
     };
 
-    const handleMouseEnterPath = (event: React.MouseEvent<SVGPathElement>) => {   // <●> handleMouseEnterPath
+
+    const marcadoresOrdenados = useMemo(() => {
+        if (!selectedInstituicao) {
+            return instituicoes;
+        }
+        const outrosMarcadores = instituicoes.filter(inst => inst.id !== selectedInstituicao.id);
+        return [...outrosMarcadores, selectedInstituicao];
+    }, [instituicoes, selectedInstituicao]);
+
+
+    const handleMouseEnterPath = (event: React.MouseEvent<SVGPathElement>) => {
         const content = event.currentTarget.getAttribute("data-name");
         if (content) {
             setTooltip(prev => ({ ...prev, visible: true, content }));
         }
     };
 
-    const handleMouseMoveSVG = (event: React.MouseEvent<SVGSVGElement>) => { // <●> handleMouseMoveSVG
-        const x = event.pageX + 12; // Usamos pageX
-        const y = event.pageY + 12; // Usamos pageY
-        setTooltip(prev => ({ ...prev, x, y }));
+    const handleMouseMoveSVG = (event: React.MouseEvent<SVGSVGElement>) => {
+        setTooltip(prev => ({ ...prev, x: event.pageX + 12, y: event.pageY + 12 }));
     };
 
-    const handleMouseLeaveSVG = () => {   // <●> handleMouseLeaveSVG
+    const handleMouseLeaveSVG = () => {
         setTooltip(prev => ({ ...prev, visible: false }));
     };
 
 
+    const sobreTexto = selectedInstituicao?.informacoes_adicionais ?? 'Nenhuma informação adicional cadastrada.';
+
+
     return (// ── ⋙⇌⇌⇌⇌⇌⇌⇌ DOM ⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸
-        <>
-            <Box // CANVAS ── ── ── ──➤
-                id="CANVAS"
-                className="flex flex-col gap-6 px-4 pb-4 pt-36 md:px-6 md:pb-8 md:pt-28 lg:px-12 lg:pb-14 lg:pt-32"
-            >
-                <Box // ── PANEL1
-                    id="PANEL1"
-                    className="flex flex-col-reverse lg:flex-row w-full mb-12 gap-8">
+        <Box
+            id="CANVAS"
+            className="flex flex-col items-center w-full px-4 pb-16 pt-28 md:px-6 md:pt-32 lg:px-12"
+        >
 
-                    <Box
-                        id="TEXT_HEADER"
-                        className="flex flex-col gap-8 justify-between items-center w-full lg:w-1/2 text-left"
-                    >
+            {/* ── ⋙── ── ── HERO ── ── ── ──➤ */}
+            <Box id="HERO" className="flex flex-col items-center w-full max-w-4xl gap-4 mb-10">
 
-                        <Heading color="gray" size="6" className="text-balance text-center break-words hyphens-none">
-                            Instituto de Ciência, Inovação e Tecnologia do Estado da Bahia
-                        </Heading>
-
-                        <Heading
-                            size={{ initial: '7', md: '9' }} // Exemplo para o título maior
-                            className="text-balance text-center break-words hyphens-none"
-                        >
-                            Incite - <span className="text-green-700">Agricultura Familiar</span> Diversificada e Sustentável
-                        </Heading>
-
-                        <Text className="pt-10 px-4">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-                        </Text>
-
-                    </Box>
-
-                    <Box
-                        id="LOGO_HEADER"
-                        className="flex h-[420px] md:h-[490px] lg:h-[600px] w-full lg:w-1/2 justify-center "
-                        style={{
-                            backgroundImage: `url(${BG})`,
-                            backgroundSize: "contain",
-                            backgroundPosition: "center",
-                            backgroundRepeat: "no-repeat",
-                        }}
-                    >
-
-
-                    </Box>
-
-                </Box>
-
-                <Box //── PANEL2
-                    id="PANEL2"
-                    className={classNames(
-                        "flex flex-col items-center w-full gap-10 mb-24,",
-                        "lg:flex-row lg:items-start lg:justify-evenly lg:gap-6",
-                    )}
+                <Heading
+                    size={{ initial: '7', md: '9' }}
+                    align="center"
+                    className="text-balance break-words hyphens-none"
                 >
+                    Incite - <span className="text-green-700">Agricultura Familiar</span> Diversificada e Sustentável
+                </Heading>
 
-                    <Box // map-panel
-                        id="map-panel"
-                        className="flex flex-col w-full max-w-full lg:w-auto">
+                <Heading as="h2" color="gray" size="4" weight="regular" align="center" className="text-balance">
+                    Instituto de Ciência, Inovação e Tecnologia do Estado da Bahia
+                </Heading>
 
+                <IlustracaoPlaceholder />
 
-                        <div className="w-full overflow-x-auto rounded-3xl">
-                            <div // ⋙── ── canvas-wrapper ── ──➤
-                                id="canvas-wrapper"
-                                className="
-                                    relative bg-transparent flex-shrink-0
-                                    w-full aspect-square overflow-hidden
-                                    lg:w-[602px] lg:h-[640px] lg:aspect-auto
-                                    "
-                            >
-
-                                <AnimatedTooltip {...tooltip} />
-
-                                <animated.svg //HERE  SVGCanvas // . . . props
-                                    id="SVGCanvas"
-                                    ref={svgRef}
-                                    role="img"
-                                    aria-label="Mapa das regiões de identidade da Bahia"
-                                    viewBox={viewBox.to((...v) => v.join(" "))}
-                                    overflow={"visible"}
-                                    style={{
-                                        width: "100%",
-                                        height: "100%",
-                                        cursor: 'pointer',
-                                    }}
-                                    onClick={handleClick} // (○) handleClick // . . . children
-                                    onMouseMove={handleMouseMoveSVG}
-                                    onMouseLeave={handleMouseLeaveSVG}
-                                >
-
-                                    <g>
-
-                                        <defs>
-                                            <style>
-                                                {
-                                                    ".cls-1{fill:#f4f4f4;stroke:#a5a5a5}"
-                                                }
-                                                {
-                                                    ".cls-1, .cls-2{stroke-linecap:round;stroke-linejoin:round}"
-                                                }
-                                                {
-                                                    ".cls-2{fill:none;stroke:#000;stroke-width:2px}"
-                                                }
-                                            </style>
-                                        </defs>
-
-                                        { // [○] mapRegion
-                                            mapRegion.map((el, i) => {
-                                                const class_style = el.id === "bahia_stroke" ? "cls-2" : "cls-1 path-hover2"
-
-                                                const strokeSpecificStyle = el.id === "bahia_stroke" ? bahiaStrokeStyle : {};
-
-                                                return (
-                                                    <g key={i}>
-                                                        <animated.path
-                                                            id={el.id}
-                                                            d={el.d}
-                                                            data-name={el.name}
-                                                            data-type="region"
-                                                            className={class_style}
-                                                            style={strokeSpecificStyle} // ○ bahiaStrokeStyle
-                                                            onMouseEnter={handleMouseEnterPath}
-                                                        />
-                                                    </g>
-                                                )
-                                            })
-                                        } // . . .
+                <Text align="center" color="gray" className="max-w-2xl">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </Text>
+            </Box>
 
 
-                                        {currentLevel === 1 && ( // ⊙ currentLevel
-                                            <rect
-                                                opacity={0.95}
-                                                x={-2000}
-                                                y={-2000}
-                                                width="4000"
-                                                height="4000"
-                                                fill="white"
-                                                onClick={(e) => { // Permitir clique no overlay para resetar o mapa
-                                                    e.stopPropagation(); // Evitar que o clique propague para o SVGCanvas
-                                                    resetMap();
-                                                }}
-                                            />
-                                        )}
+            {/* ── ⋙── ── ── PAINEL ── ── ── ──➤
+                min-h reserva a altura do detalhe: sem isso o mapa
+                pula para baixo toda vez que uma instituição é selecionada. */}
+            <Box
+                ref={painelRef}
+                id="PAINEL"
+                className="w-full max-w-5xl min-h-[300px] md:min-h-[260px]"
+            >
+                {selectedInstituicao ? (
+                    <Flex direction="column" className="h-full">
 
+                        <Button
+                            variant="ghost"
+                            size="2"
+                            onClick={resetMap}
+                            className="mb-4 self-start cursor-pointer text-gray-500 hover:text-gray-900"
+                        >
+                            <ArrowLeft size={16} className="mr-2" /> Voltar para a lista
+                        </Button>
 
-                                        {transition((style, cityItem) => {
-                                            const isCidadeAtiva =
-                                                selectedInstituicao?.cidade_id_mapa === cityItem.id;
-                                            const esmaecido = !!selectedInstituicao && !isCidadeAtiva;
+                        {/* duas colunas internas: metade da altura do layout antigo */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8">
 
-                                            return (
-                                                <animated.g {...style}>
-                                                    <animated.path
-                                                        id={cityItem.id}
-                                                        d={cityItem.d}
-                                                        data-name={cityItem.name}
-                                                        data-type="city"
-
-                                                        className={classNames(
-                                                            "path-hover2",
-                                                            !esmaecido && !isCidadeAtiva && "cls-1",
-                                                        )}
-
-                                                        fill={
-                                                            esmaecido ? "#f0f0f0"
-                                                                : isCidadeAtiva ? "#dcfce7"
-                                                                    : undefined
-                                                        }
-                                                        stroke={
-                                                            esmaecido ? "#e8e8e8"
-                                                                : isCidadeAtiva ? "#15803d"
-                                                                    : undefined
-                                                        }
-                                                        strokeWidth={isCidadeAtiva ? 1.4 : undefined}
-                                                        style={{
-                                                            transition: 'fill 300ms ease, stroke 300ms ease',
-                                                        }}
-                                                        onMouseEnter={handleMouseEnterPath}
-                                                    />
-                                                </animated.g>
-                                            );
-                                        })}
-
-                                        {marcadoresOrdenados && marcadoresOrdenados.length > 0 && marcadoresOrdenados.map(instituicao => {
-                                            const coords = mapaDeCoordenadas.get(instituicao.cidade_id_mapa);
-                                            if (coords) {
-                                                return (
-                                                    <PinMarker
-                                                        key={`inst-${instituicao.id}`}
-                                                        x={coords.x + (instituicao.offset_x || 0)}
-                                                        y={coords.y + (instituicao.offset_y || 0)}
-                                                        imageUrl={instituicao.marcador_logo}
-                                                        tooltipContent={<Text size="2" weight="bold">{instituicao.nome}</Text>}
-                                                        label={instituicao.nome}
-                                                        viewScale={viewBoxWidth / 601}
-                                                        isActive={selectedInstituicao?.id === instituicao.id}
-                                                        isAnyPinActive={selectedInstituicao !== null}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleMarkerClick(instituicao);
-                                                        }}
-                                                    />
-                                                );
-                                            }
-                                            return null;
-                                        })} //. . .
-
-                                    </g>
-
-                                </animated.svg>
-                            </div>
-
-                        </div>
-
-
-                    </Box>
-
-
-                    <div
-                        className="
-                            hidden lg:block
-                            w-[3px]
-                            bg-gradient-to-b from-green-700 via-green-600 to-green-700
-                            h-[700px]
-                            mx-4
-                            rounded-full
-                            shadow-inner"
-                    />
-
-                    <Card // HERE info-panel
-                        id="info-panel"
-                        variant="ghost"
-                        className="w-full lg:w-[500px] p-4 overflow-y-auto"
-                        style={{
-                            minHeight: "400px",
-                            maxHeight: "600px",
-                        }}
-                    >
-                        {selectedInstituicao ? (
-                            <>
-                                {/* BOTÃO DE VOLTAR */}
-                                <Button
-                                    variant="ghost"
-                                    size="2"
-                                    onClick={resetMap}
-                                    className="mb-6 cursor-pointer text-gray-500 hover:text-gray-900"
-                                >
-                                    <ArrowLeft size={16} className="mr-2" /> Voltar para a lista
-                                </Button>
-
-                                <Flex gap="5" align="center">
-                                    {selectedInstituicao.marcador_logo && (
-                                        <img
-                                            src={selectedInstituicao.marcador_logo}
-                                            alt={`${selectedInstituicao.nome} logo`}
-                                            className=" w-[100px] h-auto rounded"
-                                        />
-                                    )}
-
-                                    <Box>
-                                        <Heading as="h2" size="6" mb="4">{selectedInstituicao.nome}</Heading>
-
-                                        <Flex align="center" gap="2"><MapPin size={16} className="mb-2 text-green-700" /><Text size="2">{selectedInstituicao.cidade_nome.toLocaleUpperCase()}</Text></Flex>
-                                        <Flex align="center" gap="2"><UserIcon size={16} className="mb-2 text-green-700" /><Text size="2">{selectedInstituicao.coordenador_responsavel}</Text></Flex>
-                                        <Flex align="center" gap="2"><Mail size={16} className="mb-2 text-green-700" /><Text size="2">{selectedInstituicao.email}</Text></Flex>
-                                        <Flex align="center" gap="2"><Phone size={16} className="mb-2 text-green-700" /><Text size="2">{selectedInstituicao.telefone}</Text></Flex>
+                            <Flex gap="4" align="start">
+                                {selectedInstituicao.marcador_logo ? (
+                                    <img
+                                        src={selectedInstituicao.marcador_logo}
+                                        alt={`${selectedInstituicao.nome} logo`}
+                                        className="w-16 h-16 object-contain rounded-md bg-white border border-gray-100 flex-shrink-0"
+                                    />
+                                ) : (
+                                    <Box className="w-16 h-16 bg-green-50 border border-green-100 rounded-md flex items-center justify-center flex-shrink-0">
+                                        <MapPin size={28} className="text-green-700" />
                                     </Box>
-                                </Flex>
+                                )}
 
-                                <Separator my="4" size="4" />
+                                <Box className="min-w-0">
+                                    <Heading as="h2" size="5" mb="2">{selectedInstituicao.nome}</Heading>
 
-                                {/* Informações Adicionais */}
-                                <Box className="flex-grow mb-6">
-                                    <Heading as="h3" size="3" mb="2" color="gray">Sobre</Heading>
-                                    <Text as="p" size="2" mb="2" color="gray">
-                                        {selectedInstituicao.informacoes_adicionais ?? 'Nenhuma informação adicional cadastrada.'}
-                                    </Text>
+                                    <Flex align="center" gap="2" mb="1"><MapPin size={15} className="text-green-700 flex-shrink-0" /><Text size="2">{selectedInstituicao.cidade_nome.toLocaleUpperCase()}</Text></Flex>
+                                    <Flex align="center" gap="2" mb="1"><UserIcon size={15} className="text-green-700 flex-shrink-0" /><Text size="2">{selectedInstituicao.coordenador_responsavel}</Text></Flex>
+                                    <Flex align="center" gap="2" mb="1"><Mail size={15} className="text-green-700 flex-shrink-0" /><Text size="2" className="break-all">{selectedInstituicao.email}</Text></Flex>
+                                    <Flex align="center" gap="2"><Phone size={15} className="text-green-700 flex-shrink-0" /><Text size="2">{selectedInstituicao.telefone}</Text></Flex>
                                 </Box>
+                            </Flex>
 
-                                {/* Botão de Ação */}
-                                <Button variant="soft" color="green" asChild size="2" mt="auto" className="w-full justify-center">
+                            <Flex direction="column">
+                                {/* informacoes_adicionais é texto livre: sem clamp,
+                                    a altura reservada não serviria para nada */}
+                                <Text
+                                    as="p"
+                                    size="2"
+                                    color="gray"
+                                    className={sobreExpandido ? "" : "line-clamp-4"}
+                                >
+                                    {sobreTexto}
+                                </Text>
+
+                                {sobreTexto.length > 220 && (
+                                    <Text
+                                        as="span"
+                                        size="1"
+                                        color="green"
+                                        className="cursor-pointer font-medium hover:underline my-1 self-start"
+                                        onClick={() => setSobreExpandido(v => !v)}
+                                    >
+                                        {sobreExpandido ? "Ler menos" : "Ler mais"}
+                                    </Text>
+                                )}
+
+                                <Button variant="soft" color="green" asChild size="2" className="mt-auto pt-0 self-start">
                                     <Link to={`/instituicao/${selectedInstituicao.id}`}>
-                                        <ArrowRightIcon size={18} className="mr-2" /> Acessar Perfil Completo
+                                        <ArrowRightIcon size={18} className="mr-2" /> Acessar perfil completo
                                     </Link>
                                 </Button>
-                            </>
+                            </Flex>
+                        </div>
+                    </Flex>
+                ) : (
+                    <Flex direction="column" className="h-full">
+                        <Flex align="baseline" justify="between" gap="3" wrap="wrap" mb="3">
+                            <Heading size="5">Instituições parceiras</Heading>
+                            <Text size="2" color="gray">
+                                selecione uma abaixo ou clique num marcador do mapa
+                            </Text>
+                        </Flex>
+
+                        <Separator mb="4" size="4" />
+
+                        {erroInst ? (
+                            <Text size="2" color="gray">Não foi possível carregar as instituições.</Text>
+                        ) : instituicoes.length === 0 ? (
+                            <Text size="2" color="gray">Nenhuma instituição cadastrada ainda.</Text>
                         ) : (
-                            <Flex direction="column" className="h-full">
-                                <Box mb="5">
-                                    <Heading size="6" mb="2">Instituições Parceiras</Heading>
-                                    <Text size="2" color="gray">
-                                        Selecione uma instituição na lista abaixo ou clique em um marcador no mapa para visualizar os detalhes.
-                                    </Text>
-                                </Box>
+                            <>
 
-                                <Separator mb="4" size="4" />
 
-                                {/* LISTA DE MINI-CARDS INTERATIVOS */}
-                                <Flex direction="column" gap="3" className="overflow-y-auto pr-2 pb-4">
-                                    {instituicoes && instituicoes.length > 0 && instituicoes.map(inst => (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    {(mostrarTodas ? instituicoes : instituicoes.slice(0, LIMITE_INICIAL)).map(inst => (
                                         <Card
                                             key={inst.id}
                                             asChild
@@ -686,42 +485,198 @@ const Home = () => { // ★ Home ⋙──────────────�
                                                 className="w-full text-left p-3 focus:outline-none focus:ring-2 focus:ring-green-500 rounded-[inherit]"
                                                 onClick={() => handleMarkerClick(inst)}
                                             >
-                                                <Flex gap="4" align="center">
+                                                <Flex gap="3" align="start">
                                                     {inst.marcador_logo ? (
                                                         <img
                                                             src={inst.marcador_logo}
-                                                            alt={inst.nome}
+                                                            alt=""
                                                             loading="lazy"
-                                                            className="w-12 h-12 object-contain rounded-md bg-white border border-gray-100"
+                                                            className="w-10 h-10 object-contain rounded-md bg-white border border-gray-100 flex-shrink-0"
                                                         />
                                                     ) : (
-                                                        <Box className="w-12 h-12 bg-green-50 border border-green-100 rounded-md flex items-center justify-center flex-shrink-0">
-                                                            <MapPin size={24} className="text-green-700" />
+                                                        <Box className="w-10 h-10 bg-green-50 border border-green-100 rounded-md flex items-center justify-center flex-shrink-0">
+                                                            <MapPin size={20} className="text-green-700" />
                                                         </Box>
                                                     )}
-                                                    <Box>
-                                                        <Text as="div" size="3" weight="bold" className="line-clamp-1">{inst.nome}</Text>
-                                                        <Text as="div" size="2" color="gray" className="mt-1">{inst.cidade_nome.toUpperCase()}</Text>
+                                                    <Box className="min-w-0">
+                                                        <Text as="div" size="2" weight="bold" className="line-clamp-2 leading-snug">{inst.nome}</Text>
+                                                        <Text as="div" size="1" color="gray" className="mt-1">{inst.cidade_nome.toUpperCase()}</Text>
                                                     </Box>
                                                 </Flex>
                                             </button>
                                         </Card>
                                     ))}
-                                </Flex>
-                            </Flex>
+                                </div>
+
+                                {instituicoes.length > LIMITE_INICIAL && (
+                                    <Flex justify="center" mt="4">
+                                        <Button
+                                            variant="ghost"
+                                            color="green"
+                                            size="2"
+                                            className="cursor-pointer"
+                                            onClick={() => setMostrarTodas(v => !v)}
+                                        >
+                                            {mostrarTodas
+                                                ? "Ver menos"
+                                                : `Ver todas as ${instituicoes.length} instituições`}
+                                        </Button>
+                                    </Flex>
+                                )}
+                            </>
                         )}
-                    </Card>
 
-
-
-                </Box>
-
+                    </Flex>
+                )}
             </Box>
 
-        </>
+
+            {/* ── ⋙── ── ── MAPA ── ── ── ──➤
+                max-w porque o viewBox é 601x640 (mais alto que largo):
+                em largura total o mapa ficaria desproporcional. */}
+            <Box id="MAPA" className="w-full max-w-[640px] mt-8">
+
+                <Flex align="center" justify="between" gap="3" className="px-1 pb-2">
+                    <Text size="2" color="gray" className="truncate">
+                        Bahia
+                        {currentLevel === 1 && <> · {region.name}</>}
+                        {selectedInstituicao && (
+                            <> · <span className="text-gray-900">{selectedInstituicao.cidade_nome}</span></>
+                        )}
+                    </Text>
+
+
+                </Flex>
+
+                <div
+                    id="canvas-wrapper"
+                    className="relative bg-transparent w-full aspect-[601/640] overflow-hidden"
+                >
+                    <MapTooltip {...tooltip} />
+
+                    <animated.svg //HERE  SVGCanvas
+                        id="SVGCanvas"
+                        role="img"
+                        aria-label="Mapa das regiões de identidade da Bahia"
+                        viewBox={viewBox.to((...v) => v.join(" "))}
+                        overflow={"visible"}
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            cursor: 'pointer',
+                        }}
+                        onClick={handleClick}
+                        onMouseMove={handleMouseMoveSVG}
+                        onMouseLeave={handleMouseLeaveSVG}
+                    >
+                        <g>
+                            <defs>
+                                <style>
+                                    {".cls-1{fill:#f4f4f4;stroke:#a5a5a5}"}
+                                    {".cls-1, .cls-2{stroke-linecap:round;stroke-linejoin:round}"}
+                                    {".cls-2{fill:none;stroke:#000;stroke-width:2px}"}
+                                </style>
+                            </defs>
+
+                            {mapRegion.map((el, i) => {
+                                const class_style = el.id === "bahia_stroke" ? "cls-2" : "cls-1 path-hover2";
+                                const strokeSpecificStyle = el.id === "bahia_stroke" ? bahiaStrokeStyle : {};
+
+                                return (
+                                    <g key={i}>
+                                        <animated.path
+                                            id={el.id}
+                                            d={el.d}
+                                            data-name={el.name}
+                                            data-type="region"
+                                            className={class_style}
+                                            style={strokeSpecificStyle}
+                                            onMouseEnter={handleMouseEnterPath}
+                                        />
+                                    </g>
+                                )
+                            })}
+
+                            {currentLevel === 1 && (
+                                <rect
+                                    opacity={0.95}
+                                    x={-2000}
+                                    y={-2000}
+                                    width="4000"
+                                    height="4000"
+                                    fill="white"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        resetMap();
+                                    }}
+                                />
+                            )}
+
+                            {transition((style, cityItem) => {
+                                const isCidadeAtiva =
+                                    selectedInstituicao?.cidade_id_mapa === cityItem.id;
+                                const esmaecido = !!selectedInstituicao && !isCidadeAtiva;
+
+                                return (
+                                    <animated.g {...style}>
+                                        <animated.path
+                                            id={cityItem.id}
+                                            d={cityItem.d}
+                                            data-name={cityItem.name}
+                                            data-type="city"
+                                            className={classNames(
+                                                "path-hover2",
+                                                !esmaecido && !isCidadeAtiva && "cls-1",
+                                            )}
+                                            fill={
+                                                esmaecido ? "#f0f0f0"
+                                                    : isCidadeAtiva ? "#dcfce7"
+                                                        : undefined
+                                            }
+                                            stroke={
+                                                esmaecido ? "#e8e8e8"
+                                                    : isCidadeAtiva ? "#15803d"
+                                                        : undefined
+                                            }
+                                            strokeWidth={isCidadeAtiva ? 1.4 : undefined}
+                                            style={{
+                                                transition: 'fill 300ms ease, stroke 300ms ease',
+                                            }}
+                                            onMouseEnter={handleMouseEnterPath}
+                                        />
+                                    </animated.g>
+                                );
+                            })}
+
+                            {marcadoresOrdenados.map(instituicao => {
+                                const cidade = mapaDeCidades.get(instituicao.cidade_id_mapa);
+                                if (!cidade) return null;
+
+                                return (
+                                    <PinMarker
+                                        key={`inst-${instituicao.id}`}
+                                        x={cidade.x + (instituicao.offset_x || 0)}
+                                        y={cidade.y + (instituicao.offset_y || 0)}
+                                        imageUrl={instituicao.marcador_logo}
+                                        tooltipContent={<Text size="2" weight="bold">{instituicao.nome}</Text>}
+                                        label={instituicao.nome}
+                                        viewScale={viewBoxWidth / 601}
+                                        isActive={selectedInstituicao?.id === instituicao.id}
+                                        isAnyPinActive={selectedInstituicao !== null}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleMarkerClick(instituicao, true);
+                                        }}
+                                    />
+                                );
+                            })}
+                        </g>
+                    </animated.svg>
+                </div>
+            </Box>
+
+        </Box>
     );
 
 };  // ★ Home ⋙─────────────────────────────────────────➤ 
 export default Home;
-
-

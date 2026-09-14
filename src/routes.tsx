@@ -39,12 +39,12 @@ const routes = [
     ),
     children: [
       {
-        path: "dashboard", // [ROUTE]  /dashboard
+        path: "bahia", // [ROUTE]  /dashboard
         element: <Dashboard />,
       },
 
       {
-        path: 'blog', // [ROUTE] /blog
+        path: 'postagens', // [ROUTE] /blog
         element: <BlogPage />,
       },
 

@@ -80,7 +80,7 @@ const BlogPage = () => {
 
 
             <Helmet>
-                <title>Notícias | INCITE AF</title>
+                <title>Posts | INCITE AF</title>
                 <meta name="description" content="Notícias e publicações das instituições parceiras do INCITE Agricultura Familiar." />
             </Helmet>
 
@@ -89,7 +89,7 @@ const BlogPage = () => {
 
 
 
-            <Heading size="9" mt="4" mb="8" align="center" className="text-gray-800">Notícias</Heading>
+            <Heading size="9" mt="4" mb="8" align="center" className="text-gray-800">Posts</Heading>
 
             {isLoading ? (
                 <Flex justify="center" align="center" className="h-96"><Spinner size="3" /></Flex>
