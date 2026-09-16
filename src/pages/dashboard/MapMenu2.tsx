@@ -136,12 +136,12 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
       const response = await axios.get(url, { params }); // _PIN_ getRegionValues  ✉ 
       const data = response?.data
 
-      console.log("── ⋙⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸");
-      console.log("params:", params); // [LOG] 
-      console.log("── ⋙⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸");
-      console.log('%c ── ◯─◠◡◠◡◠◡◠◡◠◡◠◡◠◡─➤ 🌑', 'color: purple; font-size: 16px; font-weight: bold;');
-      console.log("/getRegionValues:", data); // [LOG] 
-      console.log('%c ── ◯─◡◠◡◠◡◠◡◠◡◠◡◠◡◠─➤ 🌑', 'color: purple; font-size: 16px; font-weight: bold;');
+      // console.log("── ⋙⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸");
+      // console.log("params:", params); // [LOG] 
+      // console.log("── ⋙⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⇌⫸");
+      // console.log('%c ── ◯─◠◡◠◡◠◡◠◡◠◡◠◡◠◡─➤ 🌑', 'color: purple; font-size: 16px; font-weight: bold;');
+      // console.log("/getRegionValues:", data); // [LOG] 
+      // console.log('%c ── ◯─◡◠◡◠◡◠◡◠◡◠◡◠◡◠─➤ 🌑', 'color: purple; font-size: 16px; font-weight: bold;');
 
       setRegionValues(data) // ↺ setRegionValues
 
@@ -172,8 +172,8 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
     // ele existia para compensar o nó ativo vir misturado.
     const values = Object.values(regionValues.children);
 
-    console.log('%c values 🩸', 'color: red; font-size: 16px; font-weight: bold;');
-    console.log(values)
+    // console.log('%c values 🩸', 'color: red; font-size: 16px; font-weight: bold;');
+    // console.log(values)
 
     // CASO 1: Não há dados ou os dados ainda não carregaram.
     if (values.length === 0) {
@@ -340,16 +340,16 @@ const MapMenu = () => { // ★ MapMenu ⋙── ── ── ── ── ─
 
     // [LOG] target
     // console.log("target:", target);
-    console.log("target id:", target_id);
-    console.log("target type:", target_type);
-    console.log("level:", currentLevel);
-    console.log("✦────────────────────────────➤");
+    // console.log("target id:", target_id);
+    // console.log("target type:", target_type);
+    // console.log("level:", currentLevel);
+    // console.log("✦────────────────────────────➤");
 
     // . . .
     // ⊙ currentLevel 1
     if (currentLevel === 1) {
       if (target_type === "city") {
-        console.log("Cidade clicada:", target_id,); // [LOG] 
+        // console.log("Cidade clicada:", target_id,); // [LOG] 
         setCity(target_id, target_name || "") // ↺ setCity
       } else {
         // Se clicar em qualquer outra coisa que não seja uma cidade no nível 1

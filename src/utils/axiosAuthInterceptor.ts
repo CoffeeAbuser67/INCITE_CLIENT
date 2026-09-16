@@ -1,87 +1,91 @@
 // src/utils/axiosAuthInterceptor.ts
 import { axiosForInterceptor } from "./axios";
 import { authService } from "../services/authService";
+import { useUserStore } from "../store/userStore";
+
+interface FailedRequest {
+  resolve: (value: unknown) => void;
+  reject: (reason?: unknown) => void;
+  config: unknown;
+}
 
 let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value: unknown) => void;
-  reject: (reason?: any) => void;
-}> = [];
+let failedQueue: FailedRequest[] = [];
 
-const processQueue = (error: Error | null, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) prom.reject(error);
-    else prom.resolve(token);
+const processQueue = (error: Error | null) => {
+  failedQueue.forEach(({ resolve, reject, config }) => {
+    if (error) {
+      reject(error);
+    } else {
+      // _retry já foi marcado ao enfileirar: se esta retentativa voltar 401,
+      // ela falha em vez de reentrar no fluxo de refresh.
+      resolve(axiosForInterceptor(config as never));
+    }
   });
   failedQueue = [];
 };
 
-/**
- * Configura o interceptor global para o axiosForInterceptor.
- * - Se 401 e não for /auth/token/refresh/, tenta renovar token uma única vez (fila).
- * - Se a renovação falhar, chama logoutUser() e rejeita a promise.
- */
-export const setupAxiosInterceptor = (logoutUser: () => void) => {
-  axiosForInterceptor.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      const originalRequest = error.config;
+// Logout sem depender do React. Antes a função vinha por injeção
+// (setupAxiosInterceptor(logout)), o que obrigava a registrar o interceptor
+// de dentro de um componente.
+const forceLogout = () => {
+  useUserStore.getState().removeUser();
+};
 
-      // Sem response (ex.: CORS, rede) — repasse o erro
-      if (!error.response) {
-        return Promise.reject(error);
-      }
+// Registrado uma única vez, na importação do módulo.
+axiosForInterceptor.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
 
-      // Só tenta refresh em 401 e se não for a rota de refresh
-      const is401 = error.response?.status === 401;
-      const isRefreshUrl = originalRequest?.url?.includes("/auth/token/refresh/");
-
-      if (is401 && !isRefreshUrl) {
-        // Se já tem refresh em andamento, enfileira e aguarda
-        if (isRefreshing) {
-          return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject });
-          })
-            .then(() => axiosForInterceptor(originalRequest))
-            .catch((err) => Promise.reject(err));
-        }
-
-        // Marca para evitar loop do mesmo request
-        if ((originalRequest as any)._retry) {
-          // Já tentamos — evita loop
-          return Promise.reject(error);
-        }
-        (originalRequest as any)._retry = true;
-
-        isRefreshing = true;
-
-        try {
-          const ok = await authService.tryRefreshToken();
-
-          if (ok) {
-            // Processa a fila com sucesso e refaz a request original
-            processQueue(null);
-            console.log('Token de acesso renovado 🎟️')
-            console.log('Refazendo request original')
-            return axiosForInterceptor(originalRequest);
-          } else {
-            // Falhou renovar — todo mundo falha e fazemos logout
-            const refreshError = new Error("Não foi possível renovar o token (refresh falhou).");
-            processQueue(refreshError);
-            logoutUser();
-            return Promise.reject(refreshError);
-          }
-        } catch (refreshError) {
-          // Proteção extra (em teoria não cai aqui pois tryRefreshToken não lança)
-          processQueue(refreshError as Error);
-          logoutUser();
-          return Promise.reject(refreshError);
-        } finally {
-          isRefreshing = false;
-        }
-      }
-
+    // Sem response (ex.: CORS, rede) — repasse o erro
+    if (!error.response) {
       return Promise.reject(error);
     }
-  );
-};
+
+    const is401 = error.response?.status === 401;
+    const isRefreshUrl = originalRequest?.url?.includes("/auth/token/refresh/");
+
+    if (!is401 || isRefreshUrl) {
+      return Promise.reject(error);
+    }
+
+    // Já tentamos esta request uma vez — evita loop
+    if (originalRequest._retry) {
+      return Promise.reject(error);
+    }
+
+    // Se já tem refresh em andamento, enfileira e aguarda
+    if (isRefreshing) {
+      originalRequest._retry = true;
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject, config: originalRequest });
+      });
+    }
+
+    originalRequest._retry = true;
+    isRefreshing = true;
+
+    try {
+      const ok = await authService.tryRefreshToken();
+
+      if (ok) {
+        processQueue(null);
+        return axiosForInterceptor(originalRequest);
+      }
+
+      const refreshError = new Error(
+        "Não foi possível renovar o token (refresh falhou).",
+      );
+      processQueue(refreshError);
+      forceLogout();
+      return Promise.reject(refreshError);
+    } catch (refreshError) {
+      processQueue(refreshError as Error);
+      forceLogout();
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
+  },
+);

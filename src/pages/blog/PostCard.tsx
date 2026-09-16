@@ -14,7 +14,7 @@ interface PostCardProps {
 
 export const PostCard: React.FC<PostCardProps> = ({ post }) => {
     return (
-        <Link to={`/blog/${post.slug}`} className="no-underline text-current hover:text-current h-full">
+        <Link to={`/postagens/${post.slug}`} className="no-underline text-current hover:text-current h-full">
             <Card className="h-full transform hover:-translate-y-1 transition-transform duration-300 flex flex-col">
                 <Box>
                     <AspectRatio ratio={16 / 9}>

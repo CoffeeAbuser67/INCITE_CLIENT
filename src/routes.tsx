@@ -10,7 +10,7 @@ const Dashboard = lazy(() => import("./pages/dashboard/Index"));
 const Home = lazy(() => import("./pages/home/Index"));
 const Settings = lazy(() => import("./pages/settings/Settings"));
 const Login = lazy(() => import("./pages/auth/Login"));
-const AuxMap = lazy(() => import("./pages/aux_MapPositioning"));
+// const AuxMap = lazy(() => import("./pages/aux_MapPositioning"));
 const BlogPage = lazy(() => import("./pages/blog/BlogPage"));
 const PostDetailPage = lazy(() => import("./pages/blog/PostDetailPage"));
 const InstituicaoProfilePage = lazy(() => import("./pages/instituicao/Profile"));
@@ -31,7 +31,6 @@ const routes = [
   },
 
 
-
   {
     path: "/",
     element: (
@@ -44,12 +43,12 @@ const routes = [
       },
 
       {
-        path: 'postagens', // [ROUTE] /blog
+        path: 'postagens', // [ROUTE] /postagens
         element: <BlogPage />,
       },
 
       {
-        path: 'blog/:slug', // [ROUTE]  /blog/:id
+        path: 'postagens/:slug', // [ROUTE] /postagens/:slug
         element: <PostDetailPage />,
       },
 
@@ -67,12 +66,12 @@ const routes = [
         ),
       },
 
-      { // WARN - To remove in Production
-        path: "auxMapPos", // [ROUTE] /auxMapPos
-        element: (
-          <AuxMap />
-        ),
-      },
+      // { // WARN - To remove in Production
+      //   path: "auxMapPos", // [ROUTE] /auxMapPos
+      //   element: (
+      //     <AuxMap />
+      //   ),
+      // },
 
 
     ],

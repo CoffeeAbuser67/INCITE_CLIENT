@@ -28,6 +28,8 @@ const logout = async (): Promise<void> => {
   }
 };
 
+
+
 export const authService = {
   login,
   tryRefreshToken,

@@ -11,8 +11,8 @@ import { Theme } from "@radix-ui/themes";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { setupAxiosInterceptor } from "./utils/axiosAuthInterceptor";
-import { useAuthService } from "./hooks/useAuthService";
+import "./utils/axiosAuthInterceptor";   
+
 import AppInitializer from './components/AppInitializer';
 
 
@@ -20,8 +20,6 @@ function App() {
 
   const content = useRoutes(routes);
 
-  const { logout } = useAuthService();
-  setupAxiosInterceptor(logout);
   return (
     <HelmetProvider>
       <Helmet

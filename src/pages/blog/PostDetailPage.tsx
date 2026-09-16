@@ -63,7 +63,7 @@ export const PostDetailPage = () => {
             <Flex direction="column" align="center" gap="4" className="p-16">
                 <Text size="4" color="gray">Post não encontrado.</Text>
                 <Button variant="soft" asChild>
-                    <Link to="/blog"><ArrowLeft className="mr-2 h-4 w-4" /> Voltar para o Blog</Link>
+                    <Link to="/postagens"><ArrowLeft className="mr-2 h-4 w-4" /> Voltar para as postagens</Link>
                 </Button>
             </Flex>
         );
@@ -88,7 +88,7 @@ export const PostDetailPage = () => {
 
             <article className="max-w-4xl mx-auto p-4 sm:p-8">
                 <Button variant="soft" asChild mb="6">
-                    <Link to="/blog"><ArrowLeft className="mr-2 h-4 w-4" /> Voltar para o Blog</Link>
+                    <Link to="/postagens"><ArrowLeft className="mr-2 h-4 w-4" /> Voltar para as postagens</Link>
                 </Button>
 
                 <Heading as="h1" size={{ initial: '8', md: '9' }} mb="4">{post.title}</Heading>

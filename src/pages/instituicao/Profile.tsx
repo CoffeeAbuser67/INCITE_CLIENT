@@ -372,7 +372,7 @@ const InstituicaoProfilePage = () => {
                                 {instituicao.postagens && instituicao.postagens.length > 0 ? (
                                     <Flex direction="column" gap="3">
                                         {instituicao.postagens.slice(0, 3).map((post: PublicPostListItem) => (
-                                            <Link to={`/blog/${post.slug}`} key={post.id} className="no-underline text-current">
+                                            <Link to={`/postagens/${post.slug}`} key={post.id} className="no-underline text-current">
                                                 <Card className="hover:bg-gray-50 transition-colors">
                                                     <Flex align="center" gap="3">
                                                         <Newspaper size={24} className="text-gray-600 flex-shrink-0" />
@@ -393,7 +393,7 @@ const InstituicaoProfilePage = () => {
 
                                 {instituicao.postagens.length > 3 && (
                                     <Button variant="soft" asChild mt="3" className='my-4 text-black' style={{ width: 'fit-content' }}>
-                                        <Link to={`/blog?instituicao=${instituicao.id}`}>
+                                        <Link to={`/postagens?instituicao=${instituicao.id}`}>
                                             Ver todas as notícias ({instituicao.postagens.length})
                                             <ArrowRightIcon className="ml-2" />
                                         </Link>

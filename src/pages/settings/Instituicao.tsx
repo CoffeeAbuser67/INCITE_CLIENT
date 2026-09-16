@@ -86,18 +86,6 @@ interface PostagensTabProps {
 
 
 // ── ⋙── ── ── AUX  ── ── ── ──➤
-const formatarData = (timestamp: string): string => { // (●) formatarData
-    if (!timestamp) return 'Data indisponível';
-
-    const data = new Date(timestamp);
-
-    // Intl.DateTimeFormat é o jeito moderno e correto de formatar datas
-    return new Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-    }).format(data);
-};
 
 const todasAsCidades = Object.values(mapCity).flat(); // (●) todasAsCidades
 const mapaDeNomesDeCidade = new Map(todasAsCidades.map(city => [city.id, city.name])); // (●) mapaDeNomesDeCidade

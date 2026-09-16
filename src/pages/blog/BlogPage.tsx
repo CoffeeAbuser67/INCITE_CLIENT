@@ -59,7 +59,7 @@ const BlogPage = () => {
         const novo = value === 'all' ? null : value;
         setFiltroInstituicao(novo);
         setPage(1);
-        navigate(novo ? `/blog?instituicao=${novo}` : '/blog', { replace: true });
+        navigate(novo ? `/postagens?instituicao=${novo}` : '/postagens', { replace: true });
     };
 
     const instituicaoSelecionada = useMemo(
@@ -105,7 +105,7 @@ const BlogPage = () => {
             ) : (
                 <>
                     {postDestaque && (
-                        <Link to={`/blog/${postDestaque.slug}`} className="no-underline text-current">
+                        <Link to={`/postagens/${postDestaque.slug}`} className="no-underline text-current">
                             <Card size="5" mb="8" className="group overflow-hidden">
                                 <Flex direction={{ initial: 'column', md: 'row' }} gap="6" align="center">
                                     <Box className="w-full md:w-3/5">

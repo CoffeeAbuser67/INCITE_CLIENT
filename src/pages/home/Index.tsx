@@ -1,5 +1,4 @@
 import classNames from "classnames";
-import BG from "../../assets/bg_Incite.png";
 
 import {
     Box,
