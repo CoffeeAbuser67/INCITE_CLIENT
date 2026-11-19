@@ -8,7 +8,8 @@ import { useUserStore } from "../../store/userStore";
 
 
 import BahiaStroke from "../../assets/bahiaStroke";
-import InciteLogo from "../../assets/InciteLogo";
+import iconeIncite from "../../assets/incite-icone.svg";
+// import palavraIncite from "../../assets/incite-palavra.svg";
 
 
 
@@ -57,17 +58,26 @@ const SimplifiedNavbar = () => { // ★ SimplifiedNavbar ⋙──────�
                 className="w-full max-w-6xl px-4 sm:px-6 lg:px-8 flex justify-between items-center h-full" // Aumentei max-w-6xl
             >
 
-                <Box
+                <Link
                     id="logoContainer"
+                    to="/"
+                    aria-label="INCITE Agricultura Familiar — página inicial"
                     className={classNames(
-                        "cursor-pointer flex justify-center items-center",
-                        "transition-all duration-300 ease-in-out",
-                        "text-black group"
+                        "flex items-center gap-3",
+                        "transition-opacity duration-200 hover:opacity-80"
                     )}
-                    onClick={() => navigate('/')}
                 >
-                    <InciteLogo height={40} />
-                </Box>
+                    <img
+                        src={iconeIncite}
+                        alt=""
+                        className="h-11 w-auto flex-shrink-0"
+                    />
+                    {/* <img
+                        src={palavraIncite}
+                        alt=""
+                        className="h-9 w-auto hidden sm:block"
+                    /> */}
+                </Link>
 
 
 

@@ -13,6 +13,7 @@ import { animated, useSpring, useTransition } from "react-spring";
 import { useRef, useState, useEffect, useMemo } from "react";
 import regionData from "../../assets/BahiaRegiao3.json";
 import cityData from "../../assets/BahiaCidades5.json";
+import marcaIncite from "../../assets/incite-af-marca.svg";
 
 import { axiosPlain } from "../../utils/axios";
 import { Link } from 'react-router-dom';
@@ -70,35 +71,21 @@ const mapCity: CityData = cityData;
 const mapRegion: Region[] = regionData;
 
 
+// ── ⋙── ── ── TEXTOS INSTITUCIONAIS ── ── ── ──➤
+// Fora do JSX para facilitar ajustes pedidos pelo cliente.
 
+// [●] TEXTO_INTRODUTORIO
+const TEXTO_INTRODUTORIO =
+    "O INCITE em Agricultura Familiar Diversificada e Sustentável (INCITE-AF) é uma rede de cooperação científica e tecnológica coordenada pela UESC, em parceria com UEFS, UESB, UFRB, UFSB, IFBA, IF Baiano e a SDR. Desenvolve pesquisas, forma recursos humanos e transfere conhecimentos e tecnologias para fortalecer a agricultura familiar baiana de base agroecológica.";
 
-
-// [●] IlustracaoPlaceholder
-const IlustracaoPlaceholder = () => (
-    <svg
-        viewBox="0 0 480 360"
-        role="img"
-        aria-label="Espaço reservado para a ilustração de apoio"
-        className="w-full max-w-[480px] h-auto"
-    >
-        <rect
-            x="1" y="1" width="478" height="358" rx="12"
-            fill="#f8faf8" stroke="#cbd5cd" strokeWidth="2" strokeDasharray="10 8"
-        />
-        <path d="M150 230 C 200 214, 280 214, 330 230" fill="none" stroke="#cbd5cd" strokeWidth="3" strokeLinecap="round" />
-        <circle cx="240" cy="150" r="34" fill="none" stroke="#cbd5cd" strokeWidth="3" />
-        <path d="M240 184 L240 214" stroke="#cbd5cd" strokeWidth="3" strokeLinecap="round" />
-        <text x="240" y="272" textAnchor="middle" fill="#94a3a0" fontSize="15" fontFamily="ui-sans-serif, system-ui, sans-serif">
-            ilustração de apoio
-        </text>
-        <text x="240" y="294" textAnchor="middle" fill="#b0bcb8" fontSize="13" fontFamily="ui-sans-serif, system-ui, sans-serif">
-            480 × 360
-        </text>
-    </svg>
-);
-
-
-
+// [●] TEXTO_SOBRE
+const TEXTO_SOBRE = [
+    "O Instituto de Ciência, Inovação e Tecnologia em Agricultura Familiar Diversificada e Sustentável (INCITE-AF) é uma rede interinstitucional e interdisciplinar de cooperação científica e tecnológica, apoiada pela FAPESB. Sediado na Universidade Estadual de Santa Cruz (UESC), em Ilhéus, reúne como parceiras a UEFS, a UESB, a UFRB, a UFSB, o IFBA, o IF Baiano e a Secretaria de Desenvolvimento Rural (SDR), com atuação nos diferentes biomas e Territórios de Identidade da Bahia.",
+    "A agricultura familiar responde pela maior parte dos estabelecimentos rurais baianos e tem papel central na produção de alimentos saudáveis, na segurança alimentar e na geração de empregos. Ainda assim, enfrenta limitações de acesso a tecnologias, crédito, assistência técnica e mercados, além dos efeitos das mudanças climáticas.",
+    "O objetivo do INCITE-AF é desenvolver pesquisas de impacto científico, tecnológico e social, qualificar recursos humanos e promover o empreendedorismo inovador e a transferência de conhecimentos e tecnologias para fortalecer uma agricultura familiar diversificada e sustentável. Suas ações seguem princípios agroecológicos e metodologias participativas, valorizando os saberes populares dos agricultores e dos povos e comunidades tradicionais.",
+    "Entre as frentes de trabalho estão: produção animal em sistemas silvipastoris, integração lavoura-pecuária-floresta e sistemas agroflorestais; produtos da sociobiodiversidade da Caatinga, do Cerrado e da Mata Atlântica; conservação da biodiversidade e pagamento por serviços ambientais; segurança hídrica; conservação do solo; fitossanidade; e associativismo. O INCITE-AF também atua no resgate de sementes crioulas, na diversificação da produção, na gestão das propriedades e no acesso a mercados.",
+    "Os resultados chegam aos agricultores por meio de oficinas, dias de campo, intercâmbios, cursos, em diálogo com a assistência técnica e extensão rural. A rede conta ainda com laboratórios multiusuários compartilhados e com o apoio do Núcleo de Inovação Tecnológica (NIT) da UESC na prospecção tecnológica, na proteção da propriedade intelectual e na transferência de tecnologias.",
+];
 
 
 const Home = () => { // ★ Home ⋙─────────────────────────────────────────➤ 
@@ -352,25 +339,31 @@ const Home = () => { // ★ Home ⋙──────────────�
             className="flex flex-col items-center w-full px-4 pb-16 pt-28 md:px-6 md:pt-32 lg:px-12"
         >
 
-            {/* ── ⋙── ── ── HERO ── ── ── ──➤ */}
-            <Box id="HERO" className="flex flex-col items-center w-full max-w-4xl gap-4 mb-10">
+            {/* ── ⋙── ── ── HERO ── ── ── ──➤
+                A marca do cliente já traz "INCITE — Agricultura Familiar"
+                desenhado. O h1 fica só para leitor de tela e buscadores;
+                a imagem é decorativa (alt vazio) para o nome não ser
+                anunciado duas vezes. */}
+            <Box id="HERO" className="flex flex-col items-center w-full max-w-4xl gap-6 mb-12">
 
-                <Heading
-                    size={{ initial: '7', md: '9' }}
+                <h1 className="sr-only">
+                    INCITE — Agricultura Familiar Diversificada e Sustentável
+                </h1>
+
+                <img
+                    src={marcaIncite}
+                    alt=""
+                    aria-hidden="true"
+                    className="w-full max-w-[440px] h-auto"
+                />
+
+                <Text
+                    as="p"
+                    size={{ initial: '3', md: '4' }}
                     align="center"
-                    className="text-balance break-words hyphens-none"
+                    className="max-w-2xl text-gray-700 leading-relaxed text-balance"
                 >
-                    Incite - <span className="text-green-700">Agricultura Familiar</span> Diversificada e Sustentável
-                </Heading>
-
-                <Heading as="h2" color="gray" size="4" weight="regular" align="center" className="text-balance">
-                    Instituto de Ciência, Inovação e Tecnologia do Estado da Bahia
-                </Heading>
-
-                <IlustracaoPlaceholder />
-
-                <Text align="center" color="gray" className="max-w-2xl">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                    {TEXTO_INTRODUTORIO}
                 </Text>
             </Box>
 
@@ -672,6 +665,29 @@ const Home = () => { // ★ Home ⋙──────────────�
                         </g>
                     </animated.svg>
                 </div>
+            </Box>
+
+
+            {/* ── ⋙── ── ── SOBRE ── ── ── ──➤
+                Texto institucional longo. max-w-3xl mantém ~75 caracteres
+                por linha — acima disso o olho se perde na volta da linha. */}
+            <Box id="SOBRE" className="w-full max-w-3xl mt-20">
+                <Separator size="4" mb="8" />
+
+                <Heading as="h2" size="6" mb="5">Sobre o INCITE-AF</Heading>
+
+                <Flex direction="column" gap="4">
+                    {TEXTO_SOBRE.map((paragrafo, i) => (
+                        <Text
+                            key={i}
+                            as="p"
+                            size="3"
+                            className="text-gray-700 leading-relaxed"
+                        >
+                            {paragrafo}
+                        </Text>
+                    ))}
+                </Flex>
             </Box>
 
         </Box>
